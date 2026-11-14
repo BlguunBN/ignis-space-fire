@@ -1,0 +1,35 @@
+name: Validate IGNIS redesign
+on:
+  push:
+    branches:
+      - design/visual-research-workspace-20261114
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'data/**'
+      - 'package*.json'
+      - 'tests/**'
+      - 'scripts/validate.py'
+      - '.github/workflows/verify-design.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Unit tests
+        run: npm test
+      - name: Check evidence schema
+        run: python3 scripts/validate.py
+      - name: Build
+        run: npm run build
