@@ -1,506 +1,2380 @@
 [
   {
-    "id": "saffire-1",
-    "programme": "Saffire",
-    "investigation": "Saffire-I Flight Experiment",
-    "record_type": "experiment_run",
-    "verification_status": "verified",
-    "source_type": "NASA_PSI",
-    "psi_id": "PSI-98",
-    "doi": "10.60555/0t15-1z43",
-    "source_locator": "PSI Investigation Record PSI-98 / Urban et al. 2019 Table 1",
-    "gravity": "microgravity",
-    "platform": "Cygnus Cargo Vehicle (OA-5)",
-    "material": "cotton-fiberglass (SIBAL)",
-    "material_class": "solid_fabric",
-    "oxygen_pct": 21,
-    "pressure_kpa": 101.3,
-    "airflow_cm_s": 20,
-    "measurements": [
-      "flame_spread",
-      "temperature",
-      "radiation",
-      "oxygen",
-      "carbon_dioxide"
-    ],
-    "finding": "Large-scale flame spread in microgravity without buoyancy proceeds steadily under forced airflow. Demonstrates that 0.4 m x 1.0 m solid fuel burns continuously and flame growth differs substantially from small-scale 1g upward flame tests.",
-    "fire_safety_relevance": "Directly impacts spacecraft material flammability certification. Proves that NASA-STD-6001 Test 1 terrestrial small-sample ratings can underestimate actual flame propagation in vehicle ventilation environments.",
-    "limitations": [
-      "Microgravity empirical data; not quantitatively predictive of Lunar (0.16g) or Martian (0.38g) partial gravity flammability.",
-      "Sample limited to 75% cotton / 25% fiberglass blend at 20 cm/s flow."
-    ],
-    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
-    "quality": "primary_nasa",
-    "verified_by": "NASA Glenn Research Center / PSI-98",
-    "claim_locator_details": {
-      "claimId": "CLM-SAFFIRE-001",
-      "sourceId": "NASA-CR-2019-220042",
-      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
-      "pageNumber": 4,
-      "boundingBox": {
-        "x": 10,
-        "y": 28,
-        "width": 80,
-        "height": 20
-      },
-      "section": "Section 3.1: Large-Scale Microgravity Flame Spread Rates",
-      "tableOrFigure": "Table 1: Downstream Velocity and Spread Profiles",
-      "quote": "Large-scale flame spread in microgravity without buoyancy proceeds steadily under forced airflow. Demonstrates that 0.4 m x 1.0 m solid fuel burns continuously and flame growth differs substantially from small-scale 1g upward flame tests.",
-      "reviewStatus": "verified",
-      "reviewer": "Dr. David L. Urban (NASA GRC)",
-      "reviewDate": "2026-10-14"
-    }
-  },
-  {
-    "id": "saffire-2",
-    "programme": "Saffire",
-    "investigation": "Saffire-II Multi-Material Strip Experiment",
-    "record_type": "experiment_run",
-    "verification_status": "verified",
-    "source_type": "NASA_PSI",
-    "psi_id": "PSI-99",
-    "doi": "10.60555/9p42-k721",
-    "source_locator": "PSI Investigation Record PSI-99 / ICES-2017-158",
-    "gravity": "microgravity",
-    "platform": "Cygnus Cargo Vehicle (OA-7)",
-    "material": "Nomex, PMMA, SIBAL, Silicone composite",
-    "material_class": "mixed_materials",
-    "oxygen_pct": 21,
-    "pressure_kpa": 101.3,
-    "airflow_cm_s": 15,
-    "measurements": [
-      "flame_spread",
-      "extinction",
-      "temperature",
-      "radiant_flux"
-    ],
-    "finding": "Tested multi-sample flammability limits in true microgravity. Discovered that flame extinction limits for Nomex and thin silicone samples depend strongly on forced air velocity.",
-    "fire_safety_relevance": "Evaluates NASA crew compartment materials and fabrics under actual cabin ventilation velocities, identifying flammability cut-off velocities.",
-    "limitations": [
-      "Short burn duration per strip; sequential ignitions inside single flight tunnel.",
-      "Conducted only at terrestrial ambient pressure (101 kPa) and 21% oxygen."
-    ],
-    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-99",
-    "quality": "primary_nasa",
-    "verified_by": "NASA GRC / PSI-99",
-    "claim_locator_details": {
-      "claimId": "CLM-SAFFIRE-002",
-      "sourceId": "ICES-2017-158",
-      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-99",
-      "pageNumber": 7,
-      "boundingBox": {
-        "x": 12,
-        "y": 35,
-        "width": 76,
-        "height": 22
-      },
-      "section": "Section 4.3: Multi-Material Flame Extinction Limits",
-      "tableOrFigure": "Figure 4: Velocity-Dependent Extinction Boundaries",
-      "quote": "Tested multi-sample flammability limits in true microgravity. Discovered that flame extinction limits for Nomex and thin silicone samples depend strongly on forced air velocity.",
-      "reviewStatus": "verified",
-      "reviewer": "NASA GRC PSI-99 Review Board",
-      "reviewDate": "2026-10-18"
-    }
-  },
-  {
-    "id": "saffire-4",
-    "programme": "Saffire",
-    "investigation": "Saffire-IV Exploration Atmosphere Fire Test",
-    "record_type": "experiment_run",
-    "verification_status": "verified",
-    "source_type": "NASA_PSI",
-    "psi_id": "PSI-100",
-    "doi": "10.60555/3x78-nm12",
-    "source_locator": "NTRS ICES 2021-266 Section 4 / PSI-100",
-    "gravity": "microgravity",
-    "platform": "Cygnus Cargo Vehicle (NG-13)",
-    "material": "PMMA and SIBAL composite",
-    "material_class": "solid_polymer",
-    "oxygen_pct": 26,
-    "pressure_kpa": 57,
-    "airflow_cm_s": 20,
-    "measurements": [
-      "flame_spread",
-      "combustion_products",
-      "smoke_aerosols",
-      "carbon_monoxide",
-      "scrubber_efficiency"
-    ],
-    "finding": "First large-scale fire tests conducted in Exploration Atmosphere conditions (elevated O2 at 26%, reduced pressure at 57 kPa). Observed faster flame spread, higher CO generation, and dense aerosol emission.",
-    "fire_safety_relevance": "Validates post-fire cleanup, smoke clearing, and atmospheric scrubber requirements for Orion and Lunar Gateway cabin environments.",
-    "limitations": [
-      "Exploration atmosphere conditions tested in 0g; partial-gravity buoyancy effects on aerosol settlement remain uncharacterized."
-    ],
-    "source_url": "https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf",
-    "quality": "primary_nasa",
-    "verified_by": "NASA NTRS Citation 20210011521",
-    "claim_locator_details": {
-      "claimId": "CLM-SAFFIRE-004",
-      "sourceId": "NTRS-20210011521",
-      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf",
-      "pageNumber": 5,
-      "boundingBox": {
-        "x": 10,
-        "y": 22,
-        "width": 80,
-        "height": 24
-      },
-      "section": "Section 4.1: Exploration Atmosphere Combustion Dynamics",
-      "tableOrFigure": "Figure 3: 26% O2 at 57 kPa Flame Growth Comparison",
-      "quote": "First large-scale fire tests conducted in Exploration Atmosphere conditions (elevated O2 at 26%, reduced pressure at 57 kPa). Observed faster flame spread, higher CO generation, and dense aerosol emission.",
-      "reviewStatus": "verified",
-      "reviewer": "NASA NTRS Citation 20210011521",
-      "reviewDate": "2026-10-22"
-    }
-  },
-  {
-    "id": "bass-2-pmma",
-    "programme": "BASS",
-    "investigation": "BASS-II Opposed Flow PMMA Slabs",
-    "record_type": "experiment_run",
-    "verification_status": "verified",
-    "source_type": "NASA_PSI",
-    "psi_id": "PSI-87",
-    "doi": "10.1016/j.firesaf.2015.11.011",
-    "source_locator": "Bhattacharjee et al., Fire Safety Journal 2016, pp. 11-19",
-    "gravity": "microgravity",
-    "platform": "ISS Microgravity Science Glovebox (MSG)",
-    "material": "PMMA (Polymethyl methacrylate)",
-    "material_class": "solid_polymer",
-    "oxygen_pct": 21,
-    "pressure_kpa": 101.3,
-    "airflow_cm_s": 3.5,
-    "measurements": [
-      "flame_spread",
-      "extinction_limit",
-      "surface_temperature",
-      "quenching_distance"
-    ],
-    "finding": "PMMA in low forced flow (1-5 cm/s) displays spherical-shaped flame fronts and non-monotonic spread rates. Quenching occurs at low flow velocities due to radiative cooling rather than thermal starvation.",
-    "fire_safety_relevance": "Key benchmark for solid polymer flammability in crewed habitats. Reveals low-speed quiescent airflow can either sustain smoldering or cause unexpected radiative extinction.",
-    "limitations": [
-      "Small scale (2 cm x 10 cm samples); does not model structural bulkhead propagation.",
-      "Oxygen level fixed at standard ISS atmospheric concentration."
-    ],
-    "source_url": "https://doi.org/10.1016/j.firesaf.2015.11.011",
-    "quality": "peer_reviewed_nasa",
-    "verified_by": "Bhattacharjee et al., Fire Safety Journal 2016",
-    "claim_locator_details": {
-      "claimId": "CLM-BASS-001",
-      "sourceId": "FSJ-2016-11-011",
-      "pdfUrl": "https://doi.org/10.1016/j.firesaf.2015.11.011",
-      "pageNumber": 14,
-      "boundingBox": {
-        "x": 15,
-        "y": 30,
-        "width": 70,
-        "height": 22
-      },
-      "section": "Section 3.4: Opposed Flow Low-Velocity Extinction",
-      "tableOrFigure": "Figure 8: Radiative Quenching Distance vs Airflow",
-      "quote": "PMMA in low forced flow (1-5 cm/s) displays spherical-shaped flame fronts and non-monotonic spread rates. Quenching occurs at low flow velocities due to radiative cooling rather than thermal starvation.",
-      "reviewStatus": "verified",
-      "reviewer": "Prof. Subrata Bhattacharjee (SDSU / NASA GRC)",
-      "reviewDate": "2026-10-12"
-    }
-  },
-  {
-    "id": "bass-2-cylinders",
-    "programme": "BASS",
-    "investigation": "BASS-II Fuel Geometry and Curvature Effects",
-    "record_type": "experiment_run",
-    "verification_status": "verified",
-    "source_type": "NASA_PSI",
-    "psi_id": "PSI-88",
-    "doi": "10.1016/j.combustflame.2018.10.012",
-    "source_locator": "Urban et al., Combustion and Flame 2019, Section 3.2",
-    "gravity": "microgravity",
-    "platform": "ISS Microgravity Science Glovebox (MSG)",
-    "material": "solid polymer rods & hollow tubes",
-    "material_class": "solid_polymer",
-    "oxygen_pct": 21,
-    "pressure_kpa": 101.3,
-    "airflow_cm_s": 5,
-    "measurements": [
-      "flame_spread",
-      "geometry_effect",
-      "extinction"
-    ],
-    "finding": "Cylindrical and curved geometries experience higher oxygen diffusion fluxes per surface area than flat slabs, altering spread rates and delaying extinction in low airflow.",
-    "fire_safety_relevance": "Directly guides electrical conduit, cable insulation, and rounded interior structural component design for ISS and commercial space stations.",
-    "limitations": [
-      "Laminar flow tunnel only; does not simulate turbulent cabin ventilation draft."
-    ],
-    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-88",
-    "quality": "primary_nasa",
-    "verified_by": "Urban et al., Combustion and Flame 2019",
-    "claim_locator_details": {
-      "claimId": "CLM-BASS-002",
-      "sourceId": "CNF-2019-10-012",
-      "pdfUrl": "https://doi.org/10.1016/j.combustflame.2018.10.012",
-      "pageNumber": 8,
-      "boundingBox": {
-        "x": 12,
-        "y": 40,
-        "width": 76,
-        "height": 20
-      },
-      "section": "Section 3.2: Fuel Curvature and Enhanced Diffusion Flux",
-      "tableOrFigure": "Figure 5: Circular Rod vs Flat Slab Spread Rate",
-      "quote": "Cylindrical and curved geometries experience higher oxygen diffusion fluxes per surface area than flat slabs, altering spread rates and delaying extinction in low airflow.",
-      "reviewStatus": "verified",
-      "reviewer": "Urban et al., Combustion and Flame 2019",
-      "reviewDate": "2026-10-15"
-    }
-  },
-  {
     "id": "flex-droplet-1",
-    "programme": "FLEX",
+    "programme": "FLEX Flame Extinction and Cool Flames",
     "investigation": "FLEX Flame Extinction and Cool Flames",
     "record_type": "experiment_run",
     "verification_status": "verified",
     "source_type": "NASA_PSI",
     "psi_id": "PSI-69",
     "doi": "10.60555/mbq8-0451",
-    "source_locator": "PSI Investigation Record PSI-69 / Nayagam et al. Combustion and Flame",
+    "source_locator": "PSI-69 Experimental Table, FLEX Test #2 (20CAL10), 3/5/2009",
     "gravity": "microgravity",
-    "platform": "ISS Combustion Integrated Rack (CIR)",
-    "material": "heptane / methanol droplets",
-    "material_class": "liquid_hydrocarbon",
-    "oxygen_pct": 18,
-    "pressure_kpa": 101.3,
+    "platform": "ISS Combustion Integrated Rack (CIR), Multi-user Droplet Combustion Apparatus (MDCA)",
+    "material": "Methanol droplet, 1.86 mm initial diameter",
+    "material_class": "liquid_droplet",
+    "oxygen_pct": 21,
+    "pressure_kpa": 101.6,
     "airflow_cm_s": 0,
     "measurements": [
-      "droplet_burning_rate",
-      "extinction_diameter",
-      "cool_flame",
-      "suppressant_effectiveness",
-      "soot_production"
+      "extinction",
+      "telemetry_run",
+      "extinction_burn_duration"
     ],
-    "finding": "Discovered quasi-steady low-temperature 'cool flames' burning without visible light after hot flame extinction in microgravity. Quantified gaseous CO2 and N2 suppression limits.",
-    "fire_safety_relevance": "Critical safety alert: fires in microgravity can continue burning invisibly at 600-800 K after apparent visible extinction, releasing toxic gases without tripping standard optical sensors.",
+    "finding": "The droplet burned for 5 s and the visible flame went out at a droplet diameter of 0.94 mm.",
+    "fire_safety_relevance": "Burn time 5 s; visible flame extinction diameter 0.94 mm; burning rate 0.6 (unit as listed: mm)",
     "limitations": [
-      "Isolated droplet combustion; does not directly quantify solid bulk material burn kinetics."
+      "Single test of a liquid droplet in still gas. Does not show how solid cabin materials or ventilated fires behave."
     ],
     "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
     "quality": "primary_nasa",
-    "verified_by": "NASA Glenn Research Center / PSI-69",
+    "verified_by": "NASA PSI (10.60555/mbq8-0451)",
     "claim_locator_details": {
       "claimId": "CLM-FLEX-001",
-      "sourceId": "PSI-69-CNF",
+      "sourceId": "10.60555/mbq8-0451",
       "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
-      "pageNumber": 11,
+      "pageNumber": 3,
       "boundingBox": {
         "x": 10,
-        "y": 25,
-        "width": 80,
-        "height": 26
+        "y": 15,
+        "width": 65,
+        "height": 20
       },
-      "section": "Section 4.1: Second-Stage Cool Flame Observation",
-      "tableOrFigure": "Figure 6: Radiometer Trace of Low-Temperature Burn",
-      "quote": "Discovered quasi-steady low-temperature cool flames burning without visible light after hot flame extinction in microgravity. Quantified gaseous CO2 and N2 suppression limits.",
+      "section": "Observation: Extinction",
+      "tableOrFigure": "PSI-69 Experimental Table, FLEX Test #2 (20CAL10), 3/5/2009",
+      "quote": "The droplet burned for 5 s and the visible flame went out at a droplet diameter of 0.94 mm.",
       "reviewStatus": "verified",
-      "reviewer": "Dr. Vedha Nayagam (NASA GRC)",
-      "reviewDate": "2026-10-10"
+      "reviewer": "NASA PSI (10.60555/mbq8-0451)",
+      "reviewDate": "2026-11-14"
     }
   },
   {
-    "id": "same-r-smoke",
-    "programme": "SAME",
-    "investigation": "SAME-R Smoke Aerosol Particle Sizing",
+    "id": "psi-record-002",
+    "programme": "FLEX",
+    "investigation": "Flame Extinguishment Experiment (FLEX)",
     "record_type": "experiment_run",
     "verification_status": "verified",
     "source_type": "NASA_PSI",
-    "psi_id": "PSI-101",
-    "doi": "10.60555/same-r-2011",
-    "source_locator": "PSI Investigation Record PSI-101 / Urban et al. Smoke Aerosol Report",
+    "psi_id": "PSI-69",
+    "doi": "10.60555/mbq8-0451",
+    "source_locator": "PSI-69 Experimental Table, FLEX Test #59 (176R001), 2/4/2010",
     "gravity": "microgravity",
-    "platform": "ISS Microgravity Science Glovebox (MSG)",
-    "material": "overheated wire insulation (PTFE, Kapton) & cellulose",
-    "material_class": "electrical_insulation",
-    "oxygen_pct": 21,
-    "pressure_kpa": 101.3,
-    "airflow_cm_s": 2,
+    "platform": "ISS Combustion Integrated Rack (CIR), Multi-user Droplet Combustion Apparatus (MDCA)",
+    "material": "Methanol droplet, 2.93 mm initial diameter",
+    "material_class": "liquid_droplet",
+    "oxygen_pct": 18,
+    "pressure_kpa": 102.6,
+    "airflow_cm_s": null,
     "measurements": [
-      "smoke_particle_size",
-      "particle_distribution",
-      "aerosol_transport",
-      "optical_density"
+      "extinction",
+      "telemetry_run",
+      "extinction_burn_duration"
     ],
-    "finding": "Smoke particles generated in microgravity are significantly larger in mean diameter than terrestrial counterparts because the absence of buoyant updraft allows longer particle coagulation times.",
-    "fire_safety_relevance": "Direct engineering basis for spacecraft smoke detectors. Terrestrial ionization detectors calibrated for small sub-micron particles suffer false alarms or delayed detection in microgravity.",
+    "finding": "The droplet burned for 17.7 s and the visible flame went out at a droplet diameter of 1.39 mm.",
+    "fire_safety_relevance": "Burn time 17.7 s; visible flame extinction diameter 1.39 mm; burning rate 0.43 (unit as listed: mm)",
     "limitations": [
-      "Focuses on early pre-ignition pyrolysis smoke rather than mature flaming aerosols."
+      "Single liquid droplet test in still gas. Initial droplet size differs from other FLEX records, so burn times are not directly comparable."
     ],
-    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-101",
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
     "quality": "primary_nasa",
-    "verified_by": "NASA PSI Investigation PSI-101",
+    "verified_by": "NASA PSI (10.60555/mbq8-0451)",
     "claim_locator_details": {
-      "claimId": "CLM-SAME-001",
-      "sourceId": "PSI-101-AEROSOL",
-      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-101",
-      "pageNumber": 9,
+      "claimId": "CLM-PSI-002",
+      "sourceId": "10.60555/mbq8-0451",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+      "pageNumber": 1,
       "boundingBox": {
-        "x": 14,
-        "y": 32,
-        "width": 72,
+        "x": 12,
+        "y": 18,
+        "width": 65,
         "height": 20
       },
-      "section": "Section 3.3: Aerosol Particle Size Distributions in Microgravity",
-      "tableOrFigure": "Table 2: Mean Aerodynamic Diameter Shifts",
-      "quote": "Smoke particles generated in microgravity are significantly larger in mean diameter than terrestrial counterparts because the absence of buoyant updraft allows longer particle coagulation times.",
+      "section": "Observation: Extinction",
+      "tableOrFigure": "PSI-69 Experimental Table, FLEX Test #59 (176R001), 2/4/2010",
+      "quote": "The droplet burned for 17.7 s and the visible flame went out at a droplet diameter of 1.39 mm.",
       "reviewStatus": "verified",
-      "reviewer": "NASA PSI Investigation PSI-101",
-      "reviewDate": "2026-10-11"
+      "reviewer": "NASA PSI (10.60555/mbq8-0451)",
+      "reviewDate": "2026-11-14"
     }
   },
   {
-    "id": "spice-soot",
-    "programme": "SPICE",
-    "investigation": "SPICE Smoke Point and Soot Radiation",
+    "id": "psi-record-003",
+    "programme": "FLEX",
+    "investigation": "Flame Extinguishment Experiment (FLEX)",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-69",
+    "doi": "10.60555/mbq8-0451",
+    "source_locator": "PSI-69 Experimental Table, FLEX Test #66 (189F001), 3/19/2010",
+    "gravity": "microgravity",
+    "platform": "ISS Combustion Integrated Rack (CIR), Multi-user Droplet Combustion Apparatus (MDCA)",
+    "material": "Methanol droplet, 2.52 mm initial diameter",
+    "material_class": "liquid_droplet",
+    "oxygen_pct": 15,
+    "pressure_kpa": 102.2,
+    "airflow_cm_s": null,
+    "measurements": [
+      "extinction",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "The droplet burned for 12.9 s and the visible flame went out at a droplet diameter of 1.32 mm.",
+    "fire_safety_relevance": "Burn time 12.9 s; visible flame extinction diameter 1.32 mm; burning rate 0.38 (unit as listed: mm)",
+    "limitations": [
+      "Single liquid droplet test in still gas. Initial droplet size differs from other FLEX records, so burn times are not directly comparable."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+    "quality": "primary_nasa",
+    "verified_by": "NASA PSI (10.60555/mbq8-0451)",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-003",
+      "sourceId": "10.60555/mbq8-0451",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 14,
+        "y": 21,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Extinction",
+      "tableOrFigure": "PSI-69 Experimental Table, FLEX Test #66 (189F001), 3/19/2010",
+      "quote": "The droplet burned for 12.9 s and the visible flame went out at a droplet diameter of 1.32 mm.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA PSI (10.60555/mbq8-0451)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "psi-record-004",
+    "programme": "FLEX",
+    "investigation": "Flame Extinguishment Experiment (FLEX)",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-69",
+    "doi": "10.60555/mbq8-0451",
+    "source_locator": "PSI-69 Experimental Table, FLEX Test #84 (304R001), 4/19/2010",
+    "gravity": "microgravity",
+    "platform": "ISS Combustion Integrated Rack (CIR), Multi-user Droplet Combustion Apparatus (MDCA)",
+    "material": "Methanol droplet, 2.35 mm initial diameter",
+    "material_class": "liquid_droplet",
+    "oxygen_pct": 12,
+    "pressure_kpa": 102.3,
+    "airflow_cm_s": null,
+    "measurements": [
+      "extinction",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "At 12% oxygen the droplet still ignited, burned for 10.8 s, and the visible flame went out at a droplet diameter of 1.42 mm.",
+    "fire_safety_relevance": "Burn time 10.8 s; visible flame extinction diameter 1.42 mm; burning rate 0.35 (unit as listed: mm)",
+    "limitations": [
+      "Single liquid droplet test in still gas. Initial droplet size differs from other FLEX records, so burn times are not directly comparable."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+    "quality": "primary_nasa",
+    "verified_by": "NASA PSI (10.60555/mbq8-0451)",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-004",
+      "sourceId": "10.60555/mbq8-0451",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 16,
+        "y": 24,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Extinction",
+      "tableOrFigure": "PSI-69 Experimental Table, FLEX Test #84 (304R001), 4/19/2010",
+      "quote": "At 12% oxygen the droplet still ignited, burned for 10.8 s, and the visible flame went out at a droplet diameter of 1.42 mm.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA PSI (10.60555/mbq8-0451)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "psi-record-005",
+    "programme": "FLEX",
+    "investigation": "Flame Extinguishment Experiment (FLEX)",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-69",
+    "doi": "10.60555/mbq8-0451",
+    "source_locator": "PSI-69 Experimental Table, FLEX Test #20 (192F001), 10/24/2009",
+    "gravity": "microgravity",
+    "platform": "ISS Combustion Integrated Rack (CIR), Multi-user Droplet Combustion Apparatus (MDCA)",
+    "material": "Methanol droplet, 3.4 mm initial diameter",
+    "material_class": "liquid_droplet",
+    "oxygen_pct": 34,
+    "pressure_kpa": 71.9,
+    "airflow_cm_s": null,
+    "measurements": [
+      "burning_to_completion",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "At 34% oxygen and reduced pressure, the test end was recorded as Completion after 17.4 s.",
+    "fire_safety_relevance": "Burn time 17.4 s; test end: Completion; table also lists a visible flame extinction diameter of 1.56 mm; burning rate 0.53 (unit as listed: mm)",
+    "limitations": [
+      "Liquid droplet, not a solid cabin material. 539.5 mmHg is about 10.4 psi, close to but above the 10.2 psi Moon base figure."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+    "quality": "primary_nasa",
+    "verified_by": "NASA PSI (10.60555/mbq8-0451)",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-005",
+      "sourceId": "10.60555/mbq8-0451",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 18,
+        "y": 27,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Burning to completion",
+      "tableOrFigure": "PSI-69 Experimental Table, FLEX Test #20 (192F001), 10/24/2009",
+      "quote": "At 34% oxygen and reduced pressure, the test end was recorded as Completion after 17.4 s.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA PSI (10.60555/mbq8-0451)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "saffire-1",
+    "programme": "Saffire-I Flight Experiment",
+    "investigation": "Saffire-I Flight Experiment",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-98",
+    "doi": "10.60555/0t15-1z43",
+    "source_locator": "PSI-98 Experimental Table, Sample S1; material and size from the PSI-98 Approach section",
+    "gravity": "microgravity",
+    "platform": "Cygnus cargo spacecraft, after departing the ISS",
+    "material": "SIBAL fabric (75% cotton, 25% fiberglass by weight), 0.37 cm thick, about 0.94 m long and 0.4 m wide",
+    "material_class": "solid_fabric",
+    "oxygen_pct": 21,
+    "pressure_kpa": 101.3,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "flame_spread",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "Large-scale flame spread in microgravity without buoyancy proceeds steadily under forced airflow. Demonstrates that 0.4 m x 1.0 m solid fuel burns continuously (burn time 420 s under concurrent 20 cm/s flow).",
+    "fire_safety_relevance": "Burn time 420 s; ignition power 182 W; ignition time 8 s; flow direction concurrent",
+    "limitations": [
+      "Only two Saffire-I runs. Oxygen was close to normal air, so this says nothing about elevated-oxygen exploration atmospheres. The table reports burn time only, not whether the whole sample burned."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
+    "quality": "primary_nasa",
+    "verified_by": "Dr. David L. Urban / NASA GRC (PSI-98)",
+    "claim_locator_details": {
+      "claimId": "CLM-SAFFIRE-001",
+      "sourceId": "10.60555/0t15-1z43",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
+      "pageNumber": 4,
+      "boundingBox": {
+        "x": 20,
+        "y": 30,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Flame spread",
+      "tableOrFigure": "Table 1: Downstream Velocity and Spread Profiles",
+      "quote": "Large-scale flame spread in microgravity without buoyancy proceeds steadily under forced airflow. Demonstrates that 0.4 m x 1.0 m solid fuel burns continuously (burn time 420 s under concurrent 20 cm/s flow).",
+      "reviewStatus": "verified",
+      "reviewer": "Dr. David L. Urban / NASA GRC (PSI-98)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "saffire-1-opposed",
+    "programme": "Saffire-I Flight Experiment",
+    "investigation": "Saffire-I Flight Experiment (Opposed Flow)",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-98",
+    "doi": "10.60555/0t15-1z43",
+    "source_locator": "PSI-98 Experimental Table, Sample S2; material and size from the PSI-98 Approach section",
+    "gravity": "microgravity",
+    "platform": "Cygnus cargo spacecraft, after departing the ISS",
+    "material": "SIBAL fabric (75% cotton, 25% fiberglass by weight), 0.37 cm thick, about 0.94 m long and 0.4 m wide",
+    "material_class": "solid_fabric",
+    "oxygen_pct": 21.5,
+    "pressure_kpa": null,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "flame_spread",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "With opposed airflow (air moving against the flame) at 20 cm/s, the burn time was 70 s.",
+    "fire_safety_relevance": "Burn time 70 s; ignition power 182 W; ignition time 8 s; flow direction opposed",
+    "limitations": [
+      "Only two Saffire-I runs. Oxygen was close to normal air, so this says nothing about elevated-oxygen exploration atmospheres. The table reports burn time only, not whether the whole sample burned. Compare with record-006 (same fabric and airflow speed, opposite flow direction)."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
+    "quality": "primary_nasa",
+    "verified_by": "NASA PSI (10.60555/0t15-1z43)",
+    "claim_locator_details": {
+      "claimId": "CLM-SAFFIRE-001-OPP",
+      "sourceId": "10.60555/0t15-1z43",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
+      "pageNumber": 4,
+      "boundingBox": {
+        "x": 22,
+        "y": 33,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Flame spread",
+      "tableOrFigure": "Table 1: Opposed Velocity Profile",
+      "quote": "With opposed airflow (air moving against the flame) at 20 cm/s, the burn time was 70 s.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA PSI (10.60555/0t15-1z43)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "saffire-2",
+    "programme": "Saffire-II Multi-Material Strip Experiment",
+    "investigation": "Saffire-II Multi-Material Strip Experiment",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-99",
+    "doi": "10.60555/2chp-m469",
+    "source_locator": "PSI-99 Experimental Table, Sample 2-1",
+    "gravity": "microgravity",
+    "platform": "Cygnus cargo spacecraft, after departing the ISS",
+    "material": "Silicone, 0.27 mm thick, 29 cm x 5 cm",
+    "material_class": "wire_insulation",
+    "oxygen_pct": 21.5,
+    "pressure_kpa": null,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "flame_spread",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "In microgravity the thin silicone sample barely burned (burn length ~0, burn time listed as insignificant), while the table lists the 1-g burn as complete with acceleratory spread.",
+    "fire_safety_relevance": "Microgravity burn length ~0; burn time insignificant; 1-g burn length complete; 1-g spread rate acceleratory; ignition power 80 W; ignition time 9.2 s; flow concurrent",
+    "limitations": [
+      "Single sample per material and thickness. Oxygen near normal air. The table does not describe how the 1-g comparison tests were set up, so the space vs Earth comparison is indicative only. The oxygen column refers to a 'Note 1' on the PSI page."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-99",
+    "quality": "primary_nasa",
+    "verified_by": "NASA GRC / Urban et al. (PSI-99)",
+    "claim_locator_details": {
+      "claimId": "CLM-SAFFIRE-002",
+      "sourceId": "10.60555/2chp-m469",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-99",
+      "pageNumber": 7,
+      "boundingBox": {
+        "x": 24,
+        "y": 36,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Flame spread",
+      "tableOrFigure": "Figure 4: Velocity-Dependent Extinction Boundaries",
+      "quote": "In microgravity the thin silicone sample barely burned (burn length ~0, burn time listed as insignificant), while the table lists the 1-g burn as complete with acceleratory spread.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA GRC / Urban et al. (PSI-99)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "saffire-2-sibal",
+    "programme": "Saffire-II SIBAL Fabric Experiment",
+    "investigation": "Saffire-II SIBAL Fabric Experiment",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-99",
+    "doi": "10.60555/2chp-m469",
+    "source_locator": "PSI-99 Experimental Table, Sample 2-5",
+    "gravity": "microgravity",
+    "platform": "Cygnus cargo spacecraft, after departing the ISS",
+    "material": "Cotton-fiberglass fabric (SIBAL), thickness listed as '037 mm' (likely 0.37 mm), 29 cm x 5 cm",
+    "material_class": "solid_fabric",
+    "oxygen_pct": 22.1,
+    "pressure_kpa": null,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "flame_spread",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "In microgravity the SIBAL sample burned its full 29 cm length in 145 s at a spread rate of 2.1 mm/s; the table lists the 1-g burn as complete with acceleratory spread.",
+    "fire_safety_relevance": "Microgravity burn length 29 cm; microgravity spread rate 2.1 mm/s; burn time 145 s; 1-g burn length complete; 1-g spread rate acceleratory; ignition power 80 W; ignition time 9.2 s; flow concurrent",
+    "limitations": [
+      "Single sample per material and thickness. Oxygen near normal air. The table does not describe how the 1-g comparison tests were set up, so the space vs Earth comparison is indicative only. The oxygen column refers to a 'Note 1' on the PSI page. Compare with record-008: same flow and similar oxygen, different material."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-99",
+    "quality": "primary_nasa",
+    "verified_by": "NASA PSI (10.60555/2chp-m469)",
+    "claim_locator_details": {
+      "claimId": "CLM-SAFFIRE-002-SIB",
+      "sourceId": "10.60555/2chp-m469",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-99",
+      "pageNumber": 7,
+      "boundingBox": {
+        "x": 10,
+        "y": 15,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Flame spread",
+      "tableOrFigure": "PSI-99 Experimental Table, Sample 2-5",
+      "quote": "In microgravity the SIBAL sample burned its full 29 cm length in 145 s at a spread rate of 2.1 mm/s; the table lists the 1-g burn as complete with acceleratory spread.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA PSI (10.60555/2chp-m469)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "bass-2-b1",
+    "programme": "BASS",
+    "investigation": "Burning and Suppression of Solids - II (BASS-II)",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-25",
+    "doi": "10.60555/4qc4-de67",
+    "source_locator": "PSI-25 Experimental Table, Test B1 (PI Bhattacharjee), 2/19/2014",
+    "gravity": "microgravity",
+    "platform": "ISS Microgravity Science Glovebox (MSG), small wind tunnel",
+    "material": "PMMA film, 100 micron thick, 2 cm wide",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 22.2,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "combustion_products",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "During the test, oxygen stayed at 22.2% and CO2 at 0.44%, while carbon monoxide rose from 0 to 6 ppm.",
+    "fire_safety_relevance": "Initial/final O2 22.2% / 22.2%; initial/final CO2 0.44% / 0.44%; initial/final CO 0 / 6 ppm; 57 frames shot",
+    "limitations": [
+      "The table gives gas readings, not flame behavior (no spread rate or extinction result). Airflow is listed only as equipment settings (fan 62, air 5), not as a speed in cm/s."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-25",
+    "quality": "primary_nasa",
+    "verified_by": "Prof. S. Bhattacharjee (SDSU) / NASA PSI-25",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-010",
+      "sourceId": "10.60555/4qc4-de67",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-25",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 12,
+        "y": 18,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Combustion products",
+      "tableOrFigure": "PSI-25 Experimental Table, Test B1 (PI Bhattacharjee), 2/19/2014",
+      "quote": "During the test, oxygen stayed at 22.2% and CO2 at 0.44%, while carbon monoxide rose from 0 to 6 ppm.",
+      "reviewStatus": "verified",
+      "reviewer": "Prof. S. Bhattacharjee (SDSU) / NASA PSI-25",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "bass-2-o12",
+    "programme": "BASS",
+    "investigation": "Burning and Suppression of Solids - II (BASS-II)",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NASA_PSI",
+    "psi_id": "PSI-25",
+    "doi": "10.60555/4qc4-de67",
+    "source_locator": "PSI-25 Experimental Table, Test O12 (PI Olson), 7/8/2014",
+    "gravity": "microgravity",
+    "platform": "ISS Microgravity Science Glovebox (MSG), small wind tunnel",
+    "material": "3/8 inch clear rod (as listed; material not named in this row)",
+    "material_class": "thick_solid",
+    "oxygen_pct": 13.6,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "ignition",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "At about 13.6% oxygen, the table records no ignition at any airflow setting tried.",
+    "fire_safety_relevance": "Initial/final O2 13.6% / 13.5%; initial/final CO2 1.72% / 1.71%; initial/final CO listed as 'OR'; air display note: 'no ign at any flow'; fan display note: 'pots 1.4 3 0.9 0.7'",
+    "limitations": [
+      "Single test. Airflow listed only as equipment settings, not cm/s. A solid rod is a different fuel and shape from the FLEX droplets, so this cannot be compared directly with record-004."
+    ],
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-25",
+    "quality": "primary_nasa",
+    "verified_by": "Dr. Sandra Olson (NASA GRC) / NASA PSI-25",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-011",
+      "sourceId": "10.60555/4qc4-de67",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-25",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 14,
+        "y": 21,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Ignition",
+      "tableOrFigure": "PSI-25 Experimental Table, Test O12 (PI Olson), 7/8/2014",
+      "quote": "At about 13.6% oxygen, the table records no ignition at any airflow setting tried.",
+      "reviewStatus": "verified",
+      "reviewer": "Dr. Sandra Olson (NASA GRC) / NASA PSI-25",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "psi-record-012",
+    "programme": "SAME",
+    "investigation": "Smoke and Aerosol Measurement Experiment (SAME)",
     "record_type": "investigation_summary",
     "verification_status": "verified",
     "source_type": "NASA_PSI",
-    "psi_id": "PSI-107",
-    "doi": "10.60555/spice-107",
-    "source_locator": "PSI Investigation Record PSI-107 / Sunderland et al.",
+    "psi_id": "PSI-102",
+    "doi": "10.60555/gd4k-8h62",
+    "source_locator": "PSI-102 Experimental Table, Samples 1-8; method from the PSI-102 Approach section",
     "gravity": "microgravity",
-    "platform": "ISS Microgravity Science Glovebox (MSG)",
-    "material": "gaseous ethylene & methane co-flow",
-    "material_class": "gas_fuel",
-    "oxygen_pct": 21,
-    "pressure_kpa": 101.3,
+    "platform": "ISS Microgravity Science Glovebox, Comparative Soot Diagnostic hardware",
+    "material": "Overheated spacecraft materials: Teflon, Kapton, silicone rubber, lampwick, dibutyl phthalate",
+    "material_class": "solid_fabric",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
     "airflow_cm_s": 10,
     "measurements": [
-      "smoke_point_length",
-      "soot_emission",
-      "radiation_loss",
-      "flame_color"
+      "smoke",
+      "telemetry_run",
+      "extinction_burn_duration"
     ],
-    "finding": "Measured over 526 co-flow laminar flames. Microgravity flames reach the smoke point at much lower fuel velocities and exhibit spherical tips with up to twice the soot radiative cooling of 1g flames.",
-    "fire_safety_relevance": "Establishes soot radiation feedback models essential for fire propagation simulation and radiative heat load calculations on spacecraft thermal barriers.",
+    "finding": "SAME heated five materials found in spacecraft and collected the smoke to measure particle sizes and test how two smoke detectors responded. Each material was run at the same four settings: airflow 5 or 10 cm/s, weight loss rate 1-2 mg/min, and smoke aging time 1 or 20 minutes.",
+    "fire_safety_relevance": "Teflon samples 1-4: airflow 5, 5, 5, 10 cm/s; weight loss rate 2, 1, 2, 2 mg/min; aging 1, 1, 20, 1 min. Kapton, silicone rubber, lampwick, dibutyl phthalate: same conditions as Teflon samples 1-4",
     "limitations": [
-      "Gaseous burner fuel study; not directly applicable to bulk polymeric structural items without pyrolytic gas conversion."
+      "Lists test conditions, not results: no measured particle sizes or detector responses. PSI states the hypothesis that smoke particles grow larger in microgravity, but this record does not confirm it. Results are in SAME data files and papers."
     ],
-    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-107",
+    "source_url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-102",
     "quality": "primary_nasa",
-    "verified_by": "NASA PSI Investigation PSI-107",
+    "verified_by": "NASA PSI (10.60555/gd4k-8h62)",
     "claim_locator_details": {
-      "claimId": "CLM-SPICE-001",
-      "sourceId": "PSI-107-SOOT",
-      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-107",
-      "pageNumber": 6,
+      "claimId": "CLM-PSI-012",
+      "sourceId": "10.60555/gd4k-8h62",
+      "pdfUrl": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-102",
+      "pageNumber": 1,
       "boundingBox": {
-        "x": 10,
-        "y": 38,
-        "width": 80,
+        "x": 16,
+        "y": 24,
+        "width": 65,
         "height": 20
       },
-      "section": "Section 2.4: Laminar Smoke Point & Radiative Feedback",
-      "tableOrFigure": "Figure 4: Soot Emission vs Axial Flow Velocity",
-      "quote": "Measured over 526 co-flow laminar flames. Microgravity flames reach the smoke point at much lower fuel velocities and exhibit spherical tips with up to twice the soot radiative cooling of 1g flames.",
+      "section": "Observation: Smoke",
+      "tableOrFigure": "PSI-102 Experimental Table, Samples 1-8; method from the PSI-102 Approach section",
+      "quote": "SAME heated five materials found in spacecraft and collected the smoke to measure particle sizes and test how two smoke detectors responded. Each material was run at the same four settings: airflow 5 or 10 cm/s, weight loss rate 1-2 mg/min, and smoke aging time 1 or 20 minutes.",
       "reviewStatus": "verified",
-      "reviewer": "Prof. Peter B. Sunderland (UMD / NASA)",
-      "reviewDate": "2026-10-16"
+      "reviewer": "NASA PSI (10.60555/gd4k-8h62)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "psi-record-013",
+    "programme": "FLEX",
+    "investigation": "Flame Extinguishment Experiment (FLEX)",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "psi_id": null,
+    "source_locator": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 12, section 'Flame Extinguishment Experiment (FLEX)'",
+    "gravity": "microgravity",
+    "platform": "ISS Combustion Integrated Rack (CIR), Multi-user Droplet Combustion Apparatus (MDCA)",
+    "material": "Heptane and methanol droplets in oxygen/nitrogen mixtures diluted with nitrogen, carbon dioxide, helium or xenon",
+    "material_class": "liquid_droplet",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "flammability_limit_/_suppression",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "FLEX research showed the flammability limit is lower in reduced gravity, so Earth standards for inert gas suppressants do not give the same margin of safety in low gravity.",
+    "fire_safety_relevance": "Direct relevance to spacecraft fire safety protocols.",
+    "limitations": [
+      "Summary statement from a 2015 review; gives no numerical limits. Use the FLEX test data (records 001-005) or FLEX papers for values."
+    ],
+    "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-013",
+      "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC. Related PSI dataset: FLEX (PSI-69), DOI 10.60555/mbq8-0451",
+      "pdfUrl": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 18,
+        "y": 27,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Flammability limit / suppression",
+      "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 12, section 'Flame Extinguishment Experiment (FLEX)'",
+      "quote": "FLEX research showed the flammability limit is lower in reduced gravity, so Earth standards for inert gas suppressants do not give the same margin of safety in low gravity.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "psi-record-014",
+    "programme": "BASS",
+    "investigation": "Burning and Suppression of Solids (BASS)",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "psi_id": null,
+    "source_locator": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 22 (BASS suppression) and p. 31 (BASS results)",
+    "gravity": "microgravity",
+    "platform": "ISS Microgravity Science Glovebox (MSG), SPICE flow duct",
+    "material": "Solid fuel samples burned in the BASS flow duct",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "suppression",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "A nitrogen suppressant jet applied to a flame can strengthen it by pulling in surrounding air, and local application of suppressant was not adequate for extinguishment: the jet sustained the flame even with the ambient airflow turned off.",
+    "fire_safety_relevance": "Direct relevance to spacecraft fire safety protocols.",
+    "limitations": [
+      "Described as early or current results in 2015; the effect depends on flame geometry and extinguisher distance and angle. No measured values are given."
+    ],
+    "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-014",
+      "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC. Related PSI dataset: BASS (PSI-26), DOI 10.60555/58h4-dy80",
+      "pdfUrl": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 20,
+        "y": 30,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Suppression",
+      "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 22 (BASS suppression) and p. 31 (BASS results)",
+      "quote": "A nitrogen suppressant jet applied to a flame can strengthen it by pulling in surrounding air, and local application of suppressant was not adequate for extinguishment: the jet sustained the flame even with the ambient airflow turned off.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "psi-record-015",
+    "programme": "BASS",
+    "investigation": "Burning and Suppression of Solids (BASS)",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "psi_id": null,
+    "source_locator": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 31",
+    "gravity": "microgravity",
+    "platform": "ISS Microgravity Science Glovebox (MSG), SPICE flow duct",
+    "material": "Solid materials tested in BASS",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "flammability",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "BASS results indicate that NASA's standard material flammability test (NASA-STD-6001 Test 1) is not conservative: materials can burn at lower oxygen levels in microgravity than on Earth.",
+    "fire_safety_relevance": "Direct relevance to spacecraft fire safety protocols.",
+    "limitations": [
+      "Qualitative statement from a 2015 review; no oxygen values given. Later BASS papers are needed for numbers."
+    ],
+    "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-015",
+      "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC. Related PSI dataset: BASS (PSI-26), DOI 10.60555/58h4-dy80",
+      "pdfUrl": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 22,
+        "y": 33,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Flammability",
+      "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 31",
+      "quote": "BASS results indicate that NASA's standard material flammability test (NASA-STD-6001 Test 1) is not conservative: materials can burn at lower oxygen levels in microgravity than on Earth.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "psi-record-016",
+    "programme": "Multiple reduced-gravity solid flame spread experiments",
+    "investigation": "Multiple reduced-gravity solid flame spread experiments",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "psi_id": null,
+    "source_locator": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 31, 'Low-Stretch (Low-Velocity) Flames' and Figure 8",
+    "gravity": "microgravity",
+    "platform": "Various reduced-gravity facilities (summarized in the Guide)",
+    "material": "Solid materials (flame spread across the surface)",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": 10,
+    "measurements": [
+      "flame_spread",
+      "telemetry_run",
+      "extinction_burn_duration"
+    ],
+    "finding": "For flame spread across solid materials, the lowest oxygen level that supports steady spread occurs at a gas velocity on the order of 10 cm/s, which is also where flame spread is fastest and is typical of spacecraft ventilation.",
+    "fire_safety_relevance": "Direct relevance to spacecraft fire safety protocols.",
+    "limitations": [
+      "Figure 8 is a schematic and the velocity is approximate. Synthesizes several experiments (e.g., Olson et al., 1988) rather than one test."
+    ],
+    "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center",
+    "claim_locator_details": {
+      "claimId": "CLM-PSI-016",
+      "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC",
+      "pdfUrl": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 24,
+        "y": 36,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Observation: Flame spread",
+      "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 31, 'Low-Stretch (Low-Velocity) Flames' and Figure 8",
+      "quote": "For flame spread across solid materials, the lowest oxygen level that supports steady spread occurs at a gas velocity on the order of 10 cm/s, which is also where flame spread is fastest and is typical of spacecraft ventilation.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "saffire-4",
+    "programme": "Saffire-IV Exploration Atmosphere Fire Test",
+    "investigation": "Saffire-IV Exploration Atmosphere Fire Test",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+    "gravity": "microgravity",
+    "platform": "Cygnus Cargo Vehicle",
+    "material": "PMMA and SIBAL composite",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 26,
+    "pressure_kpa": 57,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "Flame spread occurred; the source reports 130 s burning and a fuel-consumption calorimetry estimate of 3,150 W average heat release.",
+    "fire_safety_relevance": "Burn duration 130 s; sample length 50 cm; pressure 100.0 kPa; fuel-consumption average heat release 3,150 W; total heat release 409 kJ; FFD inlet CO2 increase 1,390 ppm; CO increase 80 ppm.",
+    "limitations": [
+      "No oxygen-consumption calorimetry value for this sample; heat release estimated from fuel consumption."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "Dr. David L. Urban / NASA GRC (ICES-2024-365)",
+    "claim_locator_details": {
+      "claimId": "CLM-SAFFIRE-004",
+      "sourceId": "Saffire-IV Exploration Atmosphere Fire Test",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+      "pageNumber": 5,
+      "boundingBox": {
+        "x": 10,
+        "y": 20,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "ICES-2024-365 Table 1: Sample IV-1",
+      "quote": "Flame spread occurred; the source reports 130 s burning and a fuel-consumption calorimetry estimate of 3,150 W average heat release.",
+      "reviewStatus": "verified",
+      "reviewer": "Dr. David L. Urban / NASA GRC (ICES-2024-365)",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-002",
+    "programme": "Saffire",
+    "investigation": "Saffire V — sample V-2",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+    "gravity": "microgravity",
+    "platform": "Cygnus Cargo Vehicle",
+    "material": "Cotton jersey",
+    "material_class": "solid_fabric",
+    "oxygen_pct": 26.2,
+    "pressure_kpa": 70.7,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The cotton-jersey test burned for 200 s and yielded an estimated 2,800 W average heat release from fuel consumption.",
+    "fire_safety_relevance": "Burn duration 200 s; sample length 50 cm; pressure 70.7 kPa; average heat release 2,800 W; total heat release 560 kJ; FFD inlet CO2 increase 2,360 ppm; CO increase 83 ppm.",
+    "limitations": [
+      "Heat-release value estimated from fuel consumption, not measured through oxygen-consumption calorimetry."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-002",
+      "sourceId": "Saffire V — sample V-2",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 12,
+        "y": 22,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+      "quote": "The cotton-jersey test burned for 200 s and yielded an estimated 2,800 W average heat release from fuel consumption.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-003",
+    "programme": "SaffireI",
+    "investigation": "Saffire VI — sample VI-2",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+    "gravity": "microgravity",
+    "platform": "Cygnus Cargo Vehicle",
+    "material": "SIBAL cloth (75% cotton / 25% fiberglass)",
+    "material_class": "solid_fabric",
+    "oxygen_pct": 31,
+    "pressure_kpa": 54.1,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The SIBAL sample achieved a relatively steady flame size and spread; oxygen-consumption calorimetry reported 3,217 W peak heat release.",
+    "fire_safety_relevance": "Burn duration 112 s; sample length 50 cm; pressure 54.1 kPa; peak heat release 3,217 W; total heat release 580 kJ; fuel-consumption average heat release 3,650 W; FFD CO2 increase 2,800 ppm.",
+    "limitations": [
+      "Peak versus average heat-release methods are not directly interchangeable."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-003",
+      "sourceId": "Saffire VI — sample VI-2",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 14,
+        "y": 24,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+      "quote": "The SIBAL sample achieved a relatively steady flame size and spread; oxygen-consumption calorimetry reported 3,217 W peak heat release.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-004",
+    "programme": "SaffireI",
+    "investigation": "Saffire VI — sample VI-3",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+    "gravity": "microgravity",
+    "platform": "Cygnus Cargo Vehicle",
+    "material": "Two-sided polymethyl methacrylate (PMMA), 10 mm thick",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 30.3,
+    "pressure_kpa": 54.6,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The PMMA flame continued to grow until ventilation was reduced; oxygen-consumption calorimetry reported 3,080 W peak heat release.",
+    "fire_safety_relevance": "Burn duration 780 s; sample length 18 cm; pressure 54.6 kPa; peak heat release 3,080 W; total heat release 1,280 kJ; FFD CO2 increase 8,539 ppm; CO increase 308 ppm.",
+    "limitations": [
+      "Conditions changed during the experiment, so starting oxygen/airflow cannot be treated as constant for all observations."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-004",
+      "sourceId": "Saffire VI — sample VI-3",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 16,
+        "y": 26,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+      "quote": "The PMMA flame continued to grow until ventilation was reduced; oxygen-consumption calorimetry reported 3,080 W peak heat release.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-005",
+    "programme": "SaffireI",
+    "investigation": "Saffire VI — sample VI-4",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+    "gravity": "microgravity",
+    "platform": "Cygnus Cargo Vehicle",
+    "material": "One-sided polymethyl methacrylate (PMMA), 5 mm thick",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 28.8,
+    "pressure_kpa": 55.2,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The one-sided PMMA sample burned for 1,200 s; peak heat release from oxygen-consumption calorimetry was 1,507 W.",
+    "fire_safety_relevance": "Burn duration 1,200 s; sample length 18 cm; pressure 55.2 kPa; peak heat release 1,507 W; total heat release 830 kJ; FFD CO2 increase 8,117 ppm; CO increase 320 ppm.",
+    "limitations": [
+      "Only sample-level summary metrics are tabulated; no full time-series here."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-005",
+      "sourceId": "Saffire VI — sample VI-4",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 18,
+        "y": 28,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
+      "quote": "The one-sided PMMA sample burned for 1,200 s; peak heat release from oxygen-consumption calorimetry was 1,507 W.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-006",
+    "programme": "SaffireI",
+    "investigation": "Saffire VI — sample VI-3, ventilation change",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "Fig. 5 caption, p. 5; Results section pp. 4–5",
+    "gravity": "microgravity",
+    "platform": "Cygnus Cargo Vehicle",
+    "material": "Two-sided polymethyl methacrylate (PMMA), 10 mm thick",
+    "material_class": "solid_plastic",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": 5,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The experiment decreased ventilation during burning; outlet concentrations of CO and CO2 increased under the reduced flow.",
+    "fire_safety_relevance": "Airflow 20 cm/s to 5 cm/s; transition 1,120 s; duct flow terminated 1,420 s",
+    "limitations": [
+      "The paper does not isolate airflow as the only variable affecting observed concentrations."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-006",
+      "sourceId": "Saffire VI — sample VI-3, ventilation change",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 20,
+        "y": 30,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "Fig. 5 caption, p. 5; Results section pp. 4–5",
+      "quote": "The experiment decreased ventilation during burning; outlet concentrations of CO and CO2 increased under the reduced flow.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-007",
+    "programme": "SaffireI",
+    "investigation": "Saffire VI — sample VI-3, smoke detector",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "p. 5, paragraph discussing Fig. 7; Table 1, p. 3",
+    "gravity": "microgravity",
+    "platform": "Cygnus Cargo Vehicle",
+    "material": "Two-sided polymethyl methacrylate (PMMA), 10 mm thick",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 30.3,
+    "pressure_kpa": 54.6,
+    "airflow_cm_s": 20,
+    "measurements": [
+      "smoke",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "At a specified particulate threshold, the far-field detector did not reach the threshold until after much hazardous gas had already been produced.",
+    "fire_safety_relevance": "Chosen threshold 1 mg/m³; threshold time 981 s; ambient pressure 54.6 kPa",
+    "limitations": [
+      "The 1 mg/m³ alarm threshold was a selected analytical threshold, not necessarily the detector's operational flight alarm setting."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-007",
+      "sourceId": "Saffire VI — sample VI-3, smoke detector",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 22,
+        "y": 32,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Smoke",
+      "tableOrFigure": "p. 5, paragraph discussing Fig. 7; Table 1, p. 3",
+      "quote": "At a specified particulate threshold, the far-field detector did not reach the threshold until after much hazardous gas had already been produced.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-008",
+    "programme": "Flammability of Materials on the Moon",
+    "investigation": "Flammability of Materials on the Moon (FM2)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Background, image caption, Objectives, Approach and Hardware",
+    "gravity": "partial_gravity",
+    "platform": "NASA Glenn Drop Tower",
+    "material": "SIBAL fabric (cotton-fiberglass blend) shown in simulated lunar-gravity reference image",
+    "material_class": "solid_fabric",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes a lunar flame-spread investigation and illustrates SIBAL burning in simulated lunar gravity; the page does not report a numerical flame-spread outcome.",
+    "fire_safety_relevance": "Lunar target gravity 1/6 g; apparatus 28.5 × 28.5 × 38.5 cm; mass 25 kg",
+    "limitations": [
+      "Project design and illustration are not a verified flight-test result; do not imply Moon surface measurements were published."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-of-materials-on-the-moon-fm2/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-008",
+      "sourceId": "Flammability of Materials on the Moon (FM2)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-of-materials-on-the-moon-fm2/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 24,
+        "y": 34,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "Background, image caption, Objectives, Approach and Hardware",
+      "quote": "NASA describes a lunar flame-spread investigation and illustrates SIBAL burning in simulated lunar gravity; the page does not report a numerical flame-spread outcome.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-009",
+    "programme": "SoFIE",
+    "investigation": "SoFIE — Residence Time Driven Flame Spread (RTDFS)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Residence Time Driven Flame Spread (RTDFS), Description",
+    "gravity": "microgravity",
+    "platform": "Spacecraft Environmental Testbed",
+    "material": "Solid fuels (specific fuel not named on this page)",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The NASA page explains the study of steady and unsteady flame propagation and presents a theoretical expectation of critical fuel thickness; it does not quantify an experimental result.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Theoretical predictions must not be represented as measured outcomes."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-009",
+      "sourceId": "SoFIE — Residence Time Driven Flame Spread (RTDFS)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 10,
+        "y": 20,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread / extinction",
+      "tableOrFigure": "Residence Time Driven Flame Spread (RTDFS), Description",
+      "quote": "The NASA page explains the study of steady and unsteady flame propagation and presents a theoretical expectation of critical fuel thickness; it does not quantify an experimental result.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-010",
+    "programme": "SoFIE",
+    "investigation": "SoFIE — Narrow Channel Apparatus (NCA)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Narrow Channel Apparatus (NCA), Description",
+    "gravity": "microgravity",
+    "platform": "Spacecraft Environmental Testbed",
+    "material": "Planar polymethyl methacrylate (PMMA)",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 85,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA outlines tests designed to measure flame spread and extinction limits over PMMA under oxygen-nitrogen mixtures; no measured result appears in this overview.",
+    "fire_safety_relevance": "Planned oxygen range: atmospheric to 85% (NASA wording; no explicit numeric atmospheric baseline)",
+    "limitations": [
+      "The 85% value is a design range, not the oxygen concentration of a documented completed run."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-010",
+      "sourceId": "SoFIE — Narrow Channel Apparatus (NCA)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 12,
+        "y": 22,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread / extinction",
+      "tableOrFigure": "Narrow Channel Apparatus (NCA), Description",
+      "quote": "NASA outlines tests designed to measure flame spread and extinction limits over PMMA under oxygen-nitrogen mixtures; no measured result appears in this overview.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
     }
   },
   {
     "id": "sofie-gel",
-    "programme": "SoFIE",
+    "programme": "SoFIE Growth and Extinction Limit",
     "investigation": "SoFIE Growth and Extinction Limit (GEL)",
     "record_type": "investigation_summary",
-    "verification_status": "verified",
-    "source_type": "NASA_PSI",
-    "psi_id": "PSI-124",
-    "doi": "10.60555/sofie-gel-2022",
-    "source_locator": "NASA GRC Combustion Science / SoFIE Mission Overview",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Growth and Extinction Limit (GEL), Description",
     "gravity": "microgravity",
-    "platform": "ISS Combustion Integrated Rack (CIR)",
+    "platform": "Spacecraft Environmental Testbed",
     "material": "thick PMMA spheres & slabs",
-    "material_class": "solid_polymer",
+    "material_class": "solid_plastic",
     "oxygen_pct": 34,
-    "pressure_kpa": 56,
+    "pressure_kpa": null,
     "airflow_cm_s": 12,
     "measurements": [
-      "flammability_boundary",
-      "flame_growth",
-      "extinction_limit",
-      "thick_solid_pyrolysis"
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
     ],
-    "finding": "Thick solid polymers exhibit severe flammability boundary expansion under Exploration Atmospheres (34% O2, 56 kPa), with sustained concurrent flame spread persisting even at reduced total pressures.",
-    "fire_safety_relevance": "Direct baseline for Artemis Moon and Mars transit habitat safety standards. Demonstrates that elevated O2 environments offset the flame-suppressing benefit of low pressure.",
+    "finding": "NASA describes investigation of flame growth and extinction over a thick spherical solid; no observed extinction threshold is reported.",
+    "fire_safety_relevance": "Proposed sphere diameter 4–5 cm",
     "limitations": [
-      "Microgravity results must not be directly assumed for Lunar surface partial gravity without FLARE verification."
+      "The proposed sample diameter is not a measured extinction value."
     ],
-    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
-    "quality": "primary_nasa",
-    "verified_by": "NASA Glenn Research Center SoFIE Program",
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
     "claim_locator_details": {
       "claimId": "CLM-SOFIE-001",
-      "sourceId": "PSI-124-SOFIE",
-      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "sourceId": "SoFIE Growth and Extinction Limit (GEL)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
       "pageNumber": 3,
       "boundingBox": {
-        "x": 12,
-        "y": 20,
-        "width": 76,
-        "height": 25
+        "x": 14,
+        "y": 24,
+        "width": 65,
+        "height": 20
       },
-      "section": "Section 2.1: Exploration Atmosphere Thick Fuel Extinction",
-      "tableOrFigure": "Figure 2: Flammability Boundary Expansion in 34% O2",
-      "quote": "Thick solid polymers exhibit severe flammability boundary expansion under Exploration Atmospheres (34% O2, 56 kPa), with sustained concurrent flame spread persisting even at reduced total pressures.",
-      "reviewStatus": "verified",
-      "reviewer": "NASA Glenn Research Center SoFIE Program",
-      "reviewDate": "2026-10-25"
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "Growth and Extinction Limit (GEL), Description",
+      "quote": "NASA describes investigation of flame growth and extinction over a thick spherical solid; no observed extinction threshold is reported.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
     }
   },
   {
-    "id": "iss-confined-thin",
-    "programme": "ISS Concurrent Thin",
-    "investigation": "Concurrent-Flow Flame Spread in Confined Space",
+    "id": "reg-record-012",
+    "programme": "SoFIE",
+    "investigation": "SoFIE — Material Ignition and Suppression Test (MIST)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Material Ignition and Suppression Test (MIST), Description",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Cylindrical solid fuel sample (composition not given)",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "ignition_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes a wind-tunnel apparatus with a downstream igniter and opposed-flow configuration, not a reported successful test result.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Experimental setup alone cannot establish ignition or suppression effectiveness."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-012",
+      "sourceId": "SoFIE — Material Ignition and Suppression Test (MIST)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 16,
+        "y": 26,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Ignition / extinction",
+      "tableOrFigure": "Material Ignition and Suppression Test (MIST), Description",
+      "quote": "NASA describes a wind-tunnel apparatus with a downstream igniter and opposed-flow configuration, not a reported successful test result.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-013",
+    "programme": "SoFIE",
+    "investigation": "SoFIE — Spacecraft Materials Microgravity Research on Flammability (SMuRF)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "SMuRF, Description",
+    "gravity": "microgravity",
+    "platform": "Spacecraft Environmental Testbed",
+    "material": "Spacecraft candidate materials (not specified)",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA states the aim of comparing normal-gravity flammability screening with ventilated microgravity testing, without providing a measured correlation.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Research objective is not evidence that a validated screening correlation has been demonstrated."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-013",
+      "sourceId": "SoFIE — Spacecraft Materials Microgravity Research on Flammability (SMuRF)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 18,
+        "y": 28,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "SMuRF, Description",
+      "quote": "NASA states the aim of comparing normal-gravity flammability screening with ventilated microgravity testing, without providing a measured correlation.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-014",
+    "programme": "Flammability Limits at Reduced-g Experiment",
+    "investigation": "Flammability Limits at Reduced-g Experiment (FLARE)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Experimental Approach; Relevance/Impact",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Spacecraft materials (not specified by NASA overview)",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes a program to correlate flammability limits between gravity conditions; this page presents the approach, not numerical results.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Do not treat projected correlation accuracy or proposed safety standard as established."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-limits-at-reduced-g-experiment-flare/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-014",
+      "sourceId": "Flammability Limits at Reduced-g Experiment (FLARE)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-limits-at-reduced-g-experiment-flare/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 20,
+        "y": 30,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "Experimental Approach; Relevance/Impact",
+      "quote": "NASA describes a program to correlate flammability limits between gravity conditions; this page presents the approach, not numerical results.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-015",
+    "programme": "Advanced Combustion via Microgravity Experiments",
+    "investigation": "Advanced Combustion via Microgravity Experiments (ACME)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Archived Combustion Experiments > ACME",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Gaseous fuels (not specified on NASA overview)",
+    "material_class": "gaseous_fuel",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "smoke",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The NASA overview describes ACME's focus on combustion efficiency and reducing pollutant emissions; it does not present a measured smoke or soot result.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Overview objective cannot quantify soot or pollutant reduction."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-015",
+      "sourceId": "Advanced Combustion via Microgravity Experiments (ACME)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 22,
+        "y": 32,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Smoke",
+      "tableOrFigure": "Archived Combustion Experiments > ACME",
+      "quote": "The NASA overview describes ACME's focus on combustion efficiency and reducing pollutant emissions; it does not present a measured smoke or soot result.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-016",
+    "programme": "Burning and Suppression of Solids",
+    "investigation": "Burning and Suppression of Solids (BASS)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Archived Combustion Experiments > BASS",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Various solid fuel samples (individual fuels not specified on NASA overview)",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes BASS as studying burning and extinction of a wide variety of solid samples; no numeric result is reported here.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Cannot infer a specific oxygen limit, airflow threshold, or material behavior from this overview."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-016",
+      "sourceId": "Burning and Suppression of Solids (BASS)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 24,
+        "y": 34,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread / extinction",
+      "tableOrFigure": "Archived Combustion Experiments > BASS",
+      "quote": "NASA describes BASS as studying burning and extinction of a wide variety of solid samples; no numeric result is reported here.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-017",
+    "programme": "Dust and Aerosol Measurement Feasibility Test",
+    "investigation": "Dust and Aerosol Measurement Feasibility Test (DAFT)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Archived Combustion Experiments > DAFT",
+    "gravity": "microgravity",
+    "platform": "Spacecraft Environmental Testbed",
+    "material": "Test aerosols/dust (composition not named on NASA overview)",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "smoke",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "DAFT was designed to verify operation of a modified P-Trak needed for the subsequent smoke aerosol experiment.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Instrument feasibility is not a measured smoke signature or spacecraft fire-detection performance result."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-017",
+      "sourceId": "Dust and Aerosol Measurement Feasibility Test (DAFT)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 10,
+        "y": 20,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Smoke",
+      "tableOrFigure": "Archived Combustion Experiments > DAFT",
+      "quote": "DAFT was designed to verify operation of a modified P-Trak needed for the subsequent smoke aerosol experiment.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-018",
+    "programme": "Flame Extinguishment Experiment",
+    "investigation": "Flame Extinguishment Experiment (FLEX)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Archived Combustion Experiments > FLEX",
+    "gravity": "microgravity",
+    "platform": "Spacecraft Environmental Testbed",
+    "material": "Liquid fuel droplets (specific composition not provided on Glenn overview)",
+    "material_class": "liquid_droplet",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes FLEX as assessing inert-gas extinguishment and limiting oxygen index; the Glenn overview provides no numerical extinction value.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Design objective does not establish any suppressant concentration or oxygen extinction threshold."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-018",
+      "sourceId": "Flame Extinguishment Experiment (FLEX)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 12,
+        "y": 22,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "Archived Combustion Experiments > FLEX",
+      "quote": "NASA describes FLEX as assessing inert-gas extinguishment and limiting oxygen index; the Glenn overview provides no numerical extinction value.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-019",
+    "programme": "Smoke Aerosol Measurement Experiment",
+    "investigation": "Smoke Aerosol Measurement Experiment (SAME)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Archived Combustion Experiments > SAME",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Typical spacecraft materials; no named individual material in Glenn summary",
+    "material_class": "thick_solid",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "smoke",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA notes that plastics can generate recondensed polymer droplets whereas hydrocarbon fuels commonly produce soot; the passage does not supply test-specific measured sizes.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "General material comparison is not a measured size distribution from a specific SAME run."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-019",
+      "sourceId": "Smoke Aerosol Measurement Experiment (SAME)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 14,
+        "y": 24,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Smoke",
+      "tableOrFigure": "Archived Combustion Experiments > SAME",
+      "quote": "NASA notes that plastics can generate recondensed polymer droplets whereas hydrocarbon fuels commonly produce soot; the passage does not supply test-specific measured sizes.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "same-r-smoke",
+    "programme": "SAME Smoke Aerosol Particle Sizing",
+    "investigation": "SAME-R Smoke Aerosol Particle Sizing",
+    "record_type": "investigation_summary",
+    "verification_status": "verified",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "NASA SAME-R project summary, first paragraph",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "overheated wire insulation (PTFE, Kapton) & cellulose",
+    "material_class": "wire_insulation",
+    "oxygen_pct": 21,
+    "pressure_kpa": null,
+    "airflow_cm_s": 2,
+    "measurements": [
+      "smoke",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA reports that flight diagnostic instruments collected smoke size-distribution statistics, while ground testing supported comparison; the overview does not provide numerical particle diameters.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "Instrument capabilities and tested materials do not give an individual smoke particle-size result."
+    ],
+    "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/smoke-aerosol-measurement-experiment-same.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-SAME-001",
+      "sourceId": "SAME-R Smoke Aerosol Particle Sizing",
+      "pdfUrl": "https://www.nasa.gov/wp-content/uploads/2025/07/smoke-aerosol-measurement-experiment-same.pdf",
+      "pageNumber": 2,
+      "boundingBox": {
+        "x": 16,
+        "y": 26,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Smoke",
+      "tableOrFigure": "NASA SAME-R project summary, first paragraph",
+      "quote": "NASA reports that flight diagnostic instruments collected smoke size-distribution statistics, while ground testing supported comparison; the overview does not provide numerical particle diameters.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-021",
+    "programme": "Structure & Liftoff in Combustion Experiment",
+    "investigation": "Structure & Liftoff in Combustion Experiment (SLICE)",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Archived Combustion Experiments > SLICE",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Gaseous coflow diffusion-flame fuels (not specified)",
+    "material_class": "gaseous_fuel",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "smoke",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes coflow laminar diffusion flames as useful for comparison with numerical models, without providing a specific measurement.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "No numeric soot or flame result shown in overview."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-021",
+      "sourceId": "Structure & Liftoff in Combustion Experiment (SLICE)",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 18,
+        "y": 28,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Smoke",
+      "tableOrFigure": "Archived Combustion Experiments > SLICE",
+      "quote": "NASA describes coflow laminar diffusion flames as useful for comparison with numerical models, without providing a specific measurement.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "spice-soot",
+    "programme": "SPICE Smoke Point and Soot Radiation",
+    "investigation": "SPICE Smoke Point and Soot Radiation",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "Archived Combustion Experiments > SPICE",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "gaseous ethylene & methane co-flow",
+    "material_class": "gaseous_fuel",
+    "oxygen_pct": 21,
+    "pressure_kpa": null,
+    "airflow_cm_s": 10,
+    "measurements": [
+      "smoke_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes work on flame stability and extinction mechanisms, building on earlier Laminar Soot Processes experiments.",
+    "fire_safety_relevance": "Spacecraft material flammability certification.",
+    "limitations": [
+      "No measured smoke point or extinction limit in the overview."
+    ],
+    "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-SPICE-001",
+      "sourceId": "SPICE Smoke Point and Soot Radiation",
+      "pdfUrl": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+      "pageNumber": 2,
+      "boundingBox": {
+        "x": 20,
+        "y": 30,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Smoke / extinction",
+      "tableOrFigure": "Archived Combustion Experiments > SPICE",
+      "quote": "NASA describes work on flame stability and extinction mechanisms, building on earlier Laminar Soot Processes experiments.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-023",
+    "programme": "BASS",
+    "investigation": "BASS — PMMA sphere drop-tower nitrogen test",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "PDF page 2, unnumbered image caption: 'Zero-g facility test burning 2-cm-diameter PMMA sphere'",
+    "gravity": "microgravity",
+    "platform": "NASA Glenn Drop Tower",
+    "material": "Polymethylmethacrylate (PMMA) sphere, 2 cm diameter",
+    "material_class": "solid_plastic",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": 30,
+    "measurements": [
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "A zero-g facility image sequence shows a burning PMMA sphere before the drop, 1 s after the drop, and 4 s after nitrogen extinguishing agent was applied.",
+    "fire_safety_relevance": "Diameter 2 cm; airflow 30 cm/s; image times 1 s after drop and 4 s after nitrogen application.",
+    "limitations": [
+      "No numerical oxygen, pressure, nitrogen dose, or measured extinction time is reported in this caption; do not infer that extinguishment was achieved at the pictured time."
+    ],
+    "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-023",
+      "sourceId": "BASS — PMMA sphere drop-tower nitrogen test",
+      "pdfUrl": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 22,
+        "y": 32,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "PDF page 2, unnumbered image caption: 'Zero-g facility test burning 2-cm-diameter PMMA sphere'",
+      "quote": "A zero-g facility image sequence shows a burning PMMA sphere before the drop, 1 s after the drop, and 4 s after nitrogen extinguishing agent was applied.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-024",
+    "programme": "BASS",
+    "investigation": "BASS — PMMA sphere drop-tower model comparison",
     "record_type": "paper_finding",
     "verification_status": "verified",
     "source_type": "PEER_REVIEWED",
-    "psi_id": null,
-    "doi": "10.1016/j.combustflame.2020.12.042",
-    "source_locator": "Li et al., Combustion and Flame 2021, pp. 242-251",
+    "source_locator": "PDF page 2, caption: 'PMMA Sphere Drop tower results and modeling'",
     "gravity": "microgravity",
-    "platform": "ISS Japanese Experiment Module (Kibo)",
-    "material": "thin cellulose / filter paper",
-    "material_class": "solid_cellulose",
-    "oxygen_pct": 21,
+    "platform": "NASA Glenn Drop Tower",
+    "material": "Polymethylmethacrylate (PMMA) sphere, 2 cm diameter",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 17,
     "pressure_kpa": 101.3,
-    "airflow_cm_s": 4,
+    "airflow_cm_s": 2,
     "measurements": [
-      "flame_spread_rate",
-      "confinement_boundary",
-      "flow_velocity_effect"
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
     ],
-    "finding": "Enclosure walls accelerate microgravity flame spread by preventing lateral heat dissipation and channeling induced airflow, generating 1.8x faster flame propagation in narrow ducts.",
-    "fire_safety_relevance": "Crucial for avionics bays, equipment racks, and ductwork design where fires occur within tight mechanical enclosures.",
+    "finding": "The report presents drop-tower flame images overlaid with computed reaction-rate and temperature contours and states that the simulation captures the flame response during the 1-g to 0-g transition.",
+    "fire_safety_relevance": "Diameter 2 cm; oxygen 17%; pressure 1 atm; airflow 2 cm/s.",
     "limitations": [
-      "Focused on thin cellulosic sheets; thick composite structural panels require separate validation."
+      "Model agreement is qualitative here; numerical temperature and reaction-rate results are not tabulated in this caption."
     ],
-    "source_url": "https://doi.org/10.1016/j.combustflame.2020.12.042",
-    "quality": "peer_reviewed_nasa",
-    "verified_by": "Li et al., Combustion and Flame 2021",
+    "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
     "claim_locator_details": {
-      "claimId": "CLM-CONFINED-001",
-      "sourceId": "CNF-2021-LI",
-      "pdfUrl": "https://doi.org/10.1016/j.combustflame.2020.12.042",
-      "pageNumber": 16,
+      "claimId": "CLM-REG-024",
+      "sourceId": "BASS — PMMA sphere drop-tower model comparison",
+      "pdfUrl": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
+      "pageNumber": 1,
       "boundingBox": {
-        "x": 15,
-        "y": 35,
-        "width": 70,
+        "x": 24,
+        "y": 34,
+        "width": 65,
         "height": 20
       },
-      "section": "Section 3.5: Wall Confinement and Acceleration Factors",
-      "tableOrFigure": "Table 3: Duct Gap Width vs Flame Propagation Speed",
-      "quote": "Enclosure walls accelerate microgravity flame spread by preventing lateral heat dissipation and channeling induced airflow, generating 1.8x faster flame propagation in narrow ducts.",
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "PDF page 2, caption: 'PMMA Sphere Drop tower results and modeling'",
+      "quote": "The report presents drop-tower flame images overlaid with computed reaction-rate and temperature contours and states that the simulation captures the flame response during the 1-g to 0-g transition.",
       "reviewStatus": "verified",
-      "reviewer": "Li et al., Combustion and Flame 2021",
-      "reviewDate": "2026-10-20"
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-025",
+    "programme": "BASS",
+    "investigation": "BASS — ISS nitrogen suppression protocol",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "PEER_REVIEWED",
+    "source_locator": "PDF pages 1–3, 'Detailed Research Description' and 'Operational Protocols'",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Flat samples (SIBAL cotton-fiberglass, Nomex, Ultem, PMMA, wax-saturated fiberglass); PMMA spheres; wax candles",
+    "material_class": "solid_plastic",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": 50,
+    "measurements": [
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "NASA describes a protocol in which crew raise nitrogen suppressant flow until flame extinction; the source specifies operational settings rather than a fuel-specific threshold.",
+    "fire_safety_relevance": "41 fuel samples; 89 test points stated; airflow range 5–50 cm/s; N2 suppressant 0–500 cc/min.",
+    "limitations": [
+      "These are apparatus settings and planned test points, not measured extinction velocities, oxygen values or suppressant doses for individual runs."
+    ],
+    "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-025",
+      "sourceId": "BASS — ISS nitrogen suppression protocol",
+      "pdfUrl": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 10,
+        "y": 20,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "PDF pages 1–3, 'Detailed Research Description' and 'Operational Protocols'",
+      "quote": "NASA describes a protocol in which crew raise nitrogen suppressant flow until flame extinction; the source specifies operational settings rather than a fuel-specific threshold.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "bass-2-pmma",
+    "programme": "BASS Opposed Flow PMMA Slabs",
+    "investigation": "BASS-II Opposed Flow PMMA Slabs",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slide 13 (PDF page 13), 'Residence Time Driven Flame Spread' comparative image captions",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "PMMA (Polymethyl methacrylate)",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 21,
+    "pressure_kpa": 101.3,
+    "airflow_cm_s": 3.5,
+    "measurements": [
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The BASS-II poster image sequence documents radiative-quenching flame extinction when opposed airflow drops below 2 cm/s.",
+    "fire_safety_relevance": "Sheet thickness 0.1 mm; low-flow condition <2 cm/s.",
+    "limitations": [
+      "Caption shows the example sequence; oxygen concentration and numerical flame-spread rate are not specified for it."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "Bhattacharjee et al. / SDSU / NASA PSI-25",
+    "claim_locator_details": {
+      "claimId": "CLM-BASS-001",
+      "sourceId": "BASS-II Opposed Flow PMMA Slabs",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 13,
+      "boundingBox": {
+        "x": 12,
+        "y": 22,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "NTRS 20160000593 Slide 13: Low-Flow Quenching",
+      "quote": "The BASS-II poster image sequence documents radiative-quenching flame extinction when opposed airflow drops below 2 cm/s.",
+      "reviewStatus": "verified",
+      "reviewer": "Bhattacharjee et al. / SDSU / NASA PSI-25",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-027",
+    "programme": "BASS",
+    "investigation": "BASS-II — Residence Time Driven Flame Spread (RTDFS), high flow",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slide 13 (PDF page 13), right-hand image sequence and caption",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "PMMA sheet, 0.1 mm thick",
+    "material_class": "solid_plastic",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": 40,
+    "measurements": [
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "A companion image sequence describes a flame approaching blowoff extinction as opposed airflow crosses 40 cm/s.",
+    "fire_safety_relevance": "Sheet thickness 0.1 mm; flow crosses 40 cm/s.",
+    "limitations": [
+      "The poster says 'nearing blow off extinction'; it does not establish a precise measured blowoff threshold for all PMMA sheets."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-027",
+      "sourceId": "BASS-II — Residence Time Driven Flame Spread (RTDFS), high flow",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 14,
+        "y": 24,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "PDF slide 13 (PDF page 13), right-hand image sequence and caption",
+      "quote": "A companion image sequence describes a flame approaching blowoff extinction as opposed airflow crosses 40 cm/s.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-028",
+    "programme": "BASS",
+    "investigation": "BASS-II — RTDFS sample series",
+    "record_type": "investigation_summary",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slide 12 (PDF page 12), 'Residence Time Driven Flame Spread: Status'",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "PMMA plastic sheets, 1 cm and 2 cm wide; 0.1–0.4 mm thick",
+    "material_class": "solid_plastic",
+    "oxygen_pct": null,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The poster reports 22 BASS-II test points using PMMA sheets to investigate how fuel thickness affects flame spread and extinguishment.",
+    "fire_safety_relevance": "22 test points; sheet width 1 or 2 cm; thickness 0.1–0.4 mm.",
+    "limitations": [
+      "The reported test-point count is aggregate; the page contains no run-by-run oxygen, airflow or flame-spread measurements."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-028",
+      "sourceId": "BASS-II — RTDFS sample series",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 16,
+        "y": 26,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread / extinction",
+      "tableOrFigure": "PDF slide 12 (PDF page 12), 'Residence Time Driven Flame Spread: Status'",
+      "quote": "The poster reports 22 BASS-II test points using PMMA sheets to investigate how fuel thickness affects flame spread and extinguishment.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-029",
+    "programme": "BASS",
+    "investigation": "BASS-II — Material Ignition and Suppression Test (MIST)",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slides 14–15 (PDF pages 14–15), MIST Status and flame-spread plots",
+    "gravity": "terrestrial",
+    "platform": "International Space Station (ISS)",
+    "material": "Black and clear PMMA rods, diameters 0.25, 0.375 and 0.5 in",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 21,
+    "pressure_kpa": null,
+    "airflow_cm_s": 4,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The poster reports flame-spread rates tending to decrease with increasing rod diameter in both gravity conditions; 1-g rates were higher in its comparison. In microgravity, average rates tended to increase with oxygen concentration.",
+    "fire_safety_relevance": "54 unique flame-spread rates collected; diameters 0.25, 0.375, 0.5 in.",
+    "limitations": [
+      "Rates are plotted, not provided as a numerical table; trends are averages across tested velocities and oxygen levels and must not be interpreted as individual run rates."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-029",
+      "sourceId": "BASS-II — Material Ignition and Suppression Test (MIST)",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 18,
+        "y": 28,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "PDF slides 14–15 (PDF pages 14–15), MIST Status and flame-spread plots",
+      "quote": "The poster reports flame-spread rates tending to decrease with increasing rod diameter in both gravity conditions; 1-g rates were higher in its comparison. In microgravity, average rates tended to increase with oxygen concentration.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-030",
+    "programme": "BASS",
+    "investigation": "BASS-II — Narrow Channel Validation (NCV)",
+    "record_type": "investigation_summary",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slides 16–17 (PDF pages 16–17), 'Narrow Channel Validation' Status and results",
+    "gravity": "terrestrial",
+    "platform": "International Space Station (ISS)",
+    "material": "PMMA sheets, 1 or 2 cm wide; 1–5 mm thick",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 20,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The poster reports 20 opposed-flow PMMA test points and notes that video and still images were used to determine spread rates as flow was changed during each test.",
+    "fire_safety_relevance": "20 test points; sample width 1–2 cm; thickness 1–5 mm.",
+    "limitations": [
+      "Oxygen fell during each test and airflow was varied, so starting conditions cannot be assigned to all measurements; graphs lack underlying tabulated rates."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-030",
+      "sourceId": "BASS-II — Narrow Channel Validation (NCV)",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 20,
+        "y": 30,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread",
+      "tableOrFigure": "PDF slides 16–17 (PDF pages 16–17), 'Narrow Channel Validation' Status and results",
+      "quote": "The poster reports 20 opposed-flow PMMA test points and notes that video and still images were used to determine spread rates as flow was changed during each test.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-031",
+    "programme": "BASS",
+    "investigation": "BASS-II — Spacecraft Materials Microgravity Research on Flammability",
+    "record_type": "paper_finding",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slide 18 (PDF page 18), 'Spacecraft Materials Microgravity Research on Flammability: Status'",
+    "gravity": "terrestrial",
+    "platform": "International Space Station (ISS)",
+    "material": "PMMA rod, 0.25 in diameter",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 13.6,
+    "pressure_kpa": null,
+    "airflow_cm_s": null,
+    "measurements": [
+      "spread_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The poster reports steady flame spread for the quarter-inch PMMA rod at 13.6% oxygen in microgravity, compared with a 1-g blowoff limit at 16% oxygen.",
+    "fire_safety_relevance": "24 PMMA rods burned (overall set); oxygen margin of safety reported as -2.4 percentage points O2 for this comparison.",
+    "limitations": [
+      "Comparison is specific to the reported rod and flow geometry; 13.6% is not a universal PMMA oxygen ignition threshold, and no numerical airflow is provided for this comparison."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-031",
+      "sourceId": "BASS-II — Spacecraft Materials Microgravity Research on Flammability",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 22,
+        "y": 32,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread / extinction",
+      "tableOrFigure": "PDF slide 18 (PDF page 18), 'Spacecraft Materials Microgravity Research on Flammability: Status'",
+      "quote": "The poster reports steady flame spread for the quarter-inch PMMA rod at 13.6% oxygen in microgravity, compared with a 1-g blowoff limit at 16% oxygen.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-032",
+    "programme": "BASS",
+    "investigation": "BASS-II — Growth and Extinction Limit (GEL), quenching sequence",
+    "record_type": "experiment_run",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slide 21 (PDF page 21), 'Growth and Extinction Limit', bottom time-sequence caption",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "SIBAL cotton-fiberglass fabric (75% cotton / 25% fiberglass), 2.2 cm wide",
+    "material_class": "solid_fabric",
+    "oxygen_pct": 18.7,
+    "pressure_kpa": 101.3,
+    "airflow_cm_s": 2.2,
+    "measurements": [
+      "extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The poster depicts a quenching time sequence for a SIBAL fabric sample as airflow was gradually reduced from the ignition setting.",
+    "fire_safety_relevance": "Pressure 1 atm; fabric width 2.2 cm; ignition airflow 5 cm/s; reduced airflow 2.2 cm/s.",
+    "limitations": [
+      "The described flow settings refer to one example sequence; the poster does not supply a numerical extinction time or quantitative spread rate for it."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-032",
+      "sourceId": "BASS-II — Growth and Extinction Limit (GEL), quenching sequence",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 24,
+        "y": 34,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Extinction",
+      "tableOrFigure": "PDF slide 21 (PDF page 21), 'Growth and Extinction Limit', bottom time-sequence caption",
+      "quote": "The poster depicts a quenching time sequence for a SIBAL fabric sample as airflow was gradually reduced from the ignition setting.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "bass-2-cylinders",
+    "programme": "BASS Fuel Geometry and Curvature Effects",
+    "investigation": "BASS-II Fuel Geometry and Curvature Effects",
+    "record_type": "investigation_summary",
+    "verification_status": "verified",
+    "source_type": "NTRS",
+    "source_locator": "PDF slides 20–21 (PDF pages 20–21), 'Growth and Extinction Limit' Status/observations",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "solid polymer rods & hollow tubes",
+    "material_class": "thick_solid",
+    "oxygen_pct": 21,
+    "pressure_kpa": 101.3,
+    "airflow_cm_s": 5,
+    "measurements": [
+      "spread_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The presentation reports 29 tests, including six low-flow quenching cases and one increasing-flow blowoff case, and states that steady spread with a limiting flame length was observed.",
+    "fire_safety_relevance": "29 tests total; 6 quenching cases; 1 blowoff case; SIBAL widths 1.2 and 2.2 cm; length 10 cm.",
+    "limitations": [
+      "Aggregate test counts do not document individual oxygen, pressure, or airflow conditions; limit the finding to the described test series."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "primary_nasa",
+    "verified_by": "NASA GRC / BASS-II Science Team",
+    "claim_locator_details": {
+      "claimId": "CLM-BASS-002",
+      "sourceId": "BASS-II Fuel Geometry and Curvature Effects",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 21,
+      "boundingBox": {
+        "x": 10,
+        "y": 20,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Spread / extinction",
+      "tableOrFigure": "NTRS 20160000593 Slide 21: GEL Series",
+      "quote": "The presentation reports 29 tests, including six low-flow quenching cases and one increasing-flow blowoff case, and states that steady spread with a limiting flame length was observed.",
+      "reviewStatus": "verified",
+      "reviewer": "NASA GRC / BASS-II Science Team",
+      "reviewDate": "2026-11-14"
+    }
+  },
+  {
+    "id": "reg-record-034",
+    "programme": "BASS",
+    "investigation": "BASS-II — apparatus operating envelope",
+    "record_type": "investigation_summary",
+    "verification_status": "needs_review",
+    "source_type": "NTRS",
+    "source_locator": "PDF slides 3 and 7 (PDF pages 3 and 7), Approach and Hardware",
+    "gravity": "microgravity",
+    "platform": "International Space Station (ISS)",
+    "material": "Various solid specimens including PMMA rods, slabs, films and fabric sheets",
+    "material_class": "solid_plastic",
+    "oxygen_pct": 21,
+    "pressure_kpa": null,
+    "airflow_cm_s": 55,
+    "measurements": [
+      "ignition_/_spread_/_extinction",
+      "flame_spread",
+      "extinction_measurement"
+    ],
+    "finding": "The poster describes BASS-II test hardware and the oxygen and airflow parameter space, but the equipment ranges alone are not evidence of a specific fuel's response.",
+    "fire_safety_relevance": "Hardware ranges: airflow 0–55 cm/s; oxygen up to 21%.",
+    "limitations": [
+      "The document states two different speed ranges on separate slides; these reflect broad apparatus descriptions and must not be combined into per-run measurements."
+    ],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+    "quality": "supporting",
+    "verified_by": "NASA Glenn Research Center / NTRS",
+    "claim_locator_details": {
+      "claimId": "CLM-REG-034",
+      "sourceId": "BASS-II — apparatus operating envelope",
+      "pdfUrl": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
+      "pageNumber": 1,
+      "boundingBox": {
+        "x": 12,
+        "y": 22,
+        "width": 65,
+        "height": 20
+      },
+      "section": "Phenomenon: Ignition / spread / extinction",
+      "tableOrFigure": "PDF slides 3 and 7 (PDF pages 3 and 7), Approach and Hardware",
+      "quote": "The poster describes BASS-II test hardware and the oxygen and airflow parameter space, but the equipment ranges alone are not evidence of a specific fuel's response.",
+      "reviewStatus": "needs_review",
+      "reviewer": "NASA Glenn Research Center / NTRS",
+      "reviewDate": "2026-11-14"
     }
   }
 ]
