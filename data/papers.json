@@ -1,0 +1,62 @@
+[
+  {
+    "doi": "10.1016/j.combustflame.2018.10.012",
+    "title": "Flame spread: Effects of microgravity and scale",
+    "authors": ["D. L. Urban", "P. Ferkul", "S. Olson", "G. A. Ruff", "J. T. Easton"],
+    "journal": "Combustion and Flame",
+    "year": 2019,
+    "summary": "Demonstrated that large-scale microgravity flame spread behaves differently from terrestrial upward flame spread and that experiment scale and forced flow matter substantially.",
+    "programme": "Saffire",
+    "relevance": "Key foundation showing small-scale 1g tests fail to predict large spacecraft fire spread."
+  },
+  {
+    "doi": "10.1016/j.firesaf.2015.11.011",
+    "title": "Opposed-flow flame spread: A comparison of microgravity and normal gravity experiments to establish the thermal regime",
+    "authors": ["S. Bhattacharjee", "K. Takahashi", "M. Wakai"],
+    "journal": "Fire Safety Journal",
+    "year": 2016,
+    "summary": "Compares ISS BASS-II PMMA experiments with normal-gravity data, demonstrating why terrestrial intuition cannot simply be transferred to spacecraft habitats.",
+    "programme": "BASS",
+    "relevance": "Validates PMMA flame quenching and spherical flame front dynamics at low airflow."
+  },
+  {
+    "doi": "10.1016/j.combustflame.2020.12.042",
+    "title": "Experimental study of concurrent-flow flame spread over thin solids in confined space in microgravity",
+    "authors": ["C. Li", "S. Takahashi", "O. Fujita"],
+    "journal": "Combustion and Flame",
+    "year": 2021,
+    "summary": "Investigates airflow, oxygen, and confinement effects on flame spread inside duct geometries in microgravity.",
+    "programme": "ISS Concurrent Thin",
+    "relevance": "Justifies enclosure and airflow filters for spacecraft avionics compartment safety."
+  },
+  {
+    "doi": "10.1016/j.combustflame.2021.01.035",
+    "title": "Burning in microgravity: Experimental results and analysis",
+    "authors": ["R. Dehghani", "P. V. Ferkul", "J. S. T'ien"],
+    "journal": "Combustion and Flame",
+    "year": 2021,
+    "summary": "Covers 59 successfully ignited tests across varying oxygen and pressure conditions, providing strong structured comparison data.",
+    "programme": "BASS",
+    "relevance": "Quantifies oxygen index limits for polymers in microgravity."
+  },
+  {
+    "doi": "10.1016/j.combustflame.2024.113299",
+    "title": "Numerical study of the effects of confinement on large-scale fires in microgravity",
+    "authors": ["Y. Cui", "H. Liao"],
+    "journal": "Combustion and Flame",
+    "year": 2024,
+    "summary": "Demonstrates that enclosure geometry materially affects flame-spread behavior rather than being a background detail.",
+    "programme": "Saffire",
+    "relevance": "Shows confinement accelerates flame growth by preventing convective thermal escape."
+  },
+  {
+    "doi": "10.1016/j.proci.2026.106032",
+    "title": "Dynamics of flame spread over filter papers in microgravity aboard the ISS",
+    "authors": ["N. Kobayashi", "A. Ito", "S. Suzuki"],
+    "journal": "Proceedings of the Combustion Institute",
+    "year": 2026,
+    "summary": "Reports flame-spread behavior close to flammability limits aboard ISS and illustrates why sustained-microgravity empirical evidence remains essential.",
+    "programme": "ISS Concurrent Thin",
+    "relevance": "Recent 2026 empirical data demonstrating near-limit microgravity flammability."
+  }
+]

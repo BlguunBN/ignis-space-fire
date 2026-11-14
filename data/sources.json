@@ -1,0 +1,21 @@
+[
+  {
+    "name": "NASA Physical Sciences Informatics (PSI)",
+    "description": "Official repository for NASA physical-science investigations across ISS, Cygnus, and Space Shuttle flights.",
+    "url": "https://psi.nasa.gov/physci/repo",
+    "attribution_policy": "Persistent Identifiers / DOIs with CC0-1.0 or public domain release."
+  },
+  {
+    "name": "NASA Technical Reports Server (NTRS)",
+    "description": "NASA technical reports, conference papers, journal articles, and flight safety evaluations.",
+    "url": "https://ntrs.nasa.gov/",
+    "api_endpoint": "https://ntrs.nasa.gov/api/openapi/",
+    "attribution_policy": "Public NASA technical publications and open-access scientific metadata."
+  },
+  {
+    "name": "NASA Glenn Research Center Combustion Science",
+    "description": "Lead NASA center for microgravity combustion research programmes including BASS, FLEX, Saffire, SAME, SPICE, SoFIE, and FLARE.",
+    "url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
+    "attribution_policy": "NASA public domain educational and scientific reference."
+  }
+]
