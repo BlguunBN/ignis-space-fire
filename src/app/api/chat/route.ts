@@ -9,6 +9,10 @@ import { generateNemotronGroundedResponse } from "../../../lib/nvidia-nemotron";
 
 const corpus = experimentsData as ExperimentRecord[];
 
+// Configure Vercel Serverless Function execution limits
+export const maxDuration = 60; // Up to 60s for deep scientific reasoning stream
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
