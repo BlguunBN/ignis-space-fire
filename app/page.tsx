@@ -7,6 +7,7 @@ import type { SynthesisResponse } from "@/lib/synthesis";
 import { rankEvidence } from "@/lib/ranking";
 import { AppSidebar, type NavTab } from "@/components/layout/AppSidebar";
 import { ExperimentStage } from "@/components/experiment/ExperimentStage";
+import { FlameDynamicsChart } from "@/components/FlameDynamicsChart";
 import { CompareModal } from "@/components/CompareModal";
 import { GapMatrix } from "@/components/GapMatrix";
 import { MasterComparisonTable } from "@/components/MasterComparisonTable";
@@ -231,6 +232,8 @@ export default function Home() {
                 selectedForCompare={selectedForCompare.includes(displayedExperiment.id)}/>}
 
               {showInterpretation && <InterpretationPanel synthesis={synthesis} loading={synthesisLoading} onGenerate={interpret}/>}
+
+              {activeTab === "explore" && <FlameDynamicsChart />}
 
               <section className="space-y-3">
                 <div className="flex flex-wrap items-end justify-between gap-2">
