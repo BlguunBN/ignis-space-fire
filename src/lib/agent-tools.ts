@@ -1,4 +1,5 @@
 import { ExperimentRecord } from "../types/evidence";
+import { isConversationalGreeting } from "./grounded-assistant";
 
 export interface BuildHypothesisTreeArgs {
   question: {
@@ -208,6 +209,10 @@ export function determineAgentToolsFromQuery(
   queryText: string,
   corpus: ExperimentRecord[]
 ): AgentToolCall[] {
+  if (isConversationalGreeting(queryText)) {
+    return [];
+  }
+
   const p = queryText.toLowerCase();
   const calls: AgentToolCall[] = [];
 

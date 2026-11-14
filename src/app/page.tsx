@@ -24,6 +24,7 @@ import { ExecutiveAnalyticsDashboard } from "../components/ExecutiveAnalyticsDas
 import { PaperUploadModal } from "../components/PaperUploadModal";
 import { GuidedResearchStepper, GuidedStep } from "../components/GuidedResearchStepper";
 import { generateDeterministicBrief } from "../lib/synthesis";
+import { resolveActiveStudy } from "../lib/active-study";
 
 import {
   BuildHypothesisTreeArgs,
@@ -63,6 +64,12 @@ export default function UnifiedWorkspace() {
   const [simulatorInitialTab, setSimulatorInitialTab] = useState<"physics" | "diagnostics">("physics");
   const [simulatorInitialConfig, setSimulatorInitialConfig] = useState<RunCombustionSimulationArgs | null>(null);
   const [simulatorInitialDiagConfig, setSimulatorInitialDiagConfig] = useState<InspectOpticalDiagnosticsArgs | null>(null);
+  const [explorerFilters, setExplorerFilters] = useState<{
+    searchQuery?: string;
+    gravity?: "all" | "microgravity" | "partial_gravity" | "lunar" | "martian" | "terrestrial";
+    material?: "all" | "liquid_droplets" | "pmma" | "fabrics_cellulose" | "wire_insulation" | "gaseous_fuels" | "other_solids";
+    oxygenRange?: [number, number];
+  }>({});
 
   // Configure Fuse.js for fuzzy retrieval
   const fuse = useMemo(() => {
@@ -183,16 +190,11 @@ export default function UnifiedWorkspace() {
     return result;
   }, [query, fuse, corpus]);
 
-  // Ensure activeId is always valid
+  // Keep the analysis selection within its filtered results.
   useEffect(() => {
-    if (filteredRecords.length > 0) {
-      if (!activeId || !filteredRecords.some((r) => r.id === activeId)) {
-        setActiveId(filteredRecords[0].id);
-      }
-    } else {
-      setActiveId(null);
-    }
-  }, [filteredRecords, activeId]);
+    const nextId = resolveActiveStudy(viewMode, isSourceModalOpen, activeId, filteredRecords.map((record) => record.id));
+    if (nextId !== activeId) setActiveId(nextId);
+  }, [viewMode, isSourceModalOpen, filteredRecords, activeId]);
 
   const activeRecord = useMemo(() => {
     return corpus.find((r) => r.id === activeId) || null;
@@ -298,7 +300,7 @@ export default function UnifiedWorkspace() {
             <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{viewMode === "dashboard" ? "Overview" : viewMode === "explorer" ? "Explore research" : "Analysis"}</h1>
             <p className="mt-2 text-sm text-slate-400">{viewMode === "dashboard" ? "Your starting point for combustion evidence." : viewMode === "explorer" ? "Find and inspect studies in the flight corpus." : "Compare investigations and examine their evidence."}</p>
           </div>
-          <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-slate-400">{filteredRecords.length} of {corpus.length} studies</span>
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-slate-400">{viewMode === "split" ? `${filteredRecords.length} of ${corpus.length}` : corpus.length} studies</span>
         </div>
         <details className="rounded-xl border border-white/[0.07] bg-white/[0.02]">
           <summary className="cursor-pointer px-4 py-3 text-sm text-slate-300 hover:text-white">Research pathway</summary>
@@ -322,25 +324,7 @@ export default function UnifiedWorkspace() {
               setIsAssistantOpen(true);
             }}
           />
-        ) : viewMode === "explorer" ? (
-          <ResearchExplorerGrid
-            records={corpus}
-            selectedIds={selectedIds}
-            onToggleSelect={handleToggleSelect}
-            onInspect={(rec) => {
-              setActiveId(rec.id);
-              setIsSourceModalOpen(true);
-            }}
-            onOpenPdf={(rec) => {
-              setActiveId(rec.id);
-              setIsSourceModalOpen(true);
-            }}
-            onAskAI={(prompt) => {
-              setAssistantInitialPrompt(prompt);
-              setIsAssistantOpen(true);
-            }}
-          />
-        ) : (
+        ) : viewMode === "split" ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             {/* LEFT PANE (40% width on large screens) */}
             <section className="lg:col-span-5 space-y-3 flex flex-col">
@@ -407,7 +391,30 @@ export default function UnifiedWorkspace() {
               />
             </section>
           </div>
-        )}
+        ) : null}
+        <div hidden={viewMode !== "explorer"}>
+          <ResearchExplorerGrid
+            records={corpus}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onInspect={(rec) => {
+              setActiveId(rec.id);
+              setIsSourceModalOpen(true);
+            }}
+            onOpenPdf={(rec) => {
+              setActiveId(rec.id);
+              setIsSourceModalOpen(true);
+            }}
+            onAskAI={(prompt) => {
+              setAssistantInitialPrompt(prompt);
+              setIsAssistantOpen(true);
+            }}
+            initialSearchQuery={explorerFilters.searchQuery}
+            initialGravity={explorerFilters.gravity}
+            initialMaterial={explorerFilters.material}
+            initialOxygenRange={explorerFilters.oxygenRange}
+          />
+        </div>
       </main>
 
       {/* Physics Combustion Simulator & Optical Flame Diagnostics Modal (Images 2 & 4) */}
@@ -505,20 +512,24 @@ export default function UnifiedWorkspace() {
         initialPrompt={assistantInitialPrompt}
         onInspectClaim={(recId) => {
           setActiveId(recId);
+          setIsAssistantOpen(false);
           setIsSourceModalOpen(true);
         }}
         onAddToWhiteboard={(text, citations, customTree) => {
           setWhiteboardInitialPrompt(text);
           if (customTree) setWhiteboardInitialTree(customTree);
+          setIsAssistantOpen(false);
           setIsWhiteboardOpen(true);
         }}
         onRunSimulation={(args) => {
           setSimulatorInitialConfig(args);
           setSimulatorInitialTab("physics");
+          setIsAssistantOpen(false);
           setIsSimulatorOpen(true);
         }}
         onOpenSimulator={(preset) => {
           setSimulatorInitialTab("physics");
+          setIsAssistantOpen(false);
           setIsSimulatorOpen(true);
         }}
         onOpenDiagnostics={(plateId, filterMode) => {
@@ -530,22 +541,61 @@ export default function UnifiedWorkspace() {
             });
           }
           setSimulatorInitialTab("diagnostics");
+          setIsAssistantOpen(false);
           setIsSimulatorOpen(true);
         }}
         onFilterExplorer={(args) => {
+          let mappedMaterial: "all" | "liquid_droplets" | "pmma" | "fabrics_cellulose" | "wire_insulation" | "gaseous_fuels" | "other_solids" = "all";
+          const matStr = (args.materialClasses || []).join(" ").toLowerCase();
+          if (matStr.includes("fabric") || matStr.includes("cellulose") || matStr.includes("thin") || matStr.includes("sibal")) {
+            mappedMaterial = "fabrics_cellulose";
+          } else if (matStr.includes("pmma") || matStr.includes("acrylic") || matStr.includes("plexiglass")) {
+            mappedMaterial = "pmma";
+          } else if (matStr.includes("droplet") || matStr.includes("liquid") || matStr.includes("heptane") || matStr.includes("decane") || matStr.includes("methanol")) {
+            mappedMaterial = "liquid_droplets";
+          } else if (matStr.includes("wire") || matStr.includes("insulation") || matStr.includes("kapton")) {
+            mappedMaterial = "wire_insulation";
+          } else if (matStr.includes("gas") || matStr.includes("methane")) {
+            mappedMaterial = "gaseous_fuels";
+          }
+
+          let mappedGravity: "all" | "microgravity" | "partial_gravity" | "lunar" | "martian" | "terrestrial" = "all";
+          const gravStr = (args.gravityRegimes || []).join(" ").toLowerCase();
+          if (gravStr.includes("lunar") || gravStr.includes("0.16")) {
+            mappedGravity = "lunar";
+          } else if (gravStr.includes("martian") || gravStr.includes("0.38")) {
+            mappedGravity = "martian";
+          } else if (gravStr.includes("micro") || gravStr.includes("µg") || gravStr.includes("0g")) {
+            mappedGravity = "microgravity";
+          } else if (gravStr.includes("partial")) {
+            mappedGravity = "partial_gravity";
+          } else if (gravStr.includes("1g") || gravStr.includes("earth")) {
+            mappedGravity = "terrestrial";
+          }
+
+          const o2Range = args.oxygenRange || [10, 40];
+
+          setExplorerFilters({
+            searchQuery: args.searchQuery || "",
+            gravity: mappedGravity,
+            material: mappedMaterial,
+            oxygenRange: o2Range,
+          });
+
           setQuery((prev) => ({
             ...prev,
             freeText: args.searchQuery || prev.freeText,
-            material: args.materialClasses?.[0] || prev.material,
-            oxygenPct: args.oxygenRange ? Math.round((args.oxygenRange[0] + args.oxygenRange[1]) / 2) : prev.oxygenPct,
-            pressureKpa: args.pressureRange ? Math.round((args.pressureRange[0] + args.pressureRange[1]) / 2) : prev.pressureKpa,
-            gravity: (args.gravityRegimes?.[0]?.toLowerCase().includes("micro")
-              ? "microgravity"
-              : args.gravityRegimes?.[0]?.toLowerCase().includes("lunar")
-              ? "partial"
-              : prev.gravity) as any,
+            material: mappedMaterial !== "all" ? mappedMaterial : prev.material,
+            oxygenPct: Math.round((o2Range[0] + o2Range[1]) / 2),
+            gravity: mappedGravity === "microgravity" ? "microgravity" : mappedGravity === "lunar" ? "partial_gravity" : prev.gravity,
           }));
+
+          // Switch to explorer grid and dismiss the assistant drawer so the user directly sees the filtered records!
           setViewMode("explorer");
+          setIsAssistantOpen(false);
+          if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
         }}
         onOpenCoverageMap={() => {
           setIsAssistantOpen(false);

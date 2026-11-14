@@ -28,6 +28,10 @@ interface ResearchExplorerGridProps {
   onInspect: (record: ExperimentRecord) => void;
   onOpenPdf: (record: ExperimentRecord) => void;
   onAskAI?: (prompt: string) => void;
+  initialSearchQuery?: string;
+  initialGravity?: GravityRegimeFilter;
+  initialMaterial?: MaterialFilter;
+  initialOxygenRange?: [number, number];
 }
 
 type GravityRegimeFilter = "all" | "microgravity" | "partial_gravity" | "lunar" | "martian" | "terrestrial";
@@ -44,27 +48,38 @@ export function ResearchExplorerGrid({
   onInspect,
   onOpenPdf,
   onAskAI,
+  initialSearchQuery,
+  initialGravity,
+  initialMaterial,
+  initialOxygenRange,
 }: ResearchExplorerGridProps) {
   // State for search and sidebar filters
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGravity, setSelectedGravity] = useState<GravityRegimeFilter>("all");
-  const [selectedMaterial, setSelectedMaterial] = useState<MaterialFilter>("all");
-  const [oxygenRange, setOxygenRange] = useState<[number, number]>([0, 40]);
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || "");
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [selectedGravity, setSelectedGravity] = useState<GravityRegimeFilter>(initialGravity || "all");
+  const [selectedMaterial, setSelectedMaterial] = useState<MaterialFilter>(initialMaterial || "all");
+  const [oxygenRange, setOxygenRange] = useState<[number, number]>(initialOxygenRange || [0, 40]);
   const [selectedPressure, setSelectedPressure] = useState<PressureFilter>("any");
   const [selectedOutcome, setSelectedOutcome] = useState<OutcomeFilter>("all");
   const [selectedRelevance, setSelectedRelevance] = useState<RelevanceFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("relevance");
 
-  // Helper to extract year from record
-  const getRecordYear = (r: ExperimentRecord): string => {
-    const text = `${r.source_locator} ${r.source_url} ${r.verified_by}`.toLowerCase();
-    const match = text.match(/20\d{2}/);
-    if (match) return match[0];
-    if (r.programme.toLowerCase().includes("saffire")) return "2016";
-    if (r.programme.toLowerCase().includes("bass")) return "2018";
-    if (r.programme.toLowerCase().includes("flex")) return "2014";
-    return "2019";
-  };
+  // Sync external filters from AI Copilot
+  React.useEffect(() => {
+    if (initialSearchQuery !== undefined) setSearchQuery(initialSearchQuery);
+  }, [initialSearchQuery]);
+
+  React.useEffect(() => {
+    if (initialGravity) setSelectedGravity(initialGravity);
+  }, [initialGravity]);
+
+  React.useEffect(() => {
+    if (initialMaterial) setSelectedMaterial(initialMaterial);
+  }, [initialMaterial]);
+
+  React.useEffect(() => {
+    if (initialOxygenRange) setOxygenRange(initialOxygenRange);
+  }, [initialOxygenRange]);
 
   // Helper to derive outcome for record
   const getOutcome = (r: ExperimentRecord): { id: OutcomeFilter; label: string; dotColor: string } => {
@@ -137,7 +152,14 @@ export function ResearchExplorerGrid({
       // Material
       if (r.material.toLowerCase().includes("droplet") || r.material_class === "liquid_droplet") matCounts.liquid_droplets++;
       else if (r.material.toLowerCase().includes("pmma")) matCounts.pmma++;
-      else if (r.material.toLowerCase().includes("cotton") || r.material.toLowerCase().includes("sibal") || r.material_class === "solid_fabric") matCounts.fabrics_cellulose++;
+      else if (
+        r.material.toLowerCase().includes("cotton") ||
+        r.material.toLowerCase().includes("sibal") ||
+        r.material.toLowerCase().includes("fabric") ||
+        r.material.toLowerCase().includes("cellulose") ||
+        r.material.toLowerCase().includes("lampwick") ||
+        r.material_class === "solid_fabric"
+      ) matCounts.fabrics_cellulose++;
       else if (r.material.toLowerCase().includes("wire") || r.material.toLowerCase().includes("kapton") || r.material.toLowerCase().includes("ptfe")) matCounts.wire_insulation++;
       else if (r.material.toLowerCase().includes("gas") || r.material.toLowerCase().includes("methane")) matCounts.gaseous_fuels++;
       else matCounts.other_solids++;
@@ -178,7 +200,15 @@ export function ResearchExplorerGrid({
       if (selectedMaterial !== "all") {
         if (selectedMaterial === "liquid_droplets" && !r.material.toLowerCase().includes("droplet") && r.material_class !== "liquid_droplet") return false;
         if (selectedMaterial === "pmma" && !r.material.toLowerCase().includes("pmma")) return false;
-        if (selectedMaterial === "fabrics_cellulose" && !r.material.toLowerCase().includes("cotton") && !r.material.toLowerCase().includes("sibal") && r.material_class !== "solid_fabric") return false;
+        if (
+          selectedMaterial === "fabrics_cellulose" &&
+          !r.material.toLowerCase().includes("cotton") &&
+          !r.material.toLowerCase().includes("sibal") &&
+          !r.material.toLowerCase().includes("fabric") &&
+          !r.material.toLowerCase().includes("cellulose") &&
+          !r.material.toLowerCase().includes("lampwick") &&
+          r.material_class !== "solid_fabric"
+        ) return false;
         if (selectedMaterial === "wire_insulation" && !r.material.toLowerCase().includes("wire") && !r.material.toLowerCase().includes("kapton")) return false;
         if (selectedMaterial === "gaseous_fuels" && !r.material.toLowerCase().includes("gas")) return false;
         if (selectedMaterial === "other_solids" && (r.material.toLowerCase().includes("pmma") || r.material.toLowerCase().includes("droplet"))) return false;
@@ -249,25 +279,13 @@ export function ResearchExplorerGrid({
 
   return (
     <div className="space-y-4 font-sans text-slate-100 max-w-[1750px] mx-auto animate-in fade-in duration-200">
-      {/* 1. TOP HEADER (DISCOVER / RESEARCH EXPLORER) */}
-      <div className="space-y-1">
-        <div className="text-[11px] font-mono tracking-widest text-slate-400 uppercase font-semibold">
-          DISCOVER
-        </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-100 font-sans tracking-tight">
-          Research Explorer
-        </h1>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Search, filter and understand published microgravity combustion experiments.
-        </p>
-      </div>
-
       {/* 2. MAIN SEARCH BAR & SUGGESTION */}
       <div className="space-y-1.5">
         <div className="relative flex items-center">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
+            aria-label="Search studies"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search experiments, fuels, materials, conditions, findings..."
@@ -276,6 +294,7 @@ export function ResearchExplorerGrid({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
+              aria-label="Clear search"
               className="absolute right-3 text-slate-400 hover:text-white"
             >
               <X className="w-4 h-4" />
@@ -302,9 +321,11 @@ export function ResearchExplorerGrid({
       </div>
 
       {/* 3. TWO-COLUMN LAYOUT: FILTERS SIDEBAR (LEFT) + RESULTS GRID (RIGHT) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="space-y-5">
         {/* LEFT SIDEBAR: FILTERS PANEL */}
-        <aside className="lg:col-span-3 bg-[#0c0f16] border border-white/[0.08] rounded-xl p-4 space-y-4 shadow-xl">
+        <details className="rounded-2xl border border-white/[0.08] bg-[#101319]">
+          <summary className="cursor-pointer px-5 py-4 text-sm font-medium text-slate-200 hover:text-white">Filters {hasActiveFilters && <span className="ml-2 text-xs text-amber-400">Active</span>}</summary>
+        <aside className="border-t border-white/[0.08] p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
             <h3 className="text-sm font-bold text-slate-100 font-sans">Filters</h3>
             {hasActiveFilters && (
@@ -501,9 +522,10 @@ export function ResearchExplorerGrid({
             </div>
           </div>
         </aside>
+        </details>
 
         {/* RIGHT AREA: RESULTS HEADER & 3-COLUMN CARDS GRID */}
-        <main className="lg:col-span-9 space-y-4">
+        <section aria-label="Study results" className="space-y-4">
           {/* Header Controls Bar above Grid */}
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs font-mono">
             {/* Left: Record Count + Segmented Progress Gauge */}
@@ -512,18 +534,14 @@ export function ResearchExplorerGrid({
                 <strong className="text-white text-sm">{filteredRecords.length}</strong> records in evidence corpus
               </span>
 
-              {/* Segmented status bar */}
-              <div className="w-28 h-2 rounded-full overflow-hidden flex bg-slate-800">
-                <div style={{ width: "45%" }} className="bg-[#f97316] h-full" />
-                <div style={{ width: "35%" }} className="bg-[#38bdf8] h-full" />
-                <div style={{ width: "20%" }} className="bg-[#eab308] h-full" />
-              </div>
+
             </div>
 
             {/* Right: Sort Dropdown */}
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 text-xs">Sort</span>
+              <label htmlFor="research-sort" className="text-slate-400 text-xs">Sort</label>
               <select
+                id="research-sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="bg-[#0c0f16] text-slate-200 border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400/50 cursor-pointer"
@@ -550,38 +568,23 @@ export function ResearchExplorerGrid({
               </button>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredRecords.map((rec) => {
+              {filteredRecords.slice(0, visibleCount).map((rec) => {
                 const isSelected = selectedIds.has(rec.id);
                 const outcome = getOutcome(rec);
-                const year = getRecordYear(rec);
                 const relevance = getRelevance(rec);
 
-                // Format pressure
-                const pressureStr =
-                  rec.pressure_kpa != null
-                    ? rec.pressure_kpa >= 98 && rec.pressure_kpa <= 103
-                      ? "1 atm"
-                      : `${rec.pressure_kpa} kPa`
-                    : "not stated";
-
-                // Format oxygen
-                const oxygenStr = rec.oxygen_pct != null ? `${rec.oxygen_pct}%` : "14–17%";
-
-                // Format gravity
-                const gravityStr =
-                  rec.gravity === "microgravity"
-                    ? "μg"
-                    : rec.gravity === "partial_gravity"
-                    ? "μg, 1 g"
-                    : "1 g";
+                const pressureStr = rec.pressure_kpa != null ? `${rec.pressure_kpa} kPa` : "Not stated";
+                const oxygenStr = rec.oxygen_pct != null ? `${rec.oxygen_pct}%` : "Not stated";
+                const gravityStr = rec.gravity.replace(/_/g, " ");
 
                 return (
                   <div
                     key={rec.id}
                     className={`rounded-xl border bg-[#0c0f16] p-4 flex flex-col justify-between transition-all duration-150 hover:border-white/[0.2] ${
                       isSelected
-                        ? "border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                        ? "border-amber-400/30"
                         : "border-white/[0.08]"
                     }`}
                   >
@@ -594,26 +597,20 @@ export function ResearchExplorerGrid({
                           <span className="text-slate-400 truncate">{outcome.label}</span>
                         </div>
                         <div className="flex items-center gap-1 text-slate-500 flex-shrink-0">
-                          <span>{rec.programme.split(" ")[0]} · {year}</span>
+                          <span>{rec.programme.split(" ")[0]}</span>
                           <Info className="w-3 h-3 text-slate-600" />
                         </div>
                       </div>
 
                       {/* Main Title */}
-                      <h3
-                        onClick={() => onInspect(rec)}
-                        className="text-sm font-semibold font-sans text-slate-100 hover:text-cyan-300 cursor-pointer transition-colors leading-snug line-clamp-2 mb-3"
-                      >
-                        {rec.investigation}
+                      <h3 className="mb-3 text-sm font-semibold leading-snug text-slate-100">
+                        <button type="button" onClick={() => onInspect(rec)} className="text-left hover:text-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400">{rec.investigation}</button>
                       </h3>
 
                       {/* Capsule Tag Badges */}
                       <div className="flex flex-wrap items-center gap-1.5 mb-3">
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium">
                           {rec.programme.split(" ")[0]}
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium">
-                          FLIGHT
                         </span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium truncate max-w-[120px]">
                           {rec.material_class.replace(/_/g, " ")}
@@ -639,7 +636,7 @@ export function ResearchExplorerGrid({
                         </div>
                         <div>
                           <span className="text-[9px] text-slate-500 block uppercase">Platform</span>
-                          <span className="text-slate-300 truncate block">Flight</span>
+                          <span className="text-slate-300 truncate block" title={rec.platform}>{rec.platform}</span>
                         </div>
                       </div>
 
@@ -658,13 +655,7 @@ export function ResearchExplorerGrid({
                     <div className="space-y-3 pt-2 border-t border-white/[0.06]">
                       {/* Evidence Tier & Mission Relevance */}
                       <div className="flex items-center justify-between text-[10px] font-mono">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-slate-400">Evidence tier</span>
-                          <div className="w-12 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                            <div className="h-full bg-cyan-400 rounded-full" style={{ width: "90%" }} />
-                          </div>
-                          <span className="text-slate-300 font-bold">90%</span>
-                        </div>
+                        <span className="text-slate-400">{rec.quality.replace(/_/g, " ")}</span>
                         <div className="flex items-center gap-1 font-bold">
                           <span className="text-slate-500">Mission relevance</span>
                           <span className={relevance === "high" ? "text-amber-400" : "text-cyan-400"}>
@@ -684,6 +675,7 @@ export function ResearchExplorerGrid({
 
                         <button
                           onClick={() => onToggleSelect(rec.id)}
+                          aria-pressed={isSelected}
                           className={`flex-1 py-1.5 rounded-lg border text-center transition-colors font-medium ${
                             isSelected
                               ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-bold"
@@ -710,8 +702,14 @@ export function ResearchExplorerGrid({
                 );
               })}
             </div>
+            {visibleCount < filteredRecords.length && (
+              <div className="flex justify-center pt-2">
+                <button type="button" onClick={() => setVisibleCount((count) => count + 12)} className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm text-slate-200 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400">Show more studies</button>
+              </div>
+            )}
+            </>
           )}
-        </main>
+        </section>
       </div>
     </div>
   );

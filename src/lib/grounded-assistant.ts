@@ -105,6 +105,16 @@ export function detectPhysicalBoundaryViolations(queryText: string): string[] {
   return warnings;
 }
 
+export function isConversationalGreeting(text: string): boolean {
+  const clean = text.trim().toLowerCase().replace(/[^a-z0-9\s]/g, "");
+  const greetings = new Set([
+    "hi", "hello", "hey", "greetings", "good morning", "good afternoon",
+    "good evening", "howdy", "sup", "yo", "help", "who are you",
+    "what can you do", "test"
+  ]);
+  return greetings.has(clean) || /^(hi|hello|hey|greetings|howdy)\b/i.test(clean);
+}
+
 const STOP_WORDS = new Set([
   "the", "and", "or", "for", "with", "this", "that", "from", "are", "can",
   "what", "how", "why", "does", "about", "into", "over", "more", "then",
@@ -121,14 +131,44 @@ export function generateGroundedAssistantResponse(
   const boundaryWarnings = detectPhysicalBoundaryViolations(queryText);
   const qLower = queryText.toLowerCase().trim();
 
+  if (isConversationalGreeting(queryText)) {
+    return {
+      query: queryText,
+      answer:
+        "Welcome to IGNIS Research Assistant. I am grounded in 50 NASA Physical Sciences Informatics (PSI) flight investigations across microgravity, Lunar (0.16g), and Martian (0.38g) regimes.\n\nYou can ask me combustion science questions (e.g., Saffire large-scale flame spread, FLEX droplet cool flames, or BASS low-speed extinction limits), or ask me to formulate hypothesis trees and launch simulations.",
+      citations: [],
+      isAbstention: false,
+      boundaryWarnings: [],
+      scientificLimitations: [],
+      provenanceHash: `greet-${Date.now().toString(16)}`,
+    };
+  }
+
   // Extract non-stop query words
   const words = qLower
     .split(/[\s,.;:!?()]+/)
     .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 
+  // If no searchable terms are present, return an abstention rather than dumping the whole corpus
+  if (words.length === 0) {
+    return {
+      query: queryText,
+      answer:
+        "Scientific Abstention: No verified NASA microgravity combustion records in the reviewed Physical Sciences Informatics (PSI) corpus correspond to this inquiry. Per flight safety research protocols, synthetic extrapolation is withheld.",
+      citations: [],
+      isAbstention: true,
+      abstentionReason:
+        "Query does not contain specific physical search terms.",
+      boundaryWarnings,
+      scientificLimitations: [
+        "Inquiry lacks specific combustion or environmental parameters.",
+      ],
+      provenanceHash: `abstain-${Date.now().toString(16)}`,
+    };
+  }
+
   // Keyword-directed matching across corpus with overlap scoring
   let matched = corpus.filter((r) => {
-    if (words.length === 0) return true;
     const terms = [
       r.investigation,
       r.programme,

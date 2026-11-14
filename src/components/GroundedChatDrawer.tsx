@@ -219,13 +219,6 @@ export function GroundedChatDrawer({
 
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Auto-expand reasoning accordion for the latest answer
-      if (grounded.reasoning) {
-        setExpandedReasoning((prev) => ({
-          ...prev,
-          [assistantMsg.id]: true,
-        }));
-      }
     } catch (err) {
       const errorMsg: ChatMessage = {
         id: `err-${Date.now()}`,
@@ -276,7 +269,7 @@ export function GroundedChatDrawer({
                     id: "init",
                     role: "assistant",
                     content:
-                      "Thread reset. Inquiries are verified against NASA Physical Sciences Informatics records with zero extrapolation.",
+                      "Conversation cleared. Ask a question about the research library to begin.",
                     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                   },
                 ])
@@ -336,11 +329,11 @@ export function GroundedChatDrawer({
                     >
                       <span className="flex items-center gap-2 text-[11px] text-amber-300 font-semibold">
                         <BrainCircuit className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                        <span>NVIDIA Nemotron Thinking Process ({Math.round(msg.response.reasoning.length / 4)} tokens)</span>
+                        <span>Response details</span>
                       </span>
                       <span className="flex items-center gap-1.5 text-[10px] text-slate-400">
                         <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
-                          Verified CoT
+                          Model output
                         </span>
                         {expandedReasoning[msg.id] ? (
                           <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
@@ -384,13 +377,16 @@ export function GroundedChatDrawer({
                 {msg.response && msg.response.citations.length > 0 && (
                   <div className="mt-3 pt-2.5 border-t border-white/[0.06] space-y-1.5">
                     <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                      Verified Citations (Click to inspect primary PDF):
+                      Sources (select to inspect):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {msg.response.citations.map((c, i) => (
                         <button
                           key={i}
-                          onClick={() => onInspectClaim(c.recordId)}
+                          onClick={() => {
+                            onInspectClaim(c.recordId);
+                            onClose();
+                          }}
                           className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-colors cursor-pointer"
                           title={`Click to inspect primary source for ${c.investigation} on page ${c.pageNumber}`}
                         >
@@ -466,8 +462,9 @@ export function GroundedChatDrawer({
                                     if (onAddToWhiteboard) {
                                       onAddToWhiteboard(args.question?.title || msg.content, msg.response!.citations, args);
                                     }
+                                    onClose();
                                   }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                  className="w-full py-1.5 px-3 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
                                 >
                                   <Sparkles className="w-3.5 h-3.5 fill-current" />
                                   <span>Open & Inspect Modeler (Stage 3)</span>
@@ -512,8 +509,9 @@ export function GroundedChatDrawer({
                                     } else if (onOpenSimulator) {
                                       onOpenSimulator(args.gravity === "0.16g" ? "orion-lunar" : "iss");
                                     }
+                                    onClose();
                                   }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                  className="w-full py-1.5 px-3 rounded-md bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
                                 >
                                   <span>🚀 Launch & View Simulation</span>
                                   <ArrowRight className="w-3 h-3 ml-0.5" />
@@ -549,8 +547,9 @@ export function GroundedChatDrawer({
                                     if (onOpenDiagnostics) {
                                       onOpenDiagnostics(args.plateId, args.filterMode);
                                     }
+                                    onClose();
                                   }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                  className="w-full py-1.5 px-3 rounded-md bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
                                 >
                                   <span>🔬 Inspect Optical Plate & CV Filter</span>
                                   <ArrowRight className="w-3 h-3 ml-0.5" />
@@ -586,8 +585,9 @@ export function GroundedChatDrawer({
                                     if (onFilterExplorer) {
                                       onFilterExplorer(args);
                                     }
+                                    onClose();
                                   }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                  className="w-full py-1.5 px-3 rounded-md bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
                                 >
                                   <span>📊 View Filtered Records in Explorer</span>
                                   <ArrowRight className="w-3 h-3 ml-0.5" />
@@ -622,8 +622,9 @@ export function GroundedChatDrawer({
                                     if (onInspectClaim && args.recordId) {
                                       onInspectClaim(args.recordId);
                                     }
+                                    onClose();
                                   }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                  className="w-full py-1.5 px-3 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
                                 >
                                   <span>📄 Inspect Verified Primary PDF</span>
                                   <ArrowRight className="w-3 h-3 ml-0.5" />
@@ -689,7 +690,7 @@ export function GroundedChatDrawer({
                 {/* Actions: Send to Whiteboard + Copy */}
                 {msg.role === "assistant" && msg.id !== "init" && (
                   <div className="mt-2 pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono">
-                    <span className="text-slate-500 text-[10px]">Grounding verified by NVIDIA Nemotron 30B</span>
+                    <span className="text-slate-500 text-[10px]">Review cited sources and limitations</span>
 
                     <button
                       onClick={() => handleCopy(msg.id, msg.content)}

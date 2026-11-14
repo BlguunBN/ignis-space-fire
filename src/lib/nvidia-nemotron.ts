@@ -5,6 +5,7 @@ import {
   detectPhysicalBoundaryViolations,
   generateGroundedAssistantResponse,
   GroundedAssistantResponse,
+  isConversationalGreeting,
 } from "./grounded-assistant";
 import {
   NEMOTRON_AGENT_TOOLS,
@@ -73,6 +74,11 @@ CORE SCIENTIFIC PERSONA & COGNITIVE MANDATES (AEROSPACE STANDARDS)
    - When the user's intent involves modeling, simulation, optical analysis, document inspection, or data filtering, YOU MUST INVOKE THE MATCHING TOOL (e.g. build_hypothesis_tree, run_combustion_simulation, inspect_optical_diagnostics, open_primary_evidence, filter_research_explorer).
    - Never tell the user "you can click the button". You execute the tool call so the application updates live.
 
+5. SIMULTANEOUS SCIENTIFIC SYNTHESIS WITH AGENT TOOL CALLS:
+   - When executing tool calls (such as filter_research_explorer or build_hypothesis_tree), YOU MUST STILL WRITE A THOROUGH, MULTI-PARAGRAPH SCIENTIFIC SYNTHESIS IN YOUR MESSAGE CONTENT.
+   - Synthesize relevant NASA PSI flight evidence, cite exact Claim IDs [CLM-... (Page X)], detail physical mechanisms, quantify experimental boundary limits, and analyze research gaps in your text response.
+   - DO NOT leave message content empty or output a generic one-line confirmation when calling tools. Provide both: the full written scientific assessment AND the tool dispatch.
+
 ================================================================================
 VERIFIED NASA PSI FLIGHT CORPUS (50 FLIGHT INVESTIGATIONS):
 ================================================================================
@@ -88,6 +94,32 @@ export async function generateNemotronGroundedResponse(
   corpus: ExperimentRecord[],
   options: { reasoningBudget?: number; maxTokens?: number } = {}
 ): Promise<NemotronResponse> {
+  if (isConversationalGreeting(queryText)) {
+    return {
+      query: queryText,
+      answer: `Hello! I am IGNIS, your Research Intelligence Assistant powered by NVIDIA Nemotron-3.5-Lightning (30B).
+
+I am grounded in 50 verified NASA Physical Sciences Informatics (PSI) flight investigations across microgravity, Lunar (0.16g), and Martian (0.38g) regimes.
+
+Here is what I can do for you:
+• **Synthesize Combustion Evidence**: Ask about large-scale flame spread (Saffire), droplet extinction and cool flames (FLEX), or low-speed quenching limits (BASS).
+• **Formulate Hypothesis Trees**: Ask to build Stage 3 Mind Trees for exploration flammability (e.g. Artemis Lunar 56 kPa atmospheres).
+• **Launch Physics Simulations**: Simulate spherical flame spread, Godsave-Spalding d² law, and buoyant flame transitions.
+• **Inspect Diagnostics & CV Spectroscopy**: Calibrate optical filters on SoFIE or RTDFS flight plates.
+• **Filter Flight Records**: Ask to search or filter investigations by material, gravity regime, or oxygen level.
+
+How can I assist your mission research today?`,
+      reasoning: "Conversational greeting detected. Providing assistant capabilities overview and prompt guidance without tool dispatch.",
+      citations: [],
+      isAbstention: false,
+      boundaryWarnings: [],
+      scientificLimitations: [],
+      provenanceHash: `greet-${Date.now().toString(16)}`,
+      model: NVIDIA_CONFIG.model,
+      toolCalls: [],
+    };
+  }
+
   const boundaryWarnings = detectPhysicalBoundaryViolations(queryText);
   const reasoningBudget = options.reasoningBudget ?? 2048;
   const maxTokens = options.maxTokens ?? 8192;
@@ -223,9 +255,27 @@ export async function generateNemotronGroundedResponse(
       }
     }
 
+    let finalAnswer = contentTotal.trim();
+
+    // If the model called tools and emitted empty content or an uninformative brief stub (< 80 chars)
+    if (finalAnswer.length < 80) {
+      const groundedFallback = generateGroundedAssistantResponse(queryText, corpus);
+      if (groundedFallback.answer && !groundedFallback.isAbstention) {
+        finalAnswer = `${groundedFallback.answer}\n\n*(Autonomous mission control actions have been dispatched across the workspace below. Click the cards or action buttons to inspect live telemetry and filtered records.)*`;
+        // Merge citations from groundedFallback
+        for (const cit of groundedFallback.citations) {
+          if (!matchedCitations.some((c) => c.claimId === cit.claimId)) {
+            matchedCitations.push(cit);
+          }
+        }
+      } else if (!finalAnswer) {
+        finalAnswer = `Scientific synthesis of NASA flight investigations matching "${queryText}" completed. Interactive actions and telemetry filters have been applied below.`;
+      }
+    }
+
     const isAbstention =
-      contentTotal.toLowerCase().includes("scientific abstention") ||
-      contentTotal.toLowerCase().includes("abstention:") ||
+      (finalAnswer.toLowerCase().includes("scientific abstention") ||
+        finalAnswer.toLowerCase().includes("abstention:")) &&
       matchedCitations.length === 0;
 
     // Compile limitations
@@ -241,7 +291,7 @@ export async function generateNemotronGroundedResponse(
 
     return {
       query: queryText,
-      answer: contentTotal.trim() || (finalToolCalls.length > 0 ? `I have formulated your request and executed autonomous agent actions across the IGNIS research environment.` : ""),
+      answer: finalAnswer,
       reasoning: reasoningTotal.trim() || undefined,
       citations: matchedCitations,
       isAbstention,
