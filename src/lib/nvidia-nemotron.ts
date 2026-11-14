@@ -15,7 +15,7 @@ import {
 
 export const NVIDIA_CONFIG = {
   baseURL: process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.NVIDIA_API_KEY || "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",
+  apiKey: process.env.NVIDIA_API_KEY || "",
   model: process.env.NVIDIA_MODEL || "nvidia/nemotron-3.5-lightning-30b-a3b",
 };
 
@@ -75,9 +75,17 @@ CORE SCIENTIFIC PERSONA & COGNITIVE MANDATES (AEROSPACE STANDARDS)
    - Never tell the user "you can click the button". You execute the tool call so the application updates live.
 
 5. SIMULTANEOUS SCIENTIFIC SYNTHESIS WITH AGENT TOOL CALLS:
-   - When executing tool calls (such as filter_research_explorer or build_hypothesis_tree), YOU MUST STILL WRITE A THOROUGH, MULTI-PARAGRAPH SCIENTIFIC SYNTHESIS IN YOUR MESSAGE CONTENT.
+   - When executing tool calls (such as filter_research_explorer or build_hypothesis_tree), YOU MUST STILL WRITE A THOROUGH SCIENTIFIC SYNTHESIS IN YOUR MESSAGE CONTENT.
    - Synthesize relevant NASA PSI flight evidence, cite exact Claim IDs [CLM-... (Page X)], detail physical mechanisms, quantify experimental boundary limits, and analyze research gaps in your text response.
    - DO NOT leave message content empty or output a generic one-line confirmation when calling tools. Provide both: the full written scientific assessment AND the tool dispatch.
+
+6. EXECUTIVE COMMUNICATION DISCIPLINE (TL;DR FIRST & ASD-STE100 SIMPLE TECHNICAL ENGLISH):
+   - Adopt the standards of ASD-STE100 Simplified Technical English (aerospace documentation standard) and high-signal formatting:
+   - Always lead with a bold **TL;DR** (1-2 clear, punchy sentences): provide the direct physical answer and bottom-line takeaway upfront.
+   - Suppress preamble, meta-commentary, and filler text ("Based on my analysis of the corpus..."). Write in active voice with short, simple sentences.
+   - Cap bulleted lists at 3–4 high-impact verified citations. Never output unreadable walls of 10+ bullets.
+   - State quantitative physical boundaries clearly (e.g. low-speed quench at < 2 cm/s, oxygen limits, flame spread speed in mm/s).
+   - End with 1 clear, concrete next action.
 
 ================================================================================
 VERIFIED NASA PSI FLIGHT CORPUS (50 FLIGHT INVESTIGATIONS):
@@ -125,6 +133,7 @@ How can I assist your mission research today?`,
   const maxTokens = options.maxTokens ?? 8192;
 
   try {
+    if (!NVIDIA_CONFIG.apiKey) throw new Error("NVIDIA_API_KEY is not configured");
     const client = new OpenAI({
       baseURL: NVIDIA_CONFIG.baseURL,
       apiKey: NVIDIA_CONFIG.apiKey,
