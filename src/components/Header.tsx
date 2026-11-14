@@ -27,14 +27,14 @@ export function Header({ corpusCount, onReset, onOpenBrief, onOpenCompare, onOpe
   const [collapsed, setCollapsed] = useState(false);
   const closeAfter = (action?: () => void) => () => { action?.(); setOpen(false); };
   const item = (label: string, Icon: typeof Flame, action?: () => void, active = false) => action && (
-    <button type="button" title={collapsed ? label : undefined} onClick={closeAfter(action)} aria-current={active ? "page" : undefined} className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400 ${active ? "bg-slate-800/60 text-white" : "text-slate-400 hover:bg-slate-800/40 hover:text-slate-100"}`}>
+    <button type="button" suppressHydrationWarning title={collapsed ? label : undefined} onClick={closeAfter(action)} aria-current={active ? "page" : undefined} className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400 ${active ? "bg-slate-800/60 text-white" : "text-slate-400 hover:bg-slate-800/40 hover:text-slate-100"}`}>
       <Icon className={`h-5 w-5 shrink-0 ${active ? "text-amber-400" : "text-slate-500"}`} /><span className={collapsed ? "md:sr-only" : undefined}>{label}</span>
     </button>
   );
   return (
     <>
       {/* Side nav — persistent column on desktop, slide-in drawer on mobile */}
-      <aside id="workspace-navigation" className={`${open ? "translate-x-0" : "invisible -translate-x-full md:visible"} ${collapsed ? "md:w-20" : "md:w-64"} fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-700 bg-[#0e1116] px-4 py-6 transition-transform duration-200 motion-reduce:transition-none md:sticky md:top-0 md:h-screen md:shrink-0 md:translate-x-0 md:inset-y-auto md:left-0 md:z-20`}>
+      <aside id="workspace-navigation" suppressHydrationWarning className={`${open ? "translate-x-0" : "invisible -translate-x-full md:visible"} ${collapsed ? "md:w-20" : "md:w-64"} fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-700 bg-[#0e1116] px-4 py-6 transition-transform duration-200 motion-reduce:transition-none md:sticky md:top-0 md:h-screen md:shrink-0 md:translate-x-0 md:inset-y-auto md:left-0 md:z-20`}>
         <div className="mb-9 flex items-center justify-between px-2">
           <div className="flex items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-500/10 text-amber-400"><Flame className="h-5 w-5" /></div><div className={collapsed ? "md:sr-only" : undefined}><div className="text-sm font-semibold tracking-[0.18em] text-white">IGNIS</div><div className="mt-0.5 text-xs text-slate-500">Research workspace</div></div></div>
           <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="rounded-md p-2 text-slate-400 md:hidden"><X className="h-4 w-4" /></button>
