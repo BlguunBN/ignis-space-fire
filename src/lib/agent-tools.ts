@@ -380,5 +380,91 @@ export function determineAgentToolsFromQuery(
     });
   }
 
-  return calls;
+  // 6. Autonomous Multi-Step Research Pipeline Coordination
+  // When the researcher inquires about synthesis, flammability investigations, or comparative limits:
+  const isMultiStepInquiry =
+    /(synthesize|investigate|model|flammability|artemis|lunar|microgravity|saffire|droplet|cellulose|fabric|pipeline|multi-step)/i.test(p);
+
+  if (isMultiStepInquiry) {
+    // Step 1: Ensure Research Explorer Filter exists to isolate flight evidence
+    if (!calls.some((c) => c.name === "filter_research_explorer")) {
+      const gravityRegimes = p.includes("lunar") || p.includes("0.16")
+        ? ["Lunar 0.16 g"]
+        : p.includes("martian") || p.includes("0.38")
+        ? ["Martian 0.38 g"]
+        : ["Microgravity"];
+
+      const materialClasses = p.includes("pmma")
+        ? ["thick_solid"]
+        : p.includes("fabric") || p.includes("cellulose") || p.includes("sibal")
+        ? ["solid_fabric"]
+        : p.includes("droplet") || p.includes("liquid") || p.includes("heptane")
+        ? ["liquid_fuel"]
+        : undefined;
+
+      const oxygenRange = p.includes("17") && p.includes("23")
+        ? [17, 23]
+        : p.includes("26") || p.includes("lunar") || p.includes("artemis")
+        ? [21, 30]
+        : [15, 30];
+
+      calls.push({
+        id: `call-filter-auto-${Date.now()}`,
+        name: "filter_research_explorer",
+        status: "dispatched",
+        args: {
+          gravityRegimes,
+          materialClasses,
+          oxygenRange,
+          searchQuery: p.includes("fabric") || p.includes("sibal") ? "SIBAL fabric" : p.includes("pmma") ? "PMMA" : p.includes("droplet") ? "droplet" : "",
+        },
+      });
+    }
+
+    // Step 2: Ensure Combustion Simulation exists to compute Godsave-Spalding & flow dynamics
+    if (!calls.some((c) => c.name === "run_combustion_simulation")) {
+      const isLunar = p.includes("lunar") || p.includes("0.16");
+      const isMartian = p.includes("martian") || p.includes("0.38");
+      const gravity = isLunar ? "0.16g" : isMartian ? "0.38g" : "µg";
+      const fuel = p.includes("heptane") ? "Heptane" : p.includes("decane") ? "n-Decane" : "Methanol";
+      const o2 = p.includes("26") ? 26 : p.includes("30") ? 30 : p.includes("17") ? 21 : 21;
+      const press = isLunar ? 0.69 : p.includes("56") ? 0.56 : 1.0;
+
+      calls.push({
+        id: `call-sim-auto-${Date.now()}`,
+        name: "run_combustion_simulation",
+        status: "dispatched",
+        args: {
+          gravity,
+          fuel,
+          oxygenPct: o2,
+          pressureAtm: press,
+          diluent: "Nitrogen",
+          forcedAirflowSpeed: 20,
+          description: `Autonomous validation simulation for ${gravity} (${o2}% O2 / ${press} atm) combustion boundary`,
+        },
+      });
+    }
+  }
+
+  // Deduplicate and arrange in scientific pipeline sequence:
+  // Step 1: Filter Explorer -> Step 2: Build Hypothesis -> Step 3: Run Simulation -> Step 4: Diagnostics -> Step 5: Primary PDF
+  const order: Record<AgentToolName, number> = {
+    filter_research_explorer: 1,
+    build_hypothesis_tree: 2,
+    run_combustion_simulation: 3,
+    inspect_optical_diagnostics: 4,
+    open_primary_evidence: 5,
+  };
+
+  const uniqueMap = new Map<AgentToolName, AgentToolCall>();
+  for (const c of calls) {
+    if (!uniqueMap.has(c.name)) {
+      uniqueMap.set(c.name, c);
+    }
+  }
+
+  return Array.from(uniqueMap.values()).sort(
+    (a, b) => (order[a.name] ?? 99) - (order[b.name] ?? 99)
+  );
 }
