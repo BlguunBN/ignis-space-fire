@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface FadeUpProps {
   children: ReactNode;
@@ -12,12 +12,18 @@ interface FadeUpProps {
 
 /**
  * Subtle fade + 8px rise entrance (300ms ease-out).
- * Renders children immediately when the user prefers reduced motion.
+ *
+ * Server and client must render the same DOM on first paint, so the plain
+ * div is used until after hydration; the animated motion.div mounts then.
+ * The animation is skipped entirely when the user prefers reduced motion.
  */
 export function FadeUp({ children, delay = 0, className }: FadeUpProps) {
   const reduced = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
 
-  if (reduced) {
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || reduced) {
     return <div className={className}>{children}</div>;
   }
 

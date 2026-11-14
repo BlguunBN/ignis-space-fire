@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface StatusPulseProps {
   label?: ReactNode;
@@ -14,7 +14,10 @@ interface StatusPulseProps {
 
 /**
  * Small dot with a soft expanding ring for "work in progress" indicators (no gradients).
- * The ring is skipped entirely when the user prefers reduced motion.
+ *
+ * Server and client must render the same DOM on first paint, so the ring is
+ * only added after hydration; it is skipped entirely when the user prefers
+ * reduced motion.
  */
 export function StatusPulse({
   label,
@@ -23,11 +26,14 @@ export function StatusPulse({
   ringClassName = "bg-amber-400/50",
 }: StatusPulseProps) {
   const reduced = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   return (
     <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
       <span className="relative inline-flex h-2 w-2 shrink-0" aria-hidden="true">
-        {!reduced && (
+        {mounted && !reduced && (
           <motion.span
             className={`absolute inset-0 rounded-full ${ringClassName}`}
             animate={{ scale: [1, 1.8], opacity: [0.45, 0] }}
