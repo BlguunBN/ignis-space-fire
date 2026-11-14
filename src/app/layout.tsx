@@ -13,6 +13,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Dark Reader mutates the DOM before hydration and breaks React's tree.
+            The app is already dark-themed, so opt out of the extension entirely. */}
+        <meta name="darkreader-lock" />
+      </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
   )
