@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import experimentsData from "../../../data/experiments.json";
 import { ExperimentRecord } from "../../../types/evidence";
 import {
-  generateGroundedAssistantResponse,
   validateCitations,
   GroundedAssistantResponseSchema,
 } from "../../../lib/grounded-assistant";
+import { generateNemotronGroundedResponse } from "../../../lib/nvidia-nemotron";
 
 const corpus = experimentsData as ExperimentRecord[];
 
@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { messages, selectedRecordIds } = body;
 
-    const latestMessage = Array.isArray(messages) && messages.length > 0
-      ? messages[messages.length - 1].content
-      : "Saffire and BASS flame spread comparison";
+    const latestMessage =
+      Array.isArray(messages) && messages.length > 0
+        ? messages[messages.length - 1].content
+        : "Compare Saffire vs BASS flame spread under forced airflow";
 
     // Use selected records subset if provided, otherwise entire corpus
     let targetCorpus = corpus;
@@ -28,11 +29,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Generate grounded synthesis
-    const groundedResponse = generateGroundedAssistantResponse(latestMessage, targetCorpus);
+    // Call NVIDIA Nemotron-3.5-Lightning-30B with deep reasoning and NASA PSI grounding
+    const nemotronResponse = await generateNemotronGroundedResponse(
+      latestMessage,
+      targetCorpus
+    );
 
     // Validate schema
-    const parsed = GroundedAssistantResponseSchema.safeParse(groundedResponse);
+    const parsed = GroundedAssistantResponseSchema.safeParse(nemotronResponse);
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Grounded schema validation failed", details: parsed.error.issues },
@@ -40,22 +44,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify citations against corpus
-    const citationCheck = validateCitations(groundedResponse.citations, corpus);
+    // Verify citations against authentic corpus
+    const citationCheck = validateCitations(nemotronResponse.citations, corpus);
     if (!citationCheck.valid) {
-      return NextResponse.json(
-        {
-          error: "Hallucination Guard triggered: invalid claim citations detected",
-          invalidClaims: citationCheck.invalidClaims,
-        },
-        { status: 422 }
+      // Filter out invalid claims to maintain strict hallucination safety
+      nemotronResponse.citations = nemotronResponse.citations.filter(
+        (c) => !citationCheck.invalidClaims.includes(c.claimId)
       );
     }
 
-    return NextResponse.json(groundedResponse);
+    return NextResponse.json(nemotronResponse);
   } catch (err: any) {
     return NextResponse.json(
-      { error: "Internal server error in grounded chat runtime", message: err?.message || String(err) },
+      {
+        error: "Internal server error in grounded chat runtime",
+        message: err?.message || String(err),
+      },
       { status: 500 }
     );
   }

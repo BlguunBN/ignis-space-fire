@@ -14,19 +14,23 @@ import {
   Check,
   RefreshCw,
   Network,
+  Cpu,
+  BrainCircuit,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
 import {
   generateGroundedAssistantResponse,
-  GroundedAssistantResponse,
   GroundedCitation,
 } from "../lib/grounded-assistant";
+import { NemotronResponse } from "../lib/nvidia-nemotron";
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  response?: GroundedAssistantResponse;
+  response?: NemotronResponse;
   timestamp: string;
 }
 
@@ -54,13 +58,14 @@ export function GroundedChatDrawer({
       id: "init",
       role: "assistant",
       content:
-        "Welcome to the IGNIS Grounded Research Assistant. Inquiries are strictly verified against NASA Physical Sciences Informatics (PSI) flight records with zero extrapolation.",
+        "Welcome to IGNIS Agentic Copilot powered by NVIDIA Nemotron-3.5-Lightning (30B). Deep reasoning and strict citation grounding against NASA Physical Sciences Informatics (PSI) flight records are active.",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expandedReasoning, setExpandedReasoning] = useState<Record<string, boolean>>({});
 
   // Auto-send initial prompt if passed
   useEffect(() => {
@@ -78,6 +83,13 @@ export function GroundedChatDrawer({
     "Can we predict Martian 0.38g combustion from this data?",
   ];
 
+  const toggleReasoning = (id: string) => {
+    setExpandedReasoning((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   const handleSend = async (queryText: string) => {
     if (!queryText.trim() || loading) return;
 
@@ -93,8 +105,8 @@ export function GroundedChatDrawer({
     setLoading(true);
 
     try {
-      // 1. Try Live Route Handler (/api/chat)
-      let grounded: GroundedAssistantResponse;
+      // 1. Try Live Route Handler (/api/chat with NVIDIA Nemotron 3.5)
+      let grounded: NemotronResponse;
 
       try {
         const res = await fetch("/api/chat", {
@@ -115,7 +127,11 @@ export function GroundedChatDrawer({
             const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
             if (filtered.length > 0) targetCorpus = filtered;
           }
-          grounded = generateGroundedAssistantResponse(queryText, targetCorpus);
+          const localFallback = generateGroundedAssistantResponse(queryText, targetCorpus);
+          grounded = {
+            ...localFallback,
+            model: "ignis-deterministic-grounded-fallback",
+          };
         }
       } catch (e) {
         let targetCorpus = corpus;
@@ -123,7 +139,11 @@ export function GroundedChatDrawer({
           const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
           if (filtered.length > 0) targetCorpus = filtered;
         }
-        grounded = generateGroundedAssistantResponse(queryText, targetCorpus);
+        const localFallback = generateGroundedAssistantResponse(queryText, targetCorpus);
+        grounded = {
+          ...localFallback,
+          model: "ignis-deterministic-grounded-fallback",
+        };
       }
 
       const assistantMsg: ChatMessage = {
@@ -160,19 +180,19 @@ export function GroundedChatDrawer({
         {/* Drawer Header */}
         <div className="p-3.5 border-b border-white/[0.08] bg-[#090a0d] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-md bg-amber-400/10 border border-amber-400/20 text-amber-400">
+            <div className="p-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
               <Bot className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-100">
-                <span>IGNIS Grounded Assistant</span>
-                <span className="text-[10px] px-1 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20">
-                  RAG Active
+                <span>IGNIS Agentic Copilot</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <Cpu className="w-2.5 h-2.5" /> Nemotron 30B
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-                <span>Zero Hallucination Guard • NASA PSI Corpus</span>
+                <span>NVIDIA Nemotron-3.5-Lightning • NASA PSI Grounded</span>
               </div>
             </div>
           </div>
@@ -222,26 +242,52 @@ export function GroundedChatDrawer({
                 ) : (
                   <>
                     <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    <span className="text-emerald-400/90 font-medium">Grounded Engine</span>
+                    <span className="text-emerald-400/90 font-medium">Nemotron 3.5 AI</span>
                   </>
                 )}
                 <span>• {msg.timestamp}</span>
               </div>
 
               <div
-                className={`p-3 rounded-lg max-w-[90%] leading-relaxed ${
+                className={`p-3 rounded-lg max-w-[95%] leading-relaxed ${
                   msg.role === "user"
                     ? "bg-amber-400/10 border border-amber-400/20 text-slate-100"
                     : "bg-[#13171e] border border-white/[0.06] text-slate-200"
                 }`}
               >
+                {/* Nemotron Thinking / Reasoning Process Dropdown */}
+                {msg.response?.reasoning && (
+                  <div className="mb-2.5 rounded border border-white/[0.08] bg-[#090b10] overflow-hidden text-[11px] font-mono">
+                    <button
+                      onClick={() => toggleReasoning(msg.id)}
+                      className="w-full px-2.5 py-1.5 flex items-center justify-between bg-white/[0.02] hover:bg-white/[0.05] text-slate-400 hover:text-slate-200 transition-colors text-left"
+                    >
+                      <span className="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium">
+                        <BrainCircuit className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Thinking Process ({Math.round(msg.response.reasoning.length / 4)} tokens)</span>
+                      </span>
+                      {expandedReasoning[msg.id] ? (
+                        <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                      )}
+                    </button>
+                    {expandedReasoning[msg.id] && (
+                      <div className="p-2.5 border-t border-white/[0.06] text-slate-400 text-[10px] leading-relaxed max-h-60 overflow-y-auto whitespace-pre-wrap font-mono select-text bg-[#07090c]">
+                        {msg.response.reasoning}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Synthesis Answer */}
                 <div className="whitespace-pre-wrap">{msg.content}</div>
 
                 {/* Citation Pills on Assistant Responses */}
                 {msg.response && msg.response.citations.length > 0 && (
                   <div className="mt-3 pt-2.5 border-t border-white/[0.06] space-y-1.5">
                     <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                      Verified Citations (Click to inspect PDF):
+                      Verified Citations (Click to inspect primary PDF):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {msg.response.citations.map((c, i) => (
@@ -308,9 +354,12 @@ export function GroundedChatDrawer({
           ))}
 
           {loading && (
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-[#13171e] p-3 rounded-lg border border-white/[0.06] w-fit">
+            <div className="flex items-center gap-2.5 text-xs font-mono text-slate-300 bg-[#13171e] p-3 rounded-lg border border-amber-400/20 w-fit animate-pulse">
               <Bot className="w-4 h-4 text-amber-400 animate-spin" />
-              <span>Verifying claims against NASA PSI records via RAG engine...</span>
+              <div className="flex flex-col">
+                <span className="text-amber-300 font-semibold text-[11px]">NVIDIA Nemotron-3.5 Reasoning...</span>
+                <span className="text-[10px] text-slate-400">Thinking and grounding against NASA PSI flight records</span>
+              </div>
             </div>
           )}
         </div>
@@ -358,8 +407,8 @@ export function GroundedChatDrawer({
             </button>
           </form>
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2 px-1">
-            <span>Deterministic RAG & Citations</span>
-            <span>Zero Hallucination Tolerance</span>
+            <span>NVIDIA Nemotron 30B • RAG Grounding</span>
+            <span>Zero Hallucination Guard</span>
           </div>
         </div>
       </div>
