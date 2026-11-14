@@ -27,6 +27,8 @@ interface HeaderProps {
   onOpenAssistant?: () => void;
   onOpenGraph?: () => void;
   onOpenIngestion?: () => void;
+  onOpenSimulator?: () => void;
+  onOpenUpload?: () => void;
   selectedCount: number;
   activeView: "workspace" | "coverage" | "sources";
 }
@@ -42,6 +44,8 @@ export function Header({
   onOpenAssistant,
   onOpenGraph,
   onOpenIngestion,
+  onOpenSimulator,
+  onOpenUpload,
   selectedCount,
   activeView,
 }: HeaderProps) {
@@ -125,6 +129,26 @@ export function Header({
             <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
             <span>Sources</span>
           </button>
+
+          {onOpenSimulator && (
+            <button
+              onClick={onOpenSimulator}
+              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+            >
+              <Flame className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
+              <span>Simulation</span>
+            </button>
+          )}
+
+          {onOpenUpload && (
+            <button
+              onClick={onOpenUpload}
+              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+            >
+              <FileUp className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Upload Paper</span>
+            </button>
+          )}
 
           {onOpenIngestion && (
             <button
