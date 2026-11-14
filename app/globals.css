@@ -3,65 +3,97 @@
 @tailwind utilities;
 
 :root {
-  --background: #0C0F13;
-  --foreground: #F3F5F7;
-  --sidebar-bg: #15191F;
-  --card-bg: #1B2027;
-  --card-border: #303741;
-  --accent-amber: #E99847;
-  --info-blue: #78A9D8;
-  --verified-green: #5CB59B;
-  --warning-red: #D97777;
-  --text-muted: #A1AAB5;
-  --text-dim: #737F8C;
+  color-scheme: dark;
+  --background: #0a0b0d;
+  --foreground: #f4f2ee;
+  --sidebar-bg: #0d0e10;
+  --card-bg: #151618;
+  --card-border: #2b2b2e;
+  --accent-amber: #e2ad73;
+  --info-blue: #9cb5cb;
+  --verified-green: #8cac96;
+  --warning-red: #d29d92;
+  --text-muted: #a6a5a3;
+  --text-dim: #777979;
 }
 
-html,
-body {
-  color: var(--foreground);
+html, body {
+  min-height: 100%;
+  margin: 0;
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  min-height: 100vh;
-  letter-spacing: -0.012em;
-  overflow-x: clip;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Accessible focus outline */
+* { box-sizing: border-box; }
+::selection { background: #a57747; color: #fff; }
+
 :focus-visible {
-  outline: 2px solid var(--accent-amber);
-  outline-offset: 2px;
+  outline: 2px solid #e2ad73;
+  outline-offset: 3px;
 }
 
-/* Reduced motion preference */
+.ignis-panel {
+  background: #141517;
+  border: 1px solid #2a2b2e;
+  border-radius: 12px;
+}
+.ignis-panel-soft {
+  background: #101113;
+  border: 1px solid #242629;
+  border-radius: 12px;
+}
+.ignis-serif {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+}
+.ignis-kicker {
+  color: #8f9294;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.ignis-field {
+  width: 100%;
+  border: 1px solid #333538;
+  border-radius: 7px;
+  background: #111214;
+  padding: 10px 12px;
+  color: #ecece9;
+  font-size: 13px;
+}
+.ignis-field::placeholder { color: #777b7d; }
+.ignis-button {
+  border: 1px solid #3a3b3d;
+  background: #222325;
+  color: #f0f0ef;
+  border-radius: 7px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background .18s ease, border-color .18s ease;
+}
+.ignis-button:hover { background: #2d2f32; border-color: #56585a; }
+.ignis-button-primary { background: #e2ad73; border-color: #e2ad73; color: #16120e; }
+.ignis-button-primary:hover { background: #f2c48d; border-color: #f2c48d; }
+.ignis-button:disabled { opacity: .45; cursor: not-allowed; }
+.ignis-divider { border-color: #292b2d; }
+.ignis-number { font-variant-numeric: tabular-nums; }
+.ignis-stage-grid {
+  background-image: linear-gradient(#ffffff07 1px, transparent 1px), linear-gradient(90deg, #ffffff07 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+.ignis-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+.ignis-scrollbar::-webkit-scrollbar-thumb { background: #393b3e; border-radius: 6px; }
 @media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
+  *, ::before, ::after {
+    animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Tabular figures for numbers and scores */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0C0F13;
-}
-::-webkit-scrollbar-thumb {
-  background: #303741;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
 }
