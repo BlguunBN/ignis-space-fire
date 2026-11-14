@@ -42,8 +42,8 @@ export function MasterComparisonTable({
               onClick={() => onToggleCompare(id)}
               className={`p-1.5 rounded text-xs font-semibold border transition cursor-pointer ${
                 isSelected
-                  ? "bg-[#E99847] text-[#0C0F13] border-[#E99847]"
-                  : "bg-[#0C0F13] text-[#A1AAB5] border-[#303741] hover:text-[#F3F5F7]"
+                  ? "bg-[#d7ab80] text-[#0C0F13] border-[#E99847]"
+                  : "bg-[#0e0f11] text-[#a6a8aa] border-[#2c2d30] hover:text-[#f2f1ed]"
               }`}
               title="Select for comparison tray"
             >
@@ -57,15 +57,15 @@ export function MasterComparisonTable({
         header: ({ column }) => (
           <button
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-1 font-bold text-[#A1AAB5] hover:text-[#F3F5F7] cursor-pointer"
+            className="flex items-center gap-1 font-bold text-[#a6a8aa] hover:text-[#f2f1ed] cursor-pointer"
           >
             Investigation
-            <ArrowUpDown className="w-3 h-3 text-[#737F8C]" />
+            <ArrowUpDown className="w-3 h-3 text-[#8c8e91]" />
           </button>
         ),
         cell: ({ row }) => (
           <div>
-            <span className="font-bold text-[#F3F5F7] block">{row.original.investigation}</span>
+            <span className="font-bold text-[#f2f1ed] block">{row.original.investigation}</span>
             <span className="text-[10px] text-[#78A9D8] font-mono">
               {row.original.programme} · {row.original.platform}
             </span>
@@ -77,8 +77,8 @@ export function MasterComparisonTable({
         header: "Material / Class",
         cell: ({ row }) => (
           <div>
-            <span className="font-medium text-[#F3F5F7] block">{row.original.material}</span>
-            <span className="text-[10px] text-[#737F8C] capitalize font-mono">
+            <span className="font-medium text-[#f2f1ed] block">{row.original.material}</span>
+            <span className="text-[10px] text-[#8c8e91] capitalize font-mono">
               {row.original.material_class.replace("_", " ")}
             </span>
           </div>
@@ -89,14 +89,14 @@ export function MasterComparisonTable({
         header: ({ column }) => (
           <button
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-1 font-bold text-[#A1AAB5] hover:text-[#F3F5F7] cursor-pointer"
+            className="flex items-center gap-1 font-bold text-[#a6a8aa] hover:text-[#f2f1ed] cursor-pointer"
           >
             O₂ %
-            <ArrowUpDown className="w-3 h-3 text-[#737F8C]" />
+            <ArrowUpDown className="w-3 h-3 text-[#8c8e91]" />
           </button>
         ),
         cell: ({ row }) => (
-          <span className="font-mono font-semibold text-[#E99847]">
+          <span className="font-mono font-semibold text-[#d7ab80]">
             {row.original.oxygen_pct != null ? `${row.original.oxygen_pct}%` : "Not reported"}
           </span>
         ),
@@ -106,10 +106,10 @@ export function MasterComparisonTable({
         header: ({ column }) => (
           <button
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-1 font-bold text-[#A1AAB5] hover:text-[#F3F5F7] cursor-pointer"
+            className="flex items-center gap-1 font-bold text-[#a6a8aa] hover:text-[#f2f1ed] cursor-pointer"
           >
             Airflow
-            <ArrowUpDown className="w-3 h-3 text-[#737F8C]" />
+            <ArrowUpDown className="w-3 h-3 text-[#8c8e91]" />
           </button>
         ),
         cell: ({ row }) => (
@@ -122,7 +122,7 @@ export function MasterComparisonTable({
         accessorKey: "pressure_kpa",
         header: "Pressure",
         cell: ({ row }) => (
-          <span className="font-mono text-[#A1AAB5]">
+          <span className="font-mono text-[#a6a8aa]">
             {row.original.pressure_kpa != null ? `${row.original.pressure_kpa} kPa` : "Not reported"}
           </span>
         ),
@@ -135,13 +135,13 @@ export function MasterComparisonTable({
             {row.original.measurements.slice(0, 3).map((m, i) => (
               <span
                 key={i}
-                className="text-[9px] px-1.5 py-0.5 rounded bg-[#0C0F13] text-[#A1AAB5] border border-[#303741] font-mono"
+                className="text-[9px] px-1.5 py-0.5 rounded bg-[#0e0f11] text-[#a6a8aa] border border-[#2c2d30] font-mono"
               >
                 {m.replace("_", " ")}
               </span>
             ))}
             {row.original.measurements.length > 3 && (
-              <span className="text-[9px] text-[#737F8C] font-mono">
+              <span className="text-[9px] text-[#8c8e91] font-mono">
                 +{row.original.measurements.length - 3}
               </span>
             )}
@@ -156,7 +156,7 @@ export function MasterComparisonTable({
             href={row.original.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#78A9D8] hover:text-[#F3F5F7] inline-flex items-center gap-1 font-medium text-[11px]"
+            className="text-[#78A9D8] hover:text-[#f2f1ed] inline-flex items-center gap-1 font-medium text-[11px]"
           >
             {row.original.psi_id || "Source"}
             <ExternalLink className="w-3 h-3" />
@@ -182,14 +182,14 @@ export function MasterComparisonTable({
   });
 
   return (
-    <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-5 shadow-sm space-y-4">
+    <div className="bg-[#151618] border border-[#2c2d30] rounded-xl p-5 shadow-sm space-y-4">
       {/* Search and Table Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#303741]">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#2c2d30]">
         <div>
-          <h3 className="text-base font-bold text-[#F3F5F7] flex items-center gap-2">
+          <h3 className="text-base font-bold text-[#f2f1ed] flex items-center gap-2">
             Multi-Experiment Master Comparison Matrix
           </h3>
-          <p className="text-xs text-[#A1AAB5] mt-0.5">
+          <p className="text-xs text-[#a6a8aa] mt-0.5">
             Interactive TanStack Table: Click column headers to sort by airflow, oxygen, or pressure.
           </p>
         </div>
@@ -200,18 +200,18 @@ export function MasterComparisonTable({
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
             placeholder="Search within matrix..."
-            className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-3 py-1.5 text-xs text-[#F3F5F7] placeholder-[#737F8C] focus:outline-none focus:border-[#E99847] transition pl-8"
+            className="w-full bg-[#0e0f11] border border-[#2c2d30] rounded-lg px-3 py-1.5 text-xs text-[#f2f1ed] placeholder-[#737F8C] focus:outline-none focus:border-[#E99847] transition pl-8"
           />
-          <Search className="w-3.5 h-3.5 text-[#737F8C] absolute left-2.5 top-2.5" />
+          <Search className="w-3.5 h-3.5 text-[#8c8e91] absolute left-2.5 top-2.5" />
         </div>
       </div>
 
       {/* Table Container */}
-      <div className="overflow-x-auto rounded-lg border border-[#303741] bg-[#0C0F13]">
+      <div className="overflow-x-auto rounded-lg border border-[#2c2d30] bg-[#0e0f11]">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b border-[#303741] bg-[#15191F] text-[#737F8C]">
+              <tr key={headerGroup.id} className="border-b border-[#2c2d30] bg-[#101113] text-[#8c8e91]">
                 {headerGroup.headers.map((header) => (
                   <th key={header.id} className="p-2.5 font-semibold uppercase tracking-wider text-[10px] font-mono">
                     {header.isPlaceholder
@@ -222,9 +222,9 @@ export function MasterComparisonTable({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-[#303741]/50 text-[#F3F5F7]">
+          <tbody className="divide-y divide-[#303741]/50 text-[#f2f1ed]">
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-[#15191F]/50 transition">
+              <tr key={row.id} className="hover:bg-[#101113]/50 transition">
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="p-2.5">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -236,7 +236,7 @@ export function MasterComparisonTable({
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-[#737F8C] pt-1">
+      <div className="flex items-center justify-between text-xs text-[#8c8e91] pt-1">
         <span>Showing {table.getRowModel().rows.length} indexed NASA flight investigations</span>
         <span>Click scale icon to compare any 2 records</span>
       </div>
