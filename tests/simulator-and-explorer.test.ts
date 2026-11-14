@@ -179,3 +179,42 @@ describe('Research Coverage 72-Cell Matrix & Gap Discovery', () => {
     assert.ok(partialGravityRecords.length < 5, 'Lunar/Martian partial gravity represents an authentic NASA research gap');
   });
 });
+
+describe('Advanced Sorting & Multi-Factor Filter System', () => {
+  test('accurately sorts records by oxygen concentration ascending and descending', () => {
+    const recordsWithO2 = experiments.filter(e => e.oxygen_pct != null);
+    
+    // Sort descending
+    const sortedDesc = [...recordsWithO2].sort((a, b) => (b.oxygen_pct ?? -1) - (a.oxygen_pct ?? -1));
+    assert.ok(sortedDesc[0].oxygen_pct! >= sortedDesc[sortedDesc.length - 1].oxygen_pct!);
+    assert.ok(sortedDesc[0].oxygen_pct! >= 30, 'Top sorted record must have high O2');
+
+    // Sort ascending
+    const sortedAsc = [...recordsWithO2].sort((a, b) => (a.oxygen_pct ?? 999) - (b.oxygen_pct ?? 999));
+    assert.ok(sortedAsc[0].oxygen_pct! <= sortedAsc[sortedAsc.length - 1].oxygen_pct!);
+    assert.ok(sortedAsc[0].oxygen_pct! <= 18, 'Lowest sorted record must have low O2');
+  });
+
+  test('accurately sorts records by forced ventilation airflow velocity', () => {
+    const sortedFlow = [...experiments].sort((a, b) => (b.airflow_cm_s ?? -1) - (a.airflow_cm_s ?? -1));
+    assert.ok((sortedFlow[0].airflow_cm_s ?? 0) >= (sortedFlow[sortedFlow.length - 1].airflow_cm_s ?? 0));
+    assert.ok((sortedFlow[0].airflow_cm_s ?? 0) >= 15, 'Fastest airflow record should be >= 15 cm/s');
+  });
+
+  test('accurately sorts records alphabetically by investigation name', () => {
+    const sortedNameAsc = [...experiments].sort((a, b) => a.investigation.localeCompare(b.investigation));
+    assert.ok(sortedNameAsc[0].investigation.localeCompare(sortedNameAsc[sortedNameAsc.length - 1].investigation) <= 0);
+  });
+
+  test('applies multi-tolerance boundary modes (strict, standard, wide)', () => {
+    const targetO2 = 21;
+    
+    const strictTol = 0.5;
+    const strictMatches = experiments.filter(e => e.oxygen_pct != null && Math.abs(e.oxygen_pct - targetO2) <= strictTol);
+    
+    const wideTol = 3.0;
+    const wideMatches = experiments.filter(e => e.oxygen_pct != null && Math.abs(e.oxygen_pct - targetO2) <= wideTol);
+    
+    assert.ok(wideMatches.length >= strictMatches.length, 'Wide tolerance must match equal or more studies than strict tolerance');
+  });
+});

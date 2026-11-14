@@ -69,9 +69,9 @@ export default function UnifiedWorkspace() {
     });
   }, [corpus]);
 
-  // Filter records based on freeText + structured physics conditions
+  // Filter records based on freeText + structured physics conditions + facility + sorting
   const filteredRecords = useMemo(() => {
-    let result = corpus;
+    let result = [...corpus];
 
     // Free text fuzzy filter
     if (query.freeText && query.freeText.trim() !== "") {
@@ -89,11 +89,30 @@ export default function UnifiedWorkspace() {
       );
     }
 
+    // Facility filter
+    if (query.facility) {
+      const fac = query.facility.toLowerCase();
+      result = result.filter((r) => {
+        const plat = r.platform.toLowerCase();
+        const inv = r.investigation.toLowerCase();
+        if (fac === "saffire") return plat.includes("cygnus") || inv.includes("saffire");
+        if (fac === "cir") return plat.includes("cir") || inv.includes("flex");
+        if (fac === "msg") return plat.includes("msg") || inv.includes("bass");
+        return true;
+      });
+    }
+
+    // Tolerance values based on mode
+    const tolMode = query.toleranceMode || "standard";
+    const o2Tol = tolMode === "strict" ? 0.5 : tolMode === "wide" ? 3.0 : 1.5;
+    const airflowTol = tolMode === "strict" ? 1.5 : tolMode === "wide" ? 6.0 : 3.0;
+    const pressTol = tolMode === "strict" ? 5.0 : tolMode === "wide" ? 20.0 : 10.0;
+
     // Oxygen filter
     if (query.oxygenPct != null) {
       result = result.filter((r) => {
         if (r.oxygen_pct == null) return false;
-        return Math.abs(r.oxygen_pct - (query.oxygenPct as number)) <= 3.0;
+        return Math.abs(r.oxygen_pct - (query.oxygenPct as number)) <= o2Tol;
       });
     }
 
@@ -101,7 +120,7 @@ export default function UnifiedWorkspace() {
     if (query.airflowCmS != null) {
       result = result.filter((r) => {
         if (r.airflow_cm_s == null) return false;
-        return Math.abs(r.airflow_cm_s - (query.airflowCmS as number)) <= 6.0;
+        return Math.abs(r.airflow_cm_s - (query.airflowCmS as number)) <= airflowTol;
       });
     }
 
@@ -109,13 +128,44 @@ export default function UnifiedWorkspace() {
     if (query.pressureKpa != null) {
       result = result.filter((r) => {
         if (r.pressure_kpa == null) return false;
-        return Math.abs(r.pressure_kpa - (query.pressureKpa as number)) <= 15.0;
+        return Math.abs(r.pressure_kpa - (query.pressureKpa as number)) <= pressTol;
       });
     }
 
     // Gravity filter
     if (query.gravity) {
-      result = result.filter((r) => r.gravity === query.gravity);
+      if (query.gravity === "microgravity") {
+        result = result.filter((r) => r.gravity === "microgravity");
+      } else if (query.gravity === "partial_gravity") {
+        result = result.filter(
+          (r) =>
+            r.gravity === "partial_gravity" ||
+            r.investigation.toLowerCase().includes("lunar") ||
+            r.investigation.toLowerCase().includes("martian")
+        );
+      } else {
+        result = result.filter((r) => r.gravity === query.gravity);
+      }
+    }
+
+    // Sorting
+    const sort = query.sortBy || "relevance";
+    if (sort === "oxygen_desc") {
+      result.sort((a, b) => (b.oxygen_pct ?? -1) - (a.oxygen_pct ?? -1));
+    } else if (sort === "oxygen_asc") {
+      result.sort((a, b) => (a.oxygen_pct ?? 999) - (b.oxygen_pct ?? 999));
+    } else if (sort === "airflow_desc") {
+      result.sort((a, b) => (b.airflow_cm_s ?? -1) - (a.airflow_cm_s ?? -1));
+    } else if (sort === "airflow_asc") {
+      result.sort((a, b) => (a.airflow_cm_s ?? 999) - (b.airflow_cm_s ?? 999));
+    } else if (sort === "pressure_desc") {
+      result.sort((a, b) => (b.pressure_kpa ?? -1) - (a.pressure_kpa ?? -1));
+    } else if (sort === "pressure_asc") {
+      result.sort((a, b) => (a.pressure_kpa ?? 999) - (b.pressure_kpa ?? 999));
+    } else if (sort === "name_asc") {
+      result.sort((a, b) => a.investigation.localeCompare(b.investigation));
+    } else if (sort === "name_desc") {
+      result.sort((a, b) => b.investigation.localeCompare(a.investigation));
     }
 
     return result;
@@ -315,6 +365,8 @@ export default function UnifiedWorkspace() {
                 query={query}
                 onChange={setQuery}
                 onSelectPreset={(p) => setQuery(p)}
+                totalCount={corpus.length}
+                filteredCount={filteredRecords.length}
               />
 
               {/* Quiet Header for Table Actions */}
@@ -350,6 +402,7 @@ export default function UnifiedWorkspace() {
                 onToggleSelect={handleToggleSelect}
                 onSelectAll={handleSelectAll}
                 onClearSelection={handleClearSelection}
+                onSortChange={(sort) => setQuery((prev) => ({ ...prev, sortBy: sort }))}
               />
             </section>
 

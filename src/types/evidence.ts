@@ -49,16 +49,38 @@ export interface ExperimentRecord {
   claim_locator_details?: ClaimLocator;
 }
 
+export type SortOption =
+  | "relevance"
+  | "oxygen_desc"
+  | "oxygen_asc"
+  | "airflow_desc"
+  | "airflow_asc"
+  | "pressure_desc"
+  | "pressure_asc"
+  | "name_asc"
+  | "name_desc";
+
 export interface SearchQuery {
   material?: string;
+  materialClass?: string;
+  facility?: string;
   oxygenPct?: number | null;
+  oxygenMin?: number | null;
+  oxygenMax?: number | null;
   pressureKpa?: number | null;
+  pressureMin?: number | null;
+  pressureMax?: number | null;
   airflowCmS?: number | null;
+  airflowMin?: number | null;
+  airflowMax?: number | null;
   phenomenon?: string;
   programme?: string;
   missionContext?: string;
   freeText?: string;
   gravity?: "microgravity" | "partial_gravity" | "terrestrial";
+  pillar?: "Prevention" | "Detection" | "Suppression" | "Partial-g Simulation";
+  toleranceMode?: "strict" | "standard" | "wide";
+  sortBy?: SortOption;
 }
 
 export interface ScoreBreakdown {

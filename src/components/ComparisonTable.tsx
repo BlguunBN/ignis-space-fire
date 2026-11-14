@@ -7,8 +7,16 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Info } from "lucide-react";
-import { ExperimentRecord, SearchQuery } from "../types/evidence";
+import {
+  Info,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Wind,
+  Flame,
+  Gauge,
+} from "lucide-react";
+import { ExperimentRecord, SearchQuery, SortOption } from "../types/evidence";
 import { assessApplicability, ApplicabilityAssessment } from "../lib/applicability";
 
 interface ComparisonTableProps {
@@ -20,6 +28,7 @@ interface ComparisonTableProps {
   onToggleSelect: (id: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 interface TableRowData {
@@ -36,13 +45,36 @@ export function ComparisonTable({
   onToggleSelect,
   onSelectAll,
   onClearSelection,
+  onSortChange,
 }: ComparisonTableProps) {
+  const currentSort = query.sortBy || "relevance";
+
   const data = useMemo<TableRowData[]>(() => {
     return records.map((record) => ({
       record,
       assessment: assessApplicability(record, query),
     }));
   }, [records, query]);
+
+  const handleNameSort = () => {
+    if (!onSortChange) return;
+    if (currentSort === "name_asc") {
+      onSortChange("name_desc");
+    } else {
+      onSortChange("name_asc");
+    }
+  };
+
+  const handleConditionSort = (type: "oxygen" | "airflow" | "pressure") => {
+    if (!onSortChange) return;
+    if (type === "oxygen") {
+      onSortChange(currentSort === "oxygen_desc" ? "oxygen_asc" : "oxygen_desc");
+    } else if (type === "airflow") {
+      onSortChange(currentSort === "airflow_desc" ? "airflow_asc" : "airflow_desc");
+    } else if (type === "pressure") {
+      onSortChange(currentSort === "pressure_desc" ? "pressure_asc" : "pressure_desc");
+    }
+  };
 
   const columns = useMemo<ColumnDef<TableRowData>[]>(
     () => [
@@ -83,7 +115,22 @@ export function ComparisonTable({
       },
       {
         accessorKey: "investigation",
-        header: "Investigation & Platform",
+        header: () => (
+          <button
+            onClick={handleNameSort}
+            className="flex items-center gap-1.5 hover:text-white transition-colors group font-mono text-[10px] uppercase text-slate-400 text-left"
+            title="Click to sort alphabetically"
+          >
+            <span>Investigation & Platform</span>
+            {currentSort === "name_asc" ? (
+              <ArrowUp className="w-3 h-3 text-amber-400" />
+            ) : currentSort === "name_desc" ? (
+              <ArrowDown className="w-3 h-3 text-amber-400" />
+            ) : (
+              <ArrowUpDown className="w-3 h-3 text-slate-600 group-hover:text-slate-400" />
+            )}
+          </button>
+        ),
         cell: ({ row }) => {
           const rec = row.original.record;
           const isActive = rec.id === activeId;
@@ -103,7 +150,70 @@ export function ComparisonTable({
       },
       {
         accessorKey: "conditions",
-        header: "Physical Conditions",
+        header: () => (
+          <div className="flex items-center justify-between text-[10px] font-mono uppercase text-slate-400">
+            <span>Physical Conditions</span>
+            <div className="flex items-center gap-1 font-mono text-[9px] lowercase">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleConditionSort("oxygen");
+                }}
+                className={`px-1 py-0.2 rounded border transition-colors flex items-center gap-0.5 ${
+                  currentSort.startsWith("oxygen")
+                    ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/40 font-bold"
+                    : "border-transparent text-slate-500 hover:text-slate-300"
+                }`}
+                title="Sort by Oxygen %"
+              >
+                <span>O₂</span>
+                {currentSort === "oxygen_asc" ? (
+                  <ArrowUp className="w-2 h-2" />
+                ) : currentSort === "oxygen_desc" ? (
+                  <ArrowDown className="w-2 h-2" />
+                ) : null}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleConditionSort("airflow");
+                }}
+                className={`px-1 py-0.2 rounded border transition-colors flex items-center gap-0.5 ${
+                  currentSort.startsWith("airflow")
+                    ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/40 font-bold"
+                    : "border-transparent text-slate-500 hover:text-slate-300"
+                }`}
+                title="Sort by Airflow"
+              >
+                <span>Flow</span>
+                {currentSort === "airflow_asc" ? (
+                  <ArrowUp className="w-2 h-2" />
+                ) : currentSort === "airflow_desc" ? (
+                  <ArrowDown className="w-2 h-2" />
+                ) : null}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleConditionSort("pressure");
+                }}
+                className={`px-1 py-0.2 rounded border transition-colors flex items-center gap-0.5 ${
+                  currentSort.startsWith("pressure")
+                    ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/40 font-bold"
+                    : "border-transparent text-slate-500 hover:text-slate-300"
+                }`}
+                title="Sort by Pressure"
+              >
+                <span>Press</span>
+                {currentSort === "pressure_asc" ? (
+                  <ArrowUp className="w-2 h-2" />
+                ) : currentSort === "pressure_desc" ? (
+                  <ArrowDown className="w-2 h-2" />
+                ) : null}
+              </button>
+            </div>
+          </div>
+        ),
         cell: ({ row }) => {
           const rec = row.original.record;
           return (
@@ -128,7 +238,11 @@ export function ComparisonTable({
       },
       {
         accessorKey: "applicability",
-        header: "Applicability",
+        header: () => (
+          <div className="text-left font-mono text-[10px] uppercase text-slate-400">
+            Applicability
+          </div>
+        ),
         cell: ({ row }) => {
           const { assessment } = row.original;
           const verdict = assessment.verdict;
@@ -163,7 +277,7 @@ export function ComparisonTable({
         },
       },
     ],
-    [activeId, selectedIds, records.length, onClearSelection, onSelectAll, onToggleSelect]
+    [activeId, selectedIds, records.length, currentSort, onClearSelection, onSelectAll, onToggleSelect, onSortChange]
   );
 
   const table = useReactTable({
@@ -174,7 +288,7 @@ export function ComparisonTable({
 
   if (records.length === 0) {
     return (
-      <div className="p-8 text-center bg-[#0c0f14] border border-white/[0.08] rounded-lg">
+      <div className="p-8 text-center bg-[#0c0f14] border border-white/[0.08] rounded-xl">
         <Info className="w-5 h-5 text-slate-500 mx-auto mb-2" />
         <p className="text-xs font-mono text-slate-300">No indexed investigations match this inquiry.</p>
         <p className="text-[11px] text-slate-500 mt-1">Try loosening physical filters or keywords.</p>
@@ -183,14 +297,14 @@ export function ComparisonTable({
   }
 
   return (
-    <div className="border border-white/[0.08] rounded-lg overflow-hidden bg-[#0c0f14]">
+    <div className="border border-white/[0.08] rounded-xl overflow-hidden bg-[#0c0f14] shadow-lg">
       <div className="max-h-[520px] overflow-y-auto">
         <table className="w-full text-left border-collapse">
           <thead className="bg-[#13171e] text-slate-400 font-mono text-[10px] uppercase tracking-wider sticky top-0 z-10 border-b border-white/[0.08]">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="py-2 px-2.5 font-medium">
+                  <th key={header.id} className="py-2.5 px-3 font-medium">
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
@@ -213,7 +327,7 @@ export function ComparisonTable({
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="py-2.5 px-2.5 align-middle">
+                    <td key={cell.id} className="py-2.5 px-3 align-middle">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
