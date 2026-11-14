@@ -66,7 +66,9 @@ export default function Home() {
     query
   ), [programme, query]);
 
-  const displayedExperiment = experiments.find(e => e.id === selectedId) || rankedResults[0]?.experiment || experiments[0];
+  const displayedExperiment = activeTab === "studio"
+    ? (experiments.find(e => e.id === selectedId) || experiments[0])
+    : (rankedResults.find(e => e.experiment.id === selectedId)?.experiment || rankedResults[0]?.experiment);
   const selectedIndex = experiments.findIndex(e => e.id === displayedExperiment?.id);
 
   function clearFilters() {
