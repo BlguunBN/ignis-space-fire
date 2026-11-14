@@ -6,6 +6,39 @@
     "apparatusDescription": "ISS Combustion Integrated Rack (CIR) equipped with the SoFIE insert. Accommodates solid fuel PMMA slabs/spheres and fabric sheets in quiescent or controlled low-velocity opposed airflow.",
     "assets": [
       {
+        "id": "sofie-pmma-still",
+        "experimentId": "sofie-gel",
+        "title": "SoFIE-GEL 0.5mm PMMA Opposed-Flow Combustion",
+        "representation": "original_media",
+        "format": "image",
+        "localPath": "/nasa/sofie-gel/sofie-gel-pmma-1080p.png",
+        "locator": {
+          "sourceId": "NASA SVS 31394",
+          "url": "https://svs.gsfc.nasa.gov/31394",
+          "originalCaption": "Solid Fuel Ignition and Extinction (SoFIE) Growth and Extinction Limits (GEL) experiment aboard the space station. Opposed flow air over 0.5mm PMMA."
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA / ISS Combustion Integrated Rack",
+        "processingNotes": "Direct high-definition flight camera snapshot."
+      },
+      {
+        "id": "sofie-gel-montage",
+        "experimentId": "sofie-gel",
+        "title": "SoFIE-GEL snapshot montage",
+        "representation": "original_media",
+        "format": "image",
+        "localPath": "/nasa/sofie-gel/gel-sequence-original.jpg",
+        "locator": {
+          "sourceId": "NASA SVS 31394",
+          "url": "https://svs.gsfc.nasa.gov/31394/#media_group_380285",
+          "originalCaption": "A sequence of snapshots taken about 3 seconds apart during SoFIE-GEL."
+        },
+        "intervalSeconds": 3,
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA",
+        "processingNotes": "Original NASA montage; no frames have been extracted or reordered."
+      },
+      {
         "id": "sofie-rtdfs-sequence",
         "experimentId": "sofie-gel",
         "title": "SoFIE Flight Sequence (0.2s Stated Interval)",
@@ -24,54 +57,6 @@
         "verificationStatus": "verified",
         "nasaCredit": "NASA Scientific Visualization Studio / BPS Division",
         "processingNotes": "Cropped from 1920x1080 high-resolution montage released by NASA SVS; frame order preserved."
-      },
-      {
-        "id": "sofie-pmma-still",
-        "experimentId": "sofie-gel",
-        "title": "SoFIE-GEL 0.5mm PMMA Opposed-Flow Combustion",
-        "representation": "original_media",
-        "format": "image",
-        "localPath": "/nasa/sofie-gel/sofie-gel-pmma-1080p.png",
-        "locator": {
-          "sourceId": "NASA SVS 31394",
-          "url": "https://svs.gsfc.nasa.gov/31394",
-          "originalCaption": "Solid Fuel Ignition and Extinction (SoFIE) Growth and Extinction Limits (GEL) experiment aboard the space station. Opposed flow air over 0.5mm PMMA."
-        },
-        "verificationStatus": "verified",
-        "nasaCredit": "NASA / ISS Combustion Integrated Rack",
-        "processingNotes": "Direct high-definition flight camera snapshot."
-      },
-      {
-        "id": "sofie-cir-schematic",
-        "experimentId": "sofie-gel",
-        "title": "SoFIE Flow Tunnel Apparatus Schematic",
-        "representation": "schematic",
-        "format": "svg",
-        "locator": {
-          "sourceId": "NASA GRC SoFIE Documentation",
-          "url": "https://science.nasa.gov/biological-physical/investigations/sofie-gel/",
-          "originalCaption": "Schematic of CIR flow duct and sample mounting mechanism."
-        },
-        "verificationStatus": "verified",
-        "nasaCredit": "NASA Glenn Research Center (Illustrated Schematic)",
-        "processingNotes": "Vector apparatus layout for geometry context."
-      },
-      {
-        "id": "sofie-gel-montage",
-        "experimentId": "sofie-gel",
-        "title": "SoFIE-GEL snapshot montage",
-        "representation": "original_media",
-        "format": "image",
-        "localPath": "/nasa/sofie-gel/gel-sequence-original.jpg",
-        "locator": {
-          "sourceId": "NASA SVS 31394",
-          "url": "https://svs.gsfc.nasa.gov/31394/#media_group_380285",
-          "originalCaption": "A sequence of snapshots taken about 3 seconds apart during SoFIE-GEL."
-        },
-        "intervalSeconds": 3,
-        "verificationStatus": "verified",
-        "nasaCredit": "NASA",
-        "processingNotes": "Original NASA montage; no frames have been extracted or reordered."
       }
     ],
     "scenes": [
@@ -81,7 +66,7 @@
         "title": "1. Experimental Apparatus Setup",
         "kind": "setup",
         "caption": "The SoFIE chamber is mounted inside the ISS Combustion Integrated Rack (CIR). A 0.5 mm thick PMMA solid polymer specimen is installed inside a 100 mm flow duct with controlled oxidizer flow.",
-        "referencedAssetId": "sofie-cir-schematic",
+        "referencedAssetId": "sofie-pmma-still",
         "sourceLocators": [
           {
             "sourceId": "NASA SVS 31394",
@@ -141,16 +126,17 @@
   },
   {
     "experimentId": "saffire-1",
-    "investigation": "Saffire-I Vehicle Fire",
+    "investigation": "Saffire-I Flight Experiment",
     "programme": "Saffire",
     "apparatusDescription": "Cygnus resupply vehicle cargo module flight flow tunnel (0.4m x 1.0m test sample), instrumented with HD radiometers, video cameras, thermocouple arrays, and pressure sensors.",
     "assets": [
       {
         "id": "saffire-1-schematic",
         "experimentId": "saffire-1",
-        "title": "Saffire Cygnus Cargo Flight Flow Tunnel",
+        "title": "Saffire Cygnus Flight Flow Tunnel Apparatus",
         "representation": "schematic",
-        "format": "svg",
+        "format": "image",
+        "localPath": "/nasa/schematics/saffire-tunnel.svg",
         "locator": {
           "sourceId": "NASA PSI-98",
           "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
@@ -158,7 +144,7 @@
         },
         "verificationStatus": "verified",
         "nasaCredit": "NASA Glenn Research Center Saffire Team",
-        "processingNotes": "Duct geometry illustration for large-scale flight context."
+        "processingNotes": "Cygnus flight tunnel architecture and diagnostic array."
       }
     ],
     "scenes": [
@@ -195,5 +181,102 @@
         "reviewed": true
       }
     ]
+  },
+  {
+    "experimentId": "saffire-2",
+    "investigation": "Saffire-II Multi-Material Strip Experiment",
+    "programme": "Saffire",
+    "apparatusDescription": "Cygnus flight flow duct testing multi-material strips (Nomex, PMMA, SIBAL, silicone) under forced airflow.",
+    "assets": [
+      {
+        "id": "saffire-2-schematic",
+        "experimentId": "saffire-2",
+        "title": "Saffire-II Multi-Material Flight Test Section",
+        "representation": "schematic",
+        "format": "image",
+        "localPath": "/nasa/schematics/saffire-tunnel.svg",
+        "locator": {
+          "sourceId": "NASA PSI-99 / ICES-2017-158",
+          "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-99",
+          "doi": "10.60555/2chp-m469"
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA Glenn Research Center (ICES-2017-158)",
+        "processingNotes": "Multi-material sample array in Cygnus flight duct."
+      }
+    ],
+    "scenes": []
+  },
+  {
+    "experimentId": "saffire-4",
+    "investigation": "Saffire-IV Exploration Atmosphere Fire Test",
+    "programme": "Saffire",
+    "apparatusDescription": "Large-scale fire safety tests conducted under Exploration Atmosphere conditions (elevated O2 at 26-30%, reduced pressure at 54-57 kPa).",
+    "assets": [
+      {
+        "id": "saffire-4-schematic",
+        "experimentId": "saffire-4",
+        "title": "Saffire-IV Exploration Atmosphere Flow Tunnel",
+        "representation": "schematic",
+        "format": "image",
+        "localPath": "/nasa/schematics/saffire-tunnel.svg",
+        "locator": {
+          "sourceId": "NASA NTRS 20240002981",
+          "url": "https://ntrs.nasa.gov/citations/20240002981"
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA Glenn Research Center (Urban et al. 2024)",
+        "processingNotes": "Exploration atmosphere combustion duct layout."
+      }
+    ],
+    "scenes": []
+  },
+  {
+    "experimentId": "bass-2-pmma",
+    "investigation": "BASS-II Opposed Flow PMMA Slabs",
+    "programme": "BASS",
+    "apparatusDescription": "ISS Microgravity Science Glovebox (MSG) wind tunnel testing flat and slab PMMA fuels across 0.4-40 cm/s airflow.",
+    "assets": [
+      {
+        "id": "bass-2-pmma-schematic",
+        "experimentId": "bass-2-pmma",
+        "title": "BASS-II Microgravity Glovebox Wind Tunnel",
+        "representation": "schematic",
+        "format": "image",
+        "localPath": "/nasa/schematics/bass-msg-tunnel.svg",
+        "locator": {
+          "sourceId": "NASA PSI-25 / NTRS 20160000593",
+          "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-25"
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA Glenn Research Center (Bhattacharjee et al. 2016)",
+        "processingNotes": "BASS-II flow tunnel with optical imaging and nitrogen suppressant nozzle."
+      }
+    ],
+    "scenes": []
+  },
+  {
+    "experimentId": "bass-2-cylinders",
+    "investigation": "BASS-II Fuel Geometry and Curvature Effects",
+    "programme": "BASS",
+    "apparatusDescription": "Investigation of rod diameter and curvature effects (0.25 to 0.5 in) on flame spread inside the ISS Glovebox.",
+    "assets": [
+      {
+        "id": "bass-2-cylinders-schematic",
+        "experimentId": "bass-2-cylinders",
+        "title": "BASS-II Cylindrical Fuel Flame Section",
+        "representation": "schematic",
+        "format": "image",
+        "localPath": "/nasa/schematics/bass-msg-tunnel.svg",
+        "locator": {
+          "sourceId": "NASA PSI-25 / NTRS 20160000593",
+          "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-25"
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA Glenn Research Center",
+        "processingNotes": "Cylindrical rod test geometry in microgravity."
+      }
+    ],
+    "scenes": []
   }
 ]
