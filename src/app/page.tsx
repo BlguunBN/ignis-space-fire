@@ -14,6 +14,8 @@ import { CompareModal } from "../components/CompareModal";
 import { PDFEvidenceViewer } from "../components/PDFEvidenceViewer";
 import { CoverageMapModal } from "../components/CoverageMapModal";
 import { SourcesModal } from "../components/SourcesModal";
+import { WhiteboardStudioModal } from "../components/WhiteboardStudioModal";
+import { GroundedChatDrawer } from "../components/GroundedChatDrawer";
 import { generateDeterministicBrief } from "../lib/synthesis";
 
 const allRecords = experimentsData as ExperimentRecord[];
@@ -29,6 +31,9 @@ export default function UnifiedWorkspace() {
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   const [isCoverageOpen, setIsCoverageOpen] = useState(false);
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
+  const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [whiteboardSynthesis, setWhiteboardSynthesis] = useState<string | null>(null);
 
   // Configure Fuse.js for fuzzy retrieval
   const fuse = useMemo(() => {
@@ -143,14 +148,24 @@ export default function UnifiedWorkspace() {
     setQuery({});
     setSelectedIds(new Set(allRecords.map((r) => r.id)));
     setActiveId(allRecords[0]?.id || null);
+    setWhiteboardSynthesis(null);
   };
 
   const brief = useMemo(() => {
-    return generateDeterministicBrief(
+    const baseBrief = generateDeterministicBrief(
       query,
       selectedRecords.length > 0 ? selectedRecords : filteredRecords
     );
-  }, [query, selectedRecords, filteredRecords]);
+
+    if (whiteboardSynthesis) {
+      return {
+        ...baseBrief,
+        markdownContent: `${baseBrief.markdownContent}\n\n---\n\n${whiteboardSynthesis}`,
+      };
+    }
+
+    return baseBrief;
+  }, [query, selectedRecords, filteredRecords, whiteboardSynthesis]);
 
   return (
     <div className="min-h-screen bg-[#090a0d] text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
@@ -162,6 +177,8 @@ export default function UnifiedWorkspace() {
         onOpenCompare={() => setIsCompareOpen(true)}
         onOpenCoverage={() => setIsCoverageOpen(true)}
         onOpenSources={() => setIsSourcesOpen(true)}
+        onOpenWhiteboard={() => setIsWhiteboardOpen(true)}
+        onOpenAssistant={() => setIsAssistantOpen(true)}
         selectedCount={selectedIds.size}
         activeView="workspace"
       />
@@ -268,6 +285,30 @@ export default function UnifiedWorkspace() {
         isOpen={isSourcesOpen}
         onClose={() => setIsSourcesOpen(false)}
         records={allRecords}
+      />
+
+      {/* Stage 3: Research Whiteboard Studio (React Flow + Excalidraw) */}
+      <WhiteboardStudioModal
+        isOpen={isWhiteboardOpen}
+        onClose={() => setIsWhiteboardOpen(false)}
+        activeRecord={activeRecord}
+        onExportBrief={(md) => {
+          setWhiteboardSynthesis(md);
+          setIsWhiteboardOpen(false);
+          setIsBriefOpen(true);
+        }}
+      />
+
+      {/* Stage 3: Grounded AI Assistant Drawer */}
+      <GroundedChatDrawer
+        isOpen={isAssistantOpen}
+        onClose={() => setIsAssistantOpen(false)}
+        corpus={allRecords}
+        selectedRecordIds={selectedIds}
+        onInspectClaim={(recId) => {
+          setActiveId(recId);
+          setIsSourceModalOpen(true);
+        }}
       />
     </div>
   );

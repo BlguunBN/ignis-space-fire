@@ -10,6 +10,8 @@ import {
   Grid3X3,
   BookOpen,
   ArrowRightLeft,
+  Network,
+  Bot,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -19,6 +21,8 @@ interface HeaderProps {
   onOpenCompare: () => void;
   onOpenCoverage: () => void;
   onOpenSources: () => void;
+  onOpenWhiteboard?: () => void;
+  onOpenAssistant?: () => void;
   selectedCount: number;
   activeView: "workspace" | "coverage" | "sources";
 }
@@ -30,6 +34,8 @@ export function Header({
   onOpenCompare,
   onOpenCoverage,
   onOpenSources,
+  onOpenWhiteboard,
+  onOpenAssistant,
   selectedCount,
   activeView,
 }: HeaderProps) {
@@ -66,7 +72,7 @@ export function Header({
           </div>
         </div>
 
-        {/* Center Navigation Tabs - Understated Aerospace Tabs */}
+        {/* Center Navigation Tabs */}
         <nav className="flex items-center gap-1 text-xs font-mono">
           <button
             onClick={() => {}}
@@ -78,6 +84,14 @@ export function Header({
           >
             <Compass className="w-3.5 h-3.5 text-amber-400" />
             <span>Workspace</span>
+          </button>
+
+          <button
+            onClick={onOpenWhiteboard}
+            className="px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+          >
+            <Network className="w-3.5 h-3.5 text-purple-400" />
+            <span>Research Studio</span>
           </button>
 
           <button
@@ -115,6 +129,17 @@ export function Header({
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
+
+          {/* AI Assistant Drawer Trigger */}
+          {onOpenAssistant && (
+            <button
+              onClick={onOpenAssistant}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/[0.08] transition-colors font-medium"
+            >
+              <Bot className="w-3.5 h-3.5 text-amber-400" />
+              <span>AI Assistant</span>
+            </button>
+          )}
 
           {/* Compare Trigger (Contextual when >= 2 selected) */}
           {selectedCount >= 2 && (
