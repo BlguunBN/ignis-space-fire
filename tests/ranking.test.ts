@@ -81,3 +81,23 @@ test("Dynamic Evidence Coverage Matrix: Bins with 0 records are labeled NO_INDEX
     "Notes must explicitly clarify that zero records does not mean NASA never tested it"
   );
 });
+
+test("Research Papers Dataset integrity & authentic scientific citations", () => {
+  const papersPath = path.join(__dirname, "../data/papers.json");
+  const papers = JSON.parse(fs.readFileSync(papersPath, "utf-8"));
+  assert.ok(papers.length >= 10, "Expected at least 10 verified research papers");
+
+  for (const paper of papers) {
+    assert.ok(paper.id, "Paper must have id");
+    assert.ok(paper.title, "Paper must have title");
+    assert.ok(Array.isArray(paper.authors) && paper.authors.length > 0, "Paper must have authors array");
+    assert.ok(paper.journal, "Paper must have journal/conference");
+    assert.ok(paper.year >= 2000, "Paper must have valid publication year");
+    assert.ok(paper.url?.startsWith("http"), "Paper must have valid URL");
+    assert.ok(paper.programme, "Paper must have programme");
+    assert.ok(paper.summary, "Paper must have summary");
+    assert.ok(paper.relevance, "Paper must have relevance statement");
+    assert.ok(paper.verified_source, "Paper must have verified source provenance");
+    assert.ok(paper.doi || paper.ntrs_id, "Paper must have either DOI or NTRS ID");
+  }
+});

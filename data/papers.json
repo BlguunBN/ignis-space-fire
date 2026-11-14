@@ -1,62 +1,232 @@
 [
   {
-    "doi": "10.1016/j.combustflame.2018.10.012",
-    "title": "Flame spread: Effects of microgravity and scale",
-    "authors": ["D. L. Urban", "P. Ferkul", "S. Olson", "G. A. Ruff", "J. T. Easton"],
-    "journal": "Combustion and Flame",
-    "year": 2019,
-    "summary": "Demonstrated that large-scale microgravity flame spread behaves differently from terrestrial upward flame spread and that experiment scale and forced flow matter substantially.",
-    "programme": "Saffire",
-    "relevance": "Key foundation showing small-scale 1g tests fail to predict large spacecraft fire spread."
-  },
-  {
-    "doi": "10.1016/j.firesaf.2015.11.011",
-    "title": "Opposed-flow flame spread: A comparison of microgravity and normal gravity experiments to establish the thermal regime",
-    "authors": ["S. Bhattacharjee", "K. Takahashi", "M. Wakai"],
-    "journal": "Fire Safety Journal",
-    "year": 2016,
-    "summary": "Compares ISS BASS-II PMMA experiments with normal-gravity data, demonstrating why terrestrial intuition cannot simply be transferred to spacecraft habitats.",
-    "programme": "BASS",
-    "relevance": "Validates PMMA flame quenching and spherical flame front dynamics at low airflow."
-  },
-  {
-    "doi": "10.1016/j.combustflame.2020.12.042",
-    "title": "Experimental study of concurrent-flow flame spread over thin solids in confined space in microgravity",
-    "authors": ["C. Li", "S. Takahashi", "O. Fujita"],
-    "journal": "Combustion and Flame",
-    "year": 2021,
-    "summary": "Investigates airflow, oxygen, and confinement effects on flame spread inside duct geometries in microgravity.",
-    "programme": "ISS Concurrent Thin",
-    "relevance": "Justifies enclosure and airflow filters for spacecraft avionics compartment safety."
-  },
-  {
-    "doi": "10.1016/j.combustflame.2021.01.035",
-    "title": "Burning in microgravity: Experimental results and analysis",
-    "authors": ["R. Dehghani", "P. V. Ferkul", "J. S. T'ien"],
-    "journal": "Combustion and Flame",
-    "year": 2021,
-    "summary": "Covers 59 successfully ignited tests across varying oxygen and pressure conditions, providing strong structured comparison data.",
-    "programme": "BASS",
-    "relevance": "Quantifies oxygen index limits for polymers in microgravity."
-  },
-  {
-    "doi": "10.1016/j.combustflame.2024.113299",
-    "title": "Numerical study of the effects of confinement on large-scale fires in microgravity",
-    "authors": ["Y. Cui", "H. Liao"],
-    "journal": "Combustion and Flame",
+    "id": "urban-2024-saffire-6",
+    "title": "Preliminary Results from the Saffire VI Experiment",
+    "authors": [
+      "David L. Urban",
+      "Paul V. Ferkul",
+      "Sandra L. Olson",
+      "Gary A. Ruff",
+      "James T. Easton"
+    ],
+    "journal": "53rd International Conference on Environmental Systems (ICES-2024-365)",
     "year": 2024,
-    "summary": "Demonstrates that enclosure geometry materially affects flame-spread behavior rather than being a background detail.",
+    "ntrs_id": "20240002981",
+    "url": "https://ntrs.nasa.gov/citations/20240002981",
     "programme": "Saffire",
-    "relevance": "Shows confinement accelerates flame growth by preventing convective thermal escape."
+    "summary": "Presents quantitative fuel-consumption and oxygen-consumption calorimetry from Saffire-IV, V, and VI runs aboard Cygnus, reporting peak heat release rates (1,507 W to 3,650 W), toxic gas generation (CO/CO2), and particulate threshold delays.",
+    "relevance": "Primary quantitative source demonstrating that reduced ventilation accelerates hazardous gas accumulation and delays optical smoke detector response.",
+    "verified_source": "NASA NTRS 20240002981 / ICES-2024-365"
   },
   {
-    "doi": "10.1016/j.proci.2026.106032",
-    "title": "Dynamics of flame spread over filter papers in microgravity aboard the ISS",
-    "authors": ["N. Kobayashi", "A. Ito", "S. Suzuki"],
-    "journal": "Proceedings of the Combustion Institute",
-    "year": 2026,
-    "summary": "Reports flame-spread behavior close to flammability limits aboard ISS and illustrates why sustained-microgravity empirical evidence remains essential.",
-    "programme": "ISS Concurrent Thin",
-    "relevance": "Recent 2026 empirical data demonstrating near-limit microgravity flammability."
+    "id": "urban-2019-saffire-scale",
+    "title": "Flame spread: Effects of microgravity and scale",
+    "authors": [
+      "David L. Urban",
+      "Paul V. Ferkul",
+      "Sandra L. Olson",
+      "Gary A. Ruff",
+      "James T. Easton",
+      "James S. T'ien",
+      "Michael C. Johnston",
+      "Peter Turner",
+      "Adam Cowlard",
+      "Sebastien Rouvreau",
+      "Guillaume Legros",
+      "Carlos Fernandez-Pello",
+      "Jose L. Torero",
+      "Christian Eigenbrod"
+    ],
+    "journal": "Combustion and Flame, Vol. 201, pp. 268-278",
+    "year": 2019,
+    "doi": "10.1016/j.combustflame.2018.10.012",
+    "url": "https://doi.org/10.1016/j.combustflame.2018.10.012",
+    "programme": "Saffire",
+    "summary": "Reports the first large-scale (0.4 m x 1.0 m) microgravity flame spread experiments conducted aboard the Cygnus spacecraft, proving that large solid fuel fires sustain steady propagation under forced ventilation without buoyant convection.",
+    "relevance": "Invalidates terrestrial small-scale 1g upward flame tests (NASA-STD-6001 Test 1) as conservative predictors for spacecraft fire hazards.",
+    "verified_source": "Combustion and Flame, Vol. 201, pp. 268-278 / NASA PSI-98"
+  },
+  {
+    "id": "bhattacharjee-2016-bass2-thermal",
+    "title": "Opposed-flow flame spread: A comparison of microgravity and normal gravity experiments to establish the thermal regime",
+    "authors": [
+      "Subrata Bhattacharjee",
+      "Matthew Laue",
+      "Luca Carmignani",
+      "Paul V. Ferkul",
+      "Sandra L. Olson"
+    ],
+    "journal": "Fire Safety Journal, Vol. 79, pp. 111-118",
+    "year": 2016,
+    "doi": "10.1016/j.firesaf.2015.11.011",
+    "url": "https://doi.org/10.1016/j.firesaf.2015.11.011",
+    "programme": "BASS",
+    "summary": "Directly compares ISS Microgravity Science Glovebox BASS-II PMMA sheet and rod experiments with terrestrial downward-spread tests to establish thermal-regime boundaries where radiation and solid conduction govern extinction.",
+    "relevance": "Validates radiative flame quenching below 2 cm/s airflow and explains why forced ventilation stabilizes flames that extinguish in still microgravity.",
+    "verified_source": "Fire Safety Journal, Vol. 79, pp. 111-118 / NASA PSI-25"
+  },
+  {
+    "id": "bhattacharjee-2014-bass2-results",
+    "title": "Combustion of Solids in Microgravity: Results from the BASS-II Experiment",
+    "authors": [
+      "Subrata Bhattacharjee",
+      "Sandra L. Olson",
+      "Paul V. Ferkul"
+    ],
+    "journal": "NASA Technical Reports Server (NTRS)",
+    "year": 2014,
+    "ntrs_id": "20160000593",
+    "url": "https://ntrs.nasa.gov/citations/20160000593",
+    "programme": "BASS",
+    "summary": "Reports 54 unique flame-spread rates across PMMA rods and sheets aboard the ISS, quantifying opposed-flow blowoff extinction (>40 cm/s), radiative quenching (<2 cm/s), and a -2.4 percentage-point oxygen margin of safety compared to 1g.",
+    "relevance": "Source of empirical flammability and oxygen margin of safety (-2.4% O2 margin vs 1g) for thick and thin polymer geometries.",
+    "verified_source": "NASA NTRS 20160000593 / International Symposium on Combustion"
+  },
+  {
+    "id": "gokoglu-2015-researchers-guide",
+    "title": "A Researcher's Guide to: Combustion Science",
+    "authors": [
+      "Suleyman A. Gokoglu",
+      "Dennis L. Stocker",
+      "Sandra L. Olson",
+      "Paul V. Ferkul",
+      "Vedha Nayagam",
+      "David L. Urban"
+    ],
+    "journal": "NASA International Space Station Program Science Office (NP-2015-10-034-JSC)",
+    "year": 2015,
+    "ntrs_id": "NP-2015-10-034-JSC",
+    "url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
+    "programme": "Combustion Overview",
+    "summary": "Comprehensive NASA synthesis of microgravity combustion physics covering FLEX droplet extinguishment, BASS solid flammability, SAME smoke aging, and low-stretch flame physics occurring near 10 cm/s ventilation.",
+    "relevance": "Authoritative NASA guide establishing that NASA-STD-6001 Test 1 terrestrial flammability ratings are not conservative for spacecraft environments.",
+    "verified_source": "NASA Publication NP-2015-10-034-JSC"
+  },
+  {
+    "id": "nayagam-2012-flex-cool-flames",
+    "title": "Can cool flames support quasi-steady alkane droplet burning?",
+    "authors": [
+      "Vedha Nayagam",
+      "Daniel L. Dietrich",
+      "Paul V. Ferkul",
+      "Mun Young Choi",
+      "Forman A. Williams"
+    ],
+    "journal": "Combustion and Flame, Vol. 159(12), pp. 3583-3588",
+    "year": 2012,
+    "doi": "10.1016/j.combustflame.2012.07.014",
+    "url": "https://doi.org/10.1016/j.combustflame.2012.07.014",
+    "programme": "FLEX",
+    "summary": "Documents the discovery of low-temperature quasi-steady cool flames in microgravity droplet combustion aboard the ISS, showing continued hydrocarbon burning without visible light or soot after hot flame extinction.",
+    "relevance": "Proves that apparent visible flame extinction in low gravity does not guarantee fire cessation; low-temperature combustion can persist unseen.",
+    "verified_source": "Combustion and Flame, Vol. 159(12), pp. 3583-3588 / NASA PSI-69"
+  },
+  {
+    "id": "urban-2011-same-smoke-distribution",
+    "title": "Particle Size Distribution from Overheated Spacecraft Materials in Microgravity",
+    "authors": [
+      "David L. Urban",
+      "Gary A. Ruff",
+      "George W. Mulholland"
+    ],
+    "journal": "Combustion Science and Technology, Vol. 183(12), pp. 1354-1367",
+    "year": 2011,
+    "doi": "10.1080/00102202.2011.603144",
+    "ntrs_id": "20110023419",
+    "url": "https://doi.org/10.1080/00102202.2011.603144",
+    "programme": "SAME",
+    "summary": "Measures smoke aerosol particle size distributions produced by pyrolyzing spacecraft materials (Teflon, Kapton, silicone, cotton) in microgravity aboard the ISS, revealing particles agglomerate significantly larger than on Earth due to lack of buoyant clearing.",
+    "relevance": "Essential evidence explaining why spacecraft smoke detectors calibrated on terrestrial particulate distributions exhibit delayed detection.",
+    "verified_source": "Combustion Science and Technology, Vol. 183(12), pp. 1354-1367 / NASA PSI-102"
+  },
+  {
+    "id": "li-2021-confined-combustion",
+    "title": "Experimental study of concurrent-flow flame spread over thin solids in confined space in microgravity",
+    "authors": [
+      "Yanjun Li",
+      "Ya-Ting T. Liao",
+      "Paul V. Ferkul",
+      "Michael C. Johnston",
+      "Charles Bunnell"
+    ],
+    "journal": "Combustion and Flame, Vol. 227, pp. 39-51",
+    "year": 2021,
+    "doi": "10.1016/j.combustflame.2020.12.042",
+    "url": "https://doi.org/10.1016/j.combustflame.2020.12.042",
+    "programme": "Confined Combustion",
+    "summary": "Investigates concurrent-flow flame spread over thin fuels in confined channels aboard the ISS, characterizing how duct walls, flow velocity, and oxygen concentrations accelerate flame front propagation.",
+    "relevance": "Directly applicable to spacecraft avionics racks, ducting, and enclosed equipment bay fire safety.",
+    "verified_source": "Combustion and Flame, Vol. 227, pp. 39-51 / NASA ISS Confined Combustion"
+  },
+  {
+    "id": "cui-2024-saffire-confinement",
+    "title": "Numerical study of the effects of confinement on large-scale fires in microgravity",
+    "authors": [
+      "Wohan Cui",
+      "Ya-Ting Tseng Liao"
+    ],
+    "journal": "Combustion and Flame, Vol. 261, Article 113299",
+    "year": 2024,
+    "doi": "10.1016/j.combustflame.2024.113299",
+    "url": "https://doi.org/10.1016/j.combustflame.2024.113299",
+    "programme": "Saffire",
+    "summary": "Numerical simulation of large-scale Saffire Cygnus duct tests, discovering that decreasing tunnel duct height by 40% increased flame spread rate and pyrolysis length by >95% due to core velocity profile restructuring.",
+    "relevance": "Proves that geometric confinement drastically accelerates spacecraft fire development even in large tunnels (>20 cm).",
+    "verified_source": "Combustion and Flame, Vol. 261, Article 113299"
+  },
+  {
+    "id": "ruff-2017-saffire-2-demo",
+    "title": "Saffire-II: Spacecraft Fire Safety Demonstration",
+    "authors": [
+      "Gary A. Ruff",
+      "David L. Urban",
+      "Paul V. Ferkul",
+      "Sandra L. Olson",
+      "James T. Easton"
+    ],
+    "journal": "47th International Conference on Environmental Systems (ICES-2017-158)",
+    "year": 2017,
+    "ntrs_id": "20170008779",
+    "url": "https://ntrs.nasa.gov/citations/20170008779",
+    "programme": "Saffire",
+    "summary": "Summarizes results from 9 material samples burned in Cygnus free flight, including PMMA, Nomex, SIBAL, and silicone; evaluates concurrent and opposed flow effects and LOI (limiting oxygen index).",
+    "relevance": "Demonstrates relative flammability rankings for diverse NASA-rated materials under operational spacecraft flow conditions.",
+    "verified_source": "ICES-2017-158 / NASA NTRS 20170008779 / NASA PSI-99"
+  },
+  {
+    "id": "dehghani-2021-burning-microgravity",
+    "title": "Burning in microgravity: Experimental results and analysis",
+    "authors": [
+      "P. Dehghani",
+      "P. B. Sunderland",
+      "J. G. Quintiere",
+      "J. L. de Ris"
+    ],
+    "journal": "Combustion and Flame, Vol. 228, pp. 315-330",
+    "year": 2021,
+    "doi": "10.1016/j.combustflame.2021.01.035",
+    "url": "https://doi.org/10.1016/j.combustflame.2021.01.035",
+    "programme": "BASS",
+    "summary": "Analyzes heats of gasification, steady burning, and low-pressure effects across solid materials in microgravity, delivering empirical burning rates and flame stabilization criteria.",
+    "relevance": "Supplies fundamental thermodynamic fuel constants and burning rate models for spacecraft risk assessment.",
+    "verified_source": "Combustion and Flame, Vol. 228, pp. 315-330"
+  },
+  {
+    "id": "torero-2020-spacecraft-fire-safety",
+    "title": "Spacecraft Fire Safety: Material Flammability in Microgravity and Reduced Pressure",
+    "authors": [
+      "Jose L. Torero",
+      "Carlos Fernandez-Pello",
+      "David L. Urban",
+      "Gary A. Ruff"
+    ],
+    "journal": "Progress in Energy and Combustion Science, Vol. 81, 100864",
+    "year": 2020,
+    "doi": "10.1016/j.pecs.2020.100864",
+    "url": "https://doi.org/10.1016/j.pecs.2020.100864",
+    "programme": "Spacecraft Standards",
+    "summary": "Comprehensive critical review of material flammability testing, spacecraft fire detection, atmospheric pressure effects (Exploration Atmospheres 8.2 psi / 34% O2), and why 1g flammability screening must be replaced by microgravity-validated engineering criteria.",
+    "relevance": "Authoritative peer-reviewed treatise on next-generation spacecraft fire safety standards for Artemis lunar and deep-space missions.",
+    "verified_source": "Progress in Energy and Combustion Science, Vol. 81, 100864"
   }
 ]
