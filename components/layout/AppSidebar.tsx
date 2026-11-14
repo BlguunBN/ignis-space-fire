@@ -1,20 +1,19 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import {
-  Flame,
-  Search,
-  Activity,
-  Table as TableIcon,
-  Grid3X3,
+  ArrowLeftRight,
   BookOpen,
-  Scale,
-  Sparkles,
-  Database,
-  Cpu,
+  ChartColumnIncreasing,
+  FileSearch,
+  Flame,
+  FlaskConical,
+  LayoutGrid,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 
-export type NavTab = "explore" | "chart" | "table" | "coverage" | "methodology";
+export type NavTab = "explore" | "studio" | "table" | "coverage" | "methodology";
 
 interface AppSidebarProps {
   activeTab: NavTab;
@@ -23,121 +22,53 @@ interface AppSidebarProps {
   onOpenCompare: () => void;
 }
 
-export function AppSidebar({
-  activeTab,
-  onSelectTab,
-  selectedCompareCount,
-  onOpenCompare,
-}: AppSidebarProps) {
-  const navItems: Array<{ id: NavTab; label: string; icon: React.ReactNode; badge?: string }> = [
-    { id: "explore", label: "Evidence Explorer", icon: <Search className="w-4 h-4" /> },
-    { id: "chart", label: "Flame Dynamics", icon: <Activity className="w-4 h-4" /> },
-    { id: "table", label: "Master Comparison", icon: <TableIcon className="w-4 h-4" /> },
-    { id: "coverage", label: "Coverage Matrix", icon: <Grid3X3 className="w-4 h-4" /> },
-    { id: "methodology", label: "Provenance & Limits", icon: <BookOpen className="w-4 h-4" /> },
-  ];
+const links: Array<{ id: NavTab; label: string; icon: typeof LayoutGrid }> = [
+  { id: "explore", label: "Overview", icon: LayoutGrid },
+  { id: "studio", label: "Experiment studio", icon: FlaskConical },
+  { id: "table", label: "Compare records", icon: ArrowLeftRight },
+  { id: "coverage", label: "Evidence coverage", icon: ChartColumnIncreasing },
+  { id: "methodology", label: "Sources & methodology", icon: BookOpen }
+];
+
+export function AppSidebar({ activeTab, onSelectTab, selectedCompareCount, onOpenCompare }: AppSidebarProps) {
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <aside className="w-full lg:w-60 shrink-0 bg-[#15191F] border-r border-[#303741] flex flex-col justify-between py-5 px-3 min-h-screen">
-      {/* Brand & Mission */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-9 h-9 rounded-xl bg-[#E99847] flex items-center justify-center text-[#0C0F13] font-black shadow-sm shrink-0">
-            <Flame className="w-5 h-5 fill-current" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm tracking-tight text-[#F3F5F7]">IGNIS</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#1B2027] border border-[#303741] text-[#A1AAB5]">
-                2026
-              </span>
-            </div>
-            <p className="text-[11px] text-[#A1AAB5] leading-tight">Fire Safety Intelligence</p>
-          </div>
-        </div>
-
-        {/* Navigation Items */}
-        <nav className="space-y-1">
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] px-2 block mb-1.5 font-mono">
-            Navigation
-          </span>
-          {navItems.map((item) => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => onSelectTab(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition cursor-pointer relative ${
-                  isActive
-                    ? "bg-[#1B2027] text-[#E99847] border border-[#303741] font-semibold"
-                    : "text-[#A1AAB5] hover:text-[#F3F5F7] hover:bg-[#1B2027]/40"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className={isActive ? "text-[#E99847]" : "text-[#737F8C]"}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </div>
-                {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#E99847]"></span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Live Service Status */}
-        <div className="px-2 pt-2 space-y-2">
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block font-mono">
-            Connected Engines
-          </span>
-          <div className="bg-[#0C0F13] p-2.5 rounded-lg border border-[#303741] space-y-1.5 text-[11px]">
-            <div className="flex items-center justify-between">
-              <span className="text-[#A1AAB5] flex items-center gap-1.5">
-                <Database className="w-3 h-3 text-[#5CB59B]" />
-                NASA PSI Corpus
-              </span>
-              <span className="font-mono text-[#5CB59B] text-[10px] font-semibold">10 Verified</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[#A1AAB5] flex items-center gap-1.5">
-                <Cpu className="w-3 h-3 text-[#78A9D8]" />
-                NVIDIA Nemotron
-              </span>
-              <span className="font-mono text-[#78A9D8] text-[10px]">Active</span>
-            </div>
-          </div>
-        </div>
+    <aside className={"z-40 flex w-full shrink-0 items-center border-b border-white/10 bg-[#0d0e10] lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:items-stretch lg:border-b-0 lg:border-r " + (expanded ? "lg:w-56" : "lg:w-[72px]")}>
+      <div className="hidden h-[72px] items-center justify-center border-b border-white/10 lg:flex">
+        <Flame aria-label="IGNIS" className="h-5 w-5 text-[#e2ad73]" strokeWidth={1.8} />
+        {expanded && <span className="ml-2 text-sm font-semibold tracking-[0.1em]">IGNIS</span>}
       </div>
-
-      {/* Compare Tray & Footer */}
-      <div className="pt-4 border-t border-[#303741] space-y-3">
-        {selectedCompareCount > 0 && (
-          <button
-            onClick={onOpenCompare}
-            disabled={selectedCompareCount < 2}
-            className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
-              selectedCompareCount === 2
-                ? "bg-[#E99847] text-[#0C0F13] border-[#E99847] shadow-sm"
-                : "bg-[#1B2027] text-[#A1AAB5] border-[#303741] opacity-75"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <Scale className="w-4 h-4" />
-              <span>Compare Tray</span>
-            </div>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/20">
-              {selectedCompareCount}/2
-            </span>
-          </button>
-        )}
-
-        <div className="px-2 text-[10px] text-[#737F8C] space-y-0.5">
-          <div className="text-[#F3F5F7] font-semibold">Team Twinkle Twinkle</div>
-          <div>NASA Space Apps Ulaanbaatar 2026</div>
-          <div className="pt-1 text-[9px] text-[#737F8C] font-mono">Apache-2.0 · Open Source</div>
-        </div>
+      <div className="flex flex-1 items-center gap-1 overflow-x-auto px-2 py-2 lg:flex-col lg:gap-2 lg:overflow-visible lg:px-3 lg:py-5">
+        <div className="mr-2 flex items-center lg:hidden"><Flame className="h-5 w-5 text-[#e2ad73]" aria-label="IGNIS" /></div>
+        {links.map(({ id, label, icon: Icon }) => {
+          const selected = activeTab === id;
+          return (
+            <button key={id} type="button" title={label} aria-label={label} aria-current={selected ? "page" : undefined}
+              onClick={() => onSelectTab(id)}
+              className={"group relative flex h-11 min-w-11 items-center justify-center rounded-lg px-3 transition-colors lg:w-full " +
+                (expanded ? "lg:justify-start lg:gap-3" : "") +
+                (selected ? " bg-[#242426] text-[#f6f1eb]" : " text-[#7e8186] hover:bg-white/[0.06] hover:text-white")}>
+              <Icon className={"h-[18px] w-[18px] shrink-0 " + (selected ? "text-[#e2ad73]" : "")} strokeWidth={1.7}/>
+              {expanded && <span className="hidden whitespace-nowrap text-xs lg:inline">{label}</span>}
+              {selected && <span className="absolute bottom-1 left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[#e2ad73] lg:bottom-auto lg:left-0 lg:top-1/2 lg:h-5 lg:w-[2px] lg:-translate-x-0 lg:-translate-y-1/2" />}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center px-2 lg:flex-col lg:gap-2 lg:px-3 lg:pb-4">
+        <button type="button" title="Compare selected" aria-label={"Compare selected: " + selectedCompareCount + " of 2"} onClick={onOpenCompare}
+          disabled={selectedCompareCount < 2}
+          className="relative flex h-11 min-w-11 items-center justify-center rounded-lg text-[#9fa2a5] transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-40 lg:w-full">
+          <FileSearch className="h-[18px] w-[18px]" strokeWidth={1.7}/>
+          {selectedCompareCount > 0 && <span className="absolute right-1 top-1 rounded-full bg-[#e2ad73] px-[5px] text-[9px] font-medium text-black">{selectedCompareCount}</span>}
+        </button>
+        <button type="button" title={expanded ? "Collapse navigation" : "Expand navigation"} aria-label="Toggle sidebar labels"
+          onClick={() => setExpanded((value) => !value)} className="hidden h-11 w-full items-center justify-center rounded-lg text-[#7e8186] hover:bg-white/[0.06] hover:text-white lg:flex">
+          {expanded ? <PanelLeftClose className="h-[18px] w-[18px]"/> : <PanelLeftOpen className="h-[18px] w-[18px]"/>}
+        </button>
+        <div className="hidden h-px w-8 bg-white/10 lg:block" />
+        <div title="Research software — not flight safety certification" className="hidden h-8 w-8 items-center justify-center rounded-md border border-white/10 text-[10px] font-semibold text-[#a8aaad] lg:flex">N</div>
       </div>
     </aside>
   );
