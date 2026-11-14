@@ -40,7 +40,7 @@ export function FlameDynamicsChart() {
               <XAxis dataKey="name" tick={{fill:"#a6a8aa",fontSize:11}} axisLine={false} tickLine={false}/>
               <YAxis allowDecimals={false} tick={{fill:"#85888b",fontSize:10}} axisLine={false} tickLine={false}/>
               <Tooltip cursor={{fill:"#252629"}} contentStyle={{background:"#191a1c",border:"1px solid #3a3b3d",borderRadius:8,color:"#eee",fontSize:12}}
-                formatter={(count:number)=>[count,"Indexed records"]}/>
+                formatter={(count)=>[count,"Indexed records"]}/>
               <Bar dataKey="records" radius={[4,4,0,0]} barSize={34}>
                 {rows.map((row,index)=><Cell key={row.name} fill={index===0?"#d5a473":"#6e7279"}/>)}
               </Bar>
