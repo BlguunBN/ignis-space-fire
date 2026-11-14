@@ -3,92 +3,81 @@
 @tailwind utilities;
 
 :root {
-  /* Surface Layers (Deep Aerospace Void Hierarchy) */
-  --bg-void: #06080B;
-  --surface-canvas: #0A0D12;
-  --surface-card: #10151D;
-  --surface-elevated: #18202B;
-  --surface-subtle: #202937;
+  /* Graphite & Ink Aerospace Ramp (Calm, unslopt neutrals) */
+  --bg-void: #090a0d;
+  --surface-canvas: #0e1116;
+  --surface-card: #13171e;
+  --surface-elevated: #1a202a;
+  --surface-subtle: #232a36;
+  --surface-active: #2a3342;
 
   /* Typography */
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   --text-dim: #475569;
 
-  /* Borders & Dividers */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-default: rgba(255, 255, 255, 0.14);
-  --border-focus: #F59E0B;
+  /* Hairline Borders */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-focus: #f59e0b;
 
-  /* Functional Accents */
-  --accent-amber: #F59E0B;
-  --accent-amber-glow: rgba(245, 158, 11, 0.15);
-  --telemetry-cyan: #38BDF8;
-  --telemetry-cyan-glow: rgba(56, 189, 248, 0.15);
-  --verified-emerald: #10B981;
-  --verified-emerald-glow: rgba(16, 185, 129, 0.15);
-  --danger-rose: #EF4444;
-  --danger-rose-glow: rgba(239, 68, 68, 0.15);
+  /* Single Warm Accent */
+  --accent-amber: #f59e0b;
+  --accent-amber-subtle: rgba(245, 158, 11, 0.1);
+  --telemetry-cyan: #38bdf8;
+  --verified-emerald: #10b981;
+  --danger-rose: #ef4444;
 }
 
 body {
   background-color: var(--bg-void);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tabular numbers for telemetry data */
+/* Tabular figures for numbers, measurements, and timestamps */
 .font-mono,
-code,
-pre,
-input[type="number"] {
+input[type="number"],
+td,
+th {
   font-feature-settings: "tnum" 1, "zero" 1;
   font-variant-numeric: tabular-nums;
 }
 
-/* Glassmorphism panel recipe */
+/* Quiet Glassmorphism */
 .glass-panel {
-  background: rgba(16, 21, 29, 0.75);
+  background: rgba(14, 17, 22, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-modal {
-  background: rgba(10, 13, 18, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: rgba(10, 13, 17, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
 }
 
-/* Glow effects */
-.glow-amber {
-  box-shadow: 0 0 20px -3px rgba(245, 158, 11, 0.25);
-}
-
-.glow-cyan {
-  box-shadow: 0 0 20px -3px rgba(56, 189, 248, 0.25);
-}
-
-/* Custom aerospace scrollbar */
+/* Minimalist hairline scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(6, 8, 11, 0.8);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 158, 11, 0.4);
+  background: rgba(255, 255, 255, 0.22);
 }

@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Fuse from "fuse.js";
-import { ArrowRightLeft } from "lucide-react";
 import experimentsData from "../data/experiments.json";
 import { ExperimentRecord, SearchQuery } from "../types/evidence";
 import { Header } from "../components/Header";
@@ -154,7 +153,7 @@ export default function UnifiedWorkspace() {
   }, [query, selectedRecords, filteredRecords]);
 
   return (
-    <div className="min-h-screen bg-[#06080B] text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
+    <div className="min-h-screen bg-[#090a0d] text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
       {/* Top Telemetry Header */}
       <Header
         corpusCount={allRecords.length}
@@ -171,7 +170,7 @@ export default function UnifiedWorkspace() {
       <main className="flex-1 p-3 md:p-4 max-w-[1750px] w-full mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
           {/* LEFT PANE (40% width on large screens) */}
-          <section className="lg:col-span-5 space-y-3.5 flex flex-col">
+          <section className="lg:col-span-5 space-y-3 flex flex-col">
             {/* Search & Physical Filters */}
             <SearchAndFilters
               query={query}
@@ -179,42 +178,26 @@ export default function UnifiedWorkspace() {
               onSelectPreset={(p) => setQuery(p)}
             />
 
-            {/* Filter Count & Selection Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-400 px-1">
+            {/* Quiet Header for Table Actions */}
+            <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-0.5">
               <span>
-                Matching: <strong className="text-amber-400">{filteredRecords.length}</strong> of {allRecords.length}
+                Matching <strong className="text-slate-200">{filteredRecords.length}</strong> of {allRecords.length} investigations
               </span>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-[11px]">
                 <button
-                  onClick={() => setIsCompareOpen(true)}
-                  disabled={selectedRecords.length < 2}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all ${
-                    selectedRecords.length >= 2
-                      ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 cursor-pointer"
-                      : "bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-60"
-                  }`}
-                  title="Compare selected studies side-by-side"
+                  onClick={handleSelectAll}
+                  className="text-slate-400 hover:text-slate-200 transition-colors"
                 >
-                  <ArrowRightLeft className="w-3.5 h-3.5" />
-                  <span>Compare ({selectedRecords.length})</span>
+                  Select All
                 </button>
-
-                <div className="flex items-center gap-1.5 border-l border-slate-800 pl-2">
-                  <button
-                    onClick={handleSelectAll}
-                    className="hover:text-slate-200 underline decoration-slate-600"
-                  >
-                    All
-                  </button>
-                  <span>•</span>
-                  <button
-                    onClick={handleClearSelection}
-                    className="hover:text-slate-200 underline decoration-slate-600"
-                  >
-                    Clear
-                  </button>
-                </div>
+                <span className="text-white/10">•</span>
+                <button
+                  onClick={handleClearSelection}
+                  className="text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  Clear
+                </button>
               </div>
             </div>
 
@@ -232,7 +215,7 @@ export default function UnifiedWorkspace() {
           </section>
 
           {/* RIGHT PANE (60% width on large screens) */}
-          <section className="lg:col-span-7 space-y-4 flex flex-col">
+          <section className="lg:col-span-7 space-y-3.5 flex flex-col">
             {/* Telemetry Parameter Space (Recharts) */}
             <TelemetryChart
               records={filteredRecords}

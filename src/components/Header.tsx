@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import {
   ShieldCheck,
   Flame,
-  Compass,
-  RefreshCw,
+  RotateCcw,
   FileText,
+  Compass,
   Grid3X3,
   BookOpen,
   ArrowRightLeft,
@@ -46,51 +46,51 @@ export function Header({
   }, []);
 
   return (
-    <header className="border-b border-white/10 bg-[#06080B]/90 backdrop-blur-xl px-4 py-2.5 sticky top-0 z-40 shadow-xl">
-      <div className="flex flex-wrap items-center justify-between gap-3 max-w-[1750px] mx-auto">
-        {/* Left Branding */}
+    <header className="border-b border-white/[0.08] bg-[#090a0d]/95 backdrop-blur-md px-4 py-2 sticky top-0 z-40">
+      <div className="flex items-center justify-between gap-4 max-w-[1750px] mx-auto">
+        {/* Left Branding - Minimalist Aerospace Identity */}
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-red-600 flex items-center justify-center shadow-lg shadow-amber-500/20 border border-amber-400/40">
-            <Flame className="w-4 h-4 text-white animate-pulse" />
+          <div className="h-7 w-7 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <Flame className="w-4 h-4 text-amber-400" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold tracking-wider text-slate-100">
-                IGNIS <span className="text-amber-400 text-[10px] px-1.5 py-0.2 rounded bg-amber-400/10 border border-amber-400/30">2.0</span>
-              </span>
-              <span className="hidden xl:inline-block text-[11px] font-mono text-slate-400">
-                NASA Space Apps • Flame in Freefall
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400">Microgravity Combustion Intelligence & Evidence Triage</p>
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-sm font-semibold tracking-wider text-slate-100">
+              IGNIS
+            </span>
+            <span className="text-[10px] font-mono text-amber-400/90 bg-amber-400/10 border border-amber-400/20 px-1 py-0.2 rounded">
+              v2.0
+            </span>
+            <span className="hidden sm:inline-block text-xs text-slate-400 font-sans border-l border-white/10 pl-2 ml-1">
+              Microgravity Combustion Intelligence
+            </span>
           </div>
         </div>
 
-        {/* Center Navigation Tabs (The 3 Persistent Destinations) */}
-        <nav className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-white/10 text-xs font-mono">
+        {/* Center Navigation Tabs - Understated Aerospace Tabs */}
+        <nav className="flex items-center gap-1 text-xs font-mono">
           <button
             onClick={() => {}}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
               activeView === "workspace"
-                ? "bg-amber-400 text-slate-950 shadow-sm"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                ? "text-slate-100 bg-white/[0.06] font-medium border border-white/[0.08]"
+                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
             }`}
           >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Research Workspace</span>
+            <Compass className="w-3.5 h-3.5 text-amber-400" />
+            <span>Workspace</span>
           </button>
 
           <button
             onClick={onOpenCoverage}
-            className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
+            className="px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
           >
             <Grid3X3 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Coverage & Gap Matrix</span>
+            <span>Coverage Matrix</span>
           </button>
 
           <button
             onClick={onOpenSources}
-            className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
+            className="px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
           >
             <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
             <span>Sources & Methods</span>
@@ -98,35 +98,39 @@ export function Header({
         </nav>
 
         {/* Right Telemetry & Actions */}
-        <div className="flex items-center gap-2 text-xs font-mono">
-          <div className="hidden md:flex items-center gap-2 bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-white/10 text-slate-300">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span><strong className="text-emerald-400">{corpusCount}</strong> Verified Studies</span>
-            <span className="text-slate-600">|</span>
-            <span className="text-cyan-400">{time || "00:00:00 UTC"}</span>
+        <div className="flex items-center gap-2.5 text-xs font-mono">
+          {/* Live Status Telemetry */}
+          <div className="hidden lg:flex items-center gap-2 text-slate-400 text-[11px] px-2.5 py-1 rounded border border-white/[0.06] bg-white/[0.02]">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-slate-300 font-medium">{corpusCount} Verified Studies</span>
+            <span className="text-white/10">•</span>
+            <span className="text-slate-400 tabular-nums">{time || "00:00:00 UTC"}</span>
           </div>
 
+          {/* Reset Filters */}
           <button
             onClick={onReset}
-            className="p-1.5 text-slate-400 hover:text-slate-200 bg-slate-900 hover:bg-slate-800 rounded-lg border border-white/10 transition-colors"
-            title="Reset Filters and State"
+            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] rounded border border-white/[0.06] transition-colors"
+            title="Reset filters and selections"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
+          {/* Compare Trigger (Contextual when >= 2 selected) */}
           {selectedCount >= 2 && (
             <button
               onClick={onOpenCompare}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold transition-all animate-in fade-in"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-medium transition-colors"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span>Compare ({selectedCount})</span>
             </button>
           )}
 
+          {/* Primary Action - Evidence Brief */}
           <button
             onClick={onOpenBrief}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold transition-all shadow-sm shadow-amber-400/20 active:translate-y-px"
           >
             <FileText className="w-3.5 h-3.5" />
             <span>Evidence Brief</span>
