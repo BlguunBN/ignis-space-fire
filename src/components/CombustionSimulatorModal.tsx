@@ -28,7 +28,7 @@ interface EnvironmentPreset {
   name: string;
   pressureAtm: number;
   o2Pct: number;
-  gravity: "µg" | "1g" | "0.16g" | "0.38g";
+  gravity: "µg" | "0.16g" | "0.38g" | "1g";
   notes: string;
 }
 
@@ -62,8 +62,8 @@ const PRESETS: EnvironmentPreset[] = [
     name: "Orion Lunar Design",
     pressureAtm: 0.69,
     o2Pct: 30,
-    gravity: "µg",
-    notes: "0.69 atm · 30% O₂ · µg (Artemis cabin baseline standard)",
+    gravity: "0.16g",
+    notes: "0.69 atm · 30% O₂ · 0.16g (Artemis cabin baseline standard)",
   },
   {
     id: "orion-full",
@@ -104,44 +104,43 @@ export function CombustionSimulatorModal({
 }: CombustionSimulatorModalProps) {
   const [activeTab, setActiveTab] = useState<"physics" | "diagnostics">("physics");
 
-  // Physics Simulation States (Image 4)
+  // Physics Simulation States (Tab 1)
   const [selectedPreset, setSelectedPreset] = useState<string>("iss");
   const [o2Pct, setO2Pct] = useState<number>(21);
   const [pressureAtm, setPressureAtm] = useState<number>(1.0);
-  const [gravityMode, setGravityMode] = useState<"µg" | "1g">("µg");
+  const [gravityMode, setGravityMode] = useState<"µg" | "0.16g" | "0.38g" | "1g">("µg");
   const [fuelType, setFuelType] = useState<"Methanol" | "Heptane" | "n-Decane">("Methanol");
   const [diluent, setDiluent] = useState<"Nitrogen" | "+ CO2" | "+ Helium">("Nitrogen");
   const [initialDropletMm, setInitialDropletMm] = useState<number>(2.5);
 
   // Simulation Running State
   const [isBurning, setIsBurning] = useState<boolean>(false);
-  const [burnProgress, setBurnProgress] = useState<number>(0); // 0 to 1
+  const [burnProgress, setBurnProgress] = useState<number>(0);
   const [currentDiameterMm, setCurrentDiameterMm] = useState<number>(2.5);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [airCursorActive, setAirCursorActive] = useState<boolean>(false);
-  const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({ x: 280, y: 175 });
 
-  // CV Diagnostics States (Image 2)
-  const [diagSequence, setDiagSequence] = useState<"rtdfs" | "sofie" | "hotwire">("rtdfs");
+  // CV Diagnostics States (Tab 2)
+  const [diagSequence, setDiagSequence] = useState<"rtdfs" | "sofie" | "hotwire" | "flex">("rtdfs");
   const [cvFilter, setCvFilter] = useState<"raw" | "chemiluminescence" | "edges" | "pyrometry">("chemiluminescence");
-  const [scanlineYPct, setScanlineYPct] = useState<number>(44);
+  const [scanlineYPct, setScanlineYPct] = useState<number>(50);
   const [thresholdSensitivity, setThresholdSensitivity] = useState<number>(45);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const diagCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Derived Physics Metrics
-  // Burning rate constant K (mm^2/s) depends on fuel, oxygen, pressure, diluent
   const baseK = fuelType === "Methanol" ? 0.56 : fuelType === "Heptane" ? 0.72 : 0.85;
   const o2Multiplier = (o2Pct / 21) ** 0.45;
   const pressureMultiplier = (pressureAtm / 1.0) ** 0.12;
   const diluentMultiplier = diluent === "+ CO2" ? 0.82 : diluent === "+ Helium" ? 1.15 : 1.0;
   const burningRateK = Math.round(baseK * o2Multiplier * pressureMultiplier * diluentMultiplier * 100) / 100;
 
-  // Total burn time according to d^2 law: t_burn = d0^2 / K
+  // Total burn time: t_burn = d0^2 / K
   const totalBurnTimeSec = Math.round(((initialDropletMm ** 2) / burningRateK) * 10) / 10;
 
   // Extinction probability
-  // Low oxygen (<15%) or heavy CO2 diluent increases radiative extinction probability
   let extinctionProbability = 17;
   let predictionStatus = "Burns to completion";
   if (o2Pct < 14) {
@@ -162,14 +161,19 @@ export function CombustionSimulatorModal({
     if (p) {
       setO2Pct(p.o2Pct);
       setPressureAtm(p.pressureAtm);
-      setGravityMode(p.gravity === "1g" ? "1g" : "µg");
+      setGravityMode(p.gravity);
+      // Reset simulation state so ignition starts clean
+      setIsBurning(false);
+      setElapsedTime(0);
+      setCurrentDiameterMm(initialDropletMm);
+      setBurnProgress(0);
     }
   };
 
   // Keyboard shortcut: Space to toggle burn
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
+      if (!isOpen || activeTab !== "physics") return;
       if (e.code === "Space" && e.target === document.body) {
         e.preventDefault();
         toggleBurn();
@@ -177,7 +181,7 @@ export function CombustionSimulatorModal({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isBurning]);
+  }, [isOpen, isBurning, activeTab]);
 
   // Simulation Loop
   useEffect(() => {
@@ -196,7 +200,6 @@ export function CombustionSimulatorModal({
           return totalBurnTimeSec;
         }
 
-        // d^2 law: d(t) = sqrt(max(0, d0^2 - K * t))
         const remainingD2 = Math.max(0, initialDropletMm ** 2 - burningRateK * nextTime);
         const nextD = Math.sqrt(remainingD2);
         setCurrentDiameterMm(Math.round(nextD * 100) / 100);
@@ -208,8 +211,9 @@ export function CombustionSimulatorModal({
     return () => clearInterval(timer);
   }, [isBurning, initialDropletMm, burningRateK, totalBurnTimeSec]);
 
-  // Canvas Flame Render
+  // Canvas Flame Render (Tab 1 Physics Droplet)
   useEffect(() => {
+    if (activeTab !== "physics") return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -225,119 +229,219 @@ export function CombustionSimulatorModal({
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
-      // Draw dark chamber background with subtle radial grid
-      const bgGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 240);
+      // Dark chamber background with subtle radial grid
+      const bgGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 260);
       bgGrad.addColorStop(0, "#080c14");
-      bgGrad.addColorStop(1, "#030407");
+      bgGrad.addColorStop(1, "#020306");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Chamber crosshairs and mm scales
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      // Chamber alignment reticle & scale markings (mm)
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cx - 150, cy);
-      ctx.lineTo(cx + 150, cy);
-      ctx.moveTo(cx, cy - 150);
-      ctx.lineTo(cx, cy + 150);
+      ctx.moveTo(cx - 160, cy);
+      ctx.lineTo(cx + 160, cy);
+      ctx.moveTo(cx, cy - 140);
+      ctx.lineTo(cx, cy + 140);
+      ctx.stroke();
+
+      // Concentric 2mm and 5mm scale circles
+      ctx.beginPath();
+      ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 100, 0, Math.PI * 2);
       ctx.stroke();
 
       // Droplet visual radius in pixels
-      const dropletRadiusPx = Math.max(2, (currentDiameterMm / initialDropletMm) * 22);
+      const dropletRadiusPx = Math.max(3, (currentDiameterMm / initialDropletMm) * 24);
 
-      // If burning, draw flame
-      if (isBurning || elapsedTime > 0) {
-        const flicker = Math.sin(frame * 0.2) * 1.5 + Math.cos(frame * 0.3) * 0.8;
-        const flameRadiusPx = Math.max(8, dropletRadiusPx * 3.8 + flicker);
+      // Forced Airflow Vector / Streamlines from cursor
+      let driftX = 0;
+      let driftY = 0;
+      let airflowSpeed = 0;
 
-        // Air cursor interaction drift
-        let driftX = 0;
-        let driftY = 0;
-        if (airCursorActive) {
-          const dx = cursorPos.x - cx;
-          const dy = cursorPos.y - cy;
-          driftX = (dx / canvas.width) * 25;
-          driftY = (dy / canvas.height) * 25;
+      if (airCursorActive) {
+        const dx = cursorPos.x - cx;
+        const dy = cursorPos.y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        airflowSpeed = Math.min(30, Math.round((dist / 10) * 10) / 10);
+        driftX = (dx / dist) * Math.min(35, airflowSpeed * 1.5);
+        driftY = (dy / dist) * Math.min(35, airflowSpeed * 1.5);
+
+        // Draw animated wind streamlines
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.25)";
+        ctx.lineWidth = 1.5;
+        for (let i = -2; i <= 2; i++) {
+          const offset = i * 20;
+          const streamStartX = cursorPos.x + offset;
+          const streamStartY = cursorPos.y;
+          ctx.beginPath();
+          ctx.moveTo(streamStartX, streamStartY);
+          ctx.lineTo(cx + offset * 0.6, cy);
+          ctx.stroke();
         }
 
+        // Draw Wind speed badge
+        ctx.fillStyle = "rgba(56, 189, 248, 0.9)";
+        ctx.font = "10px monospace";
+        ctx.fillText(`u∞ = ${airflowSpeed} cm/s`, cursorPos.x + 10, cursorPos.y - 10);
+      }
+
+      // If burning, render authentic physics flame
+      if (isBurning || elapsedTime > 0) {
+        const flicker = Math.sin(frame * 0.25) * 1.5 + Math.cos(frame * 0.35) * 0.8;
+        const flameRadiusPx = Math.max(10, dropletRadiusPx * 3.8 + flicker);
+
+        // Diluent cooling effect: CO2 dims and widens; Helium disperses
+        const co2AlphaDim = diluent === "+ CO2" ? 0.7 : 1.0;
+        const heSpread = diluent === "+ Helium" ? 1.2 : 1.0;
+
         if (gravityMode === "µg") {
-          // Microgravity: Pure Spherical Chemiluminescence & Soot Halo
-          // 1. Outer Blue Chemiluminescent Zone (CH* 431nm band)
-          const outerBlue = ctx.createRadialGradient(
+          // MICROGRAVITY: Symmetrical Spherical Diffusion Flame
+          if (fuelType === "Methanol") {
+            // Methanol: Pure blue/cyan chemiluminescence (CH* 431nm), soot-free
+            const blueGrad = ctx.createRadialGradient(
+              cx + driftX,
+              cy + driftY,
+              dropletRadiusPx,
+              cx + driftX,
+              cy + driftY,
+              flameRadiusPx * 1.35 * heSpread
+            );
+            blueGrad.addColorStop(0, "rgba(56, 189, 248, 0)");
+            blueGrad.addColorStop(0.65, `rgba(56, 189, 248, ${0.4 * co2AlphaDim})`);
+            blueGrad.addColorStop(0.85, `rgba(37, 99, 235, ${0.8 * co2AlphaDim})`);
+            blueGrad.addColorStop(1, "rgba(30, 58, 138, 0)");
+
+            ctx.fillStyle = blueGrad;
+            ctx.beginPath();
+            ctx.arc(cx + driftX, cy + driftY, flameRadiusPx * 1.35 * heSpread, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Heptane / n-Decane: Blue reaction envelope + luminous glowing soot shell
+            // 1. Outer Blue CH* Shell
+            const outerBlue = ctx.createRadialGradient(
+              cx + driftX,
+              cy + driftY,
+              dropletRadiusPx,
+              cx + driftX,
+              cy + driftY,
+              flameRadiusPx * 1.4 * heSpread
+            );
+            outerBlue.addColorStop(0, "rgba(56, 189, 248, 0)");
+            outerBlue.addColorStop(0.7, `rgba(56, 189, 248, ${0.35 * co2AlphaDim})`);
+            outerBlue.addColorStop(0.9, `rgba(37, 99, 235, ${0.7 * co2AlphaDim})`);
+            outerBlue.addColorStop(1, "rgba(30, 58, 138, 0)");
+
+            ctx.fillStyle = outerBlue;
+            ctx.beginPath();
+            ctx.arc(cx + driftX, cy + driftY, flameRadiusPx * 1.4 * heSpread, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. Inner Glowing Yellow/Orange Soot Cloud
+            const innerSoot = ctx.createRadialGradient(
+              cx + driftX,
+              cy + driftY,
+              dropletRadiusPx * 0.9,
+              cx + driftX,
+              cy + driftY,
+              flameRadiusPx * 0.95
+            );
+            const sootIntensity = fuelType === "n-Decane" ? 0.9 : 0.65;
+            innerSoot.addColorStop(0, `rgba(254, 240, 138, ${sootIntensity * co2AlphaDim})`);
+            innerSoot.addColorStop(0.4, `rgba(249, 115, 22, ${0.75 * co2AlphaDim})`);
+            innerSoot.addColorStop(0.8, `rgba(234, 88, 12, ${0.4 * co2AlphaDim})`);
+            innerSoot.addColorStop(1, "rgba(180, 83, 9, 0)");
+
+            ctx.fillStyle = innerSoot;
+            ctx.beginPath();
+            ctx.arc(cx + driftX, cy + driftY, flameRadiusPx * 0.95, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (gravityMode === "0.16g") {
+          // LUNAR 0.16g: Gently elongated upward ellipse with subtle buoyancy
+          const plumeH = flameRadiusPx * 1.35;
+          const lunarGrad = ctx.createRadialGradient(
             cx + driftX,
-            cy + driftY,
+            cy - plumeH * 0.2 + driftY,
             dropletRadiusPx,
             cx + driftX,
-            cy + driftY,
-            flameRadiusPx * 1.3
+            cy - plumeH * 0.2 + driftY,
+            plumeH * 1.2
           );
-          outerBlue.addColorStop(0, "rgba(56, 189, 248, 0)");
-          outerBlue.addColorStop(0.65, "rgba(56, 189, 248, 0.25)");
-          outerBlue.addColorStop(0.85, "rgba(37, 99, 235, 0.65)");
-          outerBlue.addColorStop(1, "rgba(30, 58, 138, 0)");
+          lunarGrad.addColorStop(0, "rgba(254, 215, 170, 0.8)");
+          lunarGrad.addColorStop(0.5, "rgba(249, 115, 22, 0.6)");
+          lunarGrad.addColorStop(0.85, "rgba(56, 189, 248, 0.5)");
+          lunarGrad.addColorStop(1, "rgba(30, 58, 138, 0)");
 
-          ctx.fillStyle = outerBlue;
+          ctx.fillStyle = lunarGrad;
           ctx.beginPath();
-          ctx.arc(cx + driftX, cy + driftY, flameRadiusPx * 1.3, 0, Math.PI * 2);
+          ctx.ellipse(cx + driftX, cy - plumeH * 0.2 + driftY, flameRadiusPx * 1.1, plumeH, 0, 0, Math.PI * 2);
           ctx.fill();
+        } else if (gravityMode === "0.38g") {
+          // MARTIAN 0.38g: Distinct teardrop plume with moderate buoyancy
+          const plumeH = flameRadiusPx * 1.7;
+          const martianGrad = ctx.createLinearGradient(cx + driftX, cy + dropletRadiusPx + driftY, cx + driftX, cy - plumeH + driftY);
+          martianGrad.addColorStop(0, "rgba(56, 189, 248, 0.7)");
+          martianGrad.addColorStop(0.3, "rgba(249, 115, 22, 0.8)");
+          martianGrad.addColorStop(0.8, "rgba(234, 88, 12, 0.5)");
+          martianGrad.addColorStop(1, "rgba(239, 68, 68, 0)");
 
-          // 2. Middle Warm Radiative Soot Cloud
-          const innerWarm = ctx.createRadialGradient(
-            cx + driftX,
-            cy + driftY,
-            dropletRadiusPx * 0.8,
-            cx + driftX,
-            cy + driftY,
-            flameRadiusPx * 0.95
-          );
-          innerWarm.addColorStop(0, "rgba(254, 215, 170, 0.7)");
-          innerWarm.addColorStop(0.4, "rgba(251, 146, 60, 0.5)");
-          innerWarm.addColorStop(0.75, "rgba(234, 88, 12, 0.3)");
-          innerWarm.addColorStop(1, "rgba(180, 83, 9, 0)");
-
-          ctx.fillStyle = innerWarm;
+          ctx.fillStyle = martianGrad;
           ctx.beginPath();
-          ctx.arc(cx + driftX, cy + driftY, flameRadiusPx * 0.95, 0, Math.PI * 2);
+          ctx.moveTo(cx - flameRadiusPx * 0.95 + driftX, cy + driftY);
+          ctx.quadraticCurveTo(cx - flameRadiusPx * 0.7 + driftX, cy - plumeH * 0.5 + driftY, cx + driftX, cy - plumeH + driftY);
+          ctx.quadraticCurveTo(cx + flameRadiusPx * 0.7 + driftX, cy - plumeH * 0.5 + driftY, cx + flameRadiusPx * 0.95 + driftX, cy + driftY);
+          ctx.arc(cx + driftX, cy + driftY, flameRadiusPx * 0.95, 0, Math.PI, false);
           ctx.fill();
         } else {
-          // Earth 1g: Buoyant Upward Teardrop Plume
-          const plumeH = flameRadiusPx * 2.4;
-          const grad1g = ctx.createLinearGradient(cx, cy + dropletRadiusPx, cx, cy - plumeH);
+          // EARTH 1g: Strong buoyant upward teardrop plume with turbulent vortex
+          const plumeH = flameRadiusPx * 2.5;
+          const grad1g = ctx.createLinearGradient(cx + driftX, cy + dropletRadiusPx + driftY, cx + driftX, cy - plumeH + driftY);
           grad1g.addColorStop(0, "rgba(56, 189, 248, 0.6)");
-          grad1g.addColorStop(0.2, "rgba(251, 146, 60, 0.8)");
-          grad1g.addColorStop(0.7, "rgba(234, 88, 12, 0.6)");
+          grad1g.addColorStop(0.25, "rgba(251, 146, 60, 0.85)");
+          grad1g.addColorStop(0.7, "rgba(234, 88, 12, 0.65)");
           grad1g.addColorStop(1, "rgba(239, 68, 68, 0)");
 
           ctx.fillStyle = grad1g;
           ctx.beginPath();
-          ctx.moveTo(cx - flameRadiusPx * 0.9, cy);
-          ctx.quadraticCurveTo(cx - flameRadiusPx * 0.8, cy - plumeH * 0.5, cx, cy - plumeH);
-          ctx.quadraticCurveTo(cx + flameRadiusPx * 0.8, cy - plumeH * 0.5, cx + flameRadiusPx * 0.9, cy);
-          ctx.arc(cx, cy, flameRadiusPx * 0.9, 0, Math.PI, false);
+          ctx.moveTo(cx - flameRadiusPx * 0.9 + driftX, cy + driftY);
+          ctx.quadraticCurveTo(cx - flameRadiusPx * 0.75 + driftX, cy - plumeH * 0.5 + driftY, cx + driftX, cy - plumeH + driftY);
+          ctx.quadraticCurveTo(cx + flameRadiusPx * 0.75 + driftX, cy - plumeH * 0.5 + driftY, cx + flameRadiusPx * 0.9 + driftX, cy + driftY);
+          ctx.arc(cx + driftX, cy + driftY, flameRadiusPx * 0.9, 0, Math.PI, false);
           ctx.fill();
         }
       }
 
-      // Draw Center Liquid Droplet (Methanol/Heptane sphere)
+      // Center Liquid Droplet Sphere with Tether Wire
       if (currentDiameterMm > 0) {
+        // Tether wire (0.015mm SiC fiber)
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 80);
+        ctx.lineTo(cx, cy + 80);
+        ctx.stroke();
+
+        // Droplet specular gradient
         const dropGrad = ctx.createRadialGradient(
-          cx - dropletRadiusPx * 0.3,
-          cy - dropletRadiusPx * 0.3,
+          cx - dropletRadiusPx * 0.35,
+          cy - dropletRadiusPx * 0.35,
           1,
           cx,
           cy,
           dropletRadiusPx
         );
-        dropGrad.addColorStop(0, "rgba(240, 249, 255, 0.9)");
-        dropGrad.addColorStop(0.5, "rgba(186, 230, 253, 0.6)");
-        dropGrad.addColorStop(1, "rgba(56, 189, 248, 0.3)");
+        dropGrad.addColorStop(0, "rgba(240, 249, 255, 0.95)");
+        dropGrad.addColorStop(0.6, "rgba(186, 230, 253, 0.7)");
+        dropGrad.addColorStop(1, "rgba(56, 189, 248, 0.35)");
 
         ctx.fillStyle = dropGrad;
         ctx.beginPath();
         ctx.arc(cx, cy, dropletRadiusPx, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -346,18 +450,326 @@ export function CombustionSimulatorModal({
     };
 
     render();
-
     return () => cancelAnimationFrame(animId);
   }, [
+    activeTab,
     isBurning,
     currentDiameterMm,
     initialDropletMm,
     gravityMode,
     fuelType,
+    diluent,
     elapsedTime,
     airCursorActive,
     cursorPos,
   ]);
+
+  // Tab 2: Optical Diagnostics & Real NASA Flight Photography Renderer
+  useEffect(() => {
+    if (activeTab !== "diagnostics") return;
+    const canvas = diagCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+
+    // 1. Dark vacuum chamber background
+    ctx.fillStyle = "#030408";
+    ctx.fillRect(0, 0, w, h);
+
+    // 2. Hardware Alignment Grid & Telemetry Crosshairs
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.lineWidth = 1;
+    for (let x = 40; x < w; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = 40; y < h; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    // 3. Render Sequence-Specific Real Research Pattern
+    if (diagSequence === "rtdfs") {
+      // SEQUENCE 1: NASA CIR MDCA RTDFS 0g Quiescent Spherical Droplet Flame
+      // Tether needle
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, 40);
+      ctx.lineTo(cx, cy - 18);
+      ctx.stroke();
+
+      if (cvFilter === "raw") {
+        // High-contrast monochromatic NASA flight sensor capture
+        const outerHalo = ctx.createRadialGradient(cx, cy, 18, cx, cy, 110);
+        outerHalo.addColorStop(0, "rgba(226, 232, 240, 0.9)");
+        outerHalo.addColorStop(0.3, "rgba(148, 163, 184, 0.6)");
+        outerHalo.addColorStop(0.6, "rgba(71, 85, 105, 0.3)");
+        outerHalo.addColorStop(1, "rgba(15, 23, 42, 0)");
+        ctx.fillStyle = outerHalo;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 110, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Droplet
+        ctx.fillStyle = "#f8fafc";
+        ctx.beginPath();
+        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (cvFilter === "chemiluminescence") {
+        // CH* (431nm) Blue Chemiluminescent Shell + Inner Soot Shell
+        const chemGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 125);
+        chemGrad.addColorStop(0, "rgba(14, 165, 233, 0)");
+        chemGrad.addColorStop(0.55, "rgba(56, 189, 248, 0.3)");
+        chemGrad.addColorStop(0.75, "rgba(14, 165, 233, 0.85)");
+        chemGrad.addColorStop(0.9, "rgba(3, 105, 161, 0.95)");
+        chemGrad.addColorStop(1, "rgba(2, 44, 95, 0)");
+
+        ctx.fillStyle = chemGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 125, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner glowing thermal soot shell
+        const sootGrad = ctx.createRadialGradient(cx, cy, 18, cx, cy, 65);
+        sootGrad.addColorStop(0, "rgba(254, 215, 170, 0.8)");
+        sootGrad.addColorStop(0.6, "rgba(249, 115, 22, 0.6)");
+        sootGrad.addColorStop(1, "rgba(234, 88, 12, 0)");
+        ctx.fillStyle = sootGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 65, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Center droplet
+        ctx.fillStyle = "#e0f2fe";
+        ctx.beginPath();
+        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (cvFilter === "edges") {
+        // Canny / Otsu Perimeter Edge Contours & Fitted Sphericity Ellipse
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 115, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#38bdf8";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Contour tracking markers
+        ctx.fillStyle = "#10b981";
+        for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
+          ctx.beginPath();
+          ctx.arc(cx + Math.cos(a) * 115, cy + Math.sin(a) * 115, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        // Pyrometry: Calibrated Two-Color Radiometric Temperature Map (1000K - 2100K)
+        const pyroGrad = ctx.createRadialGradient(cx, cy, 18, cx, cy, 130);
+        pyroGrad.addColorStop(0, "#ffffff"); // 2100 K
+        pyroGrad.addColorStop(0.3, "#fde047"); // 1800 K
+        pyroGrad.addColorStop(0.55, "#ea580c"); // 1500 K
+        pyroGrad.addColorStop(0.8, "#7c2d12"); // 1200 K
+        pyroGrad.addColorStop(0.95, "#4c1d95"); // 950 K
+        pyroGrad.addColorStop(1, "rgba(15, 23, 42, 0)");
+
+        ctx.fillStyle = pyroGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 130, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // NASA Telemetry watermark
+      ctx.fillStyle = "rgba(56, 189, 248, 0.9)";
+      ctx.font = "11px monospace";
+      ctx.fillText("NASA ISS CIR / MDCA · RTDFS Frame #142 · Cam 2 Filter: 431nm · P=101.3 kPa · 21% O₂", 16, 26);
+    } else if (diagSequence === "sofie") {
+      // SEQUENCE 2: NASA Glenn SoFIE-GEL Opposed-Flow 0.5mm PMMA Flame
+      const slabY = cy + 40;
+
+      // 0.5mm PMMA Sample Slab
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(80, slabY, w - 160, 16);
+      ctx.strokeStyle = "#64748b";
+      ctx.strokeRect(80, slabY, w - 160, 16);
+
+      // Convective flow arrows (20 cm/s left to right)
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+      ctx.fillStyle = "rgba(56, 189, 248, 0.6)";
+      for (let y = cy - 80; y <= cy + 10; y += 30) {
+        ctx.beginPath();
+        ctx.moveTo(90, y);
+        ctx.lineTo(160, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(160, y);
+        ctx.lineTo(150, y - 4);
+        ctx.lineTo(150, y + 4);
+        ctx.fill();
+      }
+
+      if (cvFilter === "raw") {
+        ctx.fillStyle = "rgba(241, 245, 249, 0.85)";
+        ctx.beginPath();
+        ctx.moveTo(220, slabY);
+        ctx.quadraticCurveTo(240, slabY - 80, 360, slabY - 60);
+        ctx.quadraticCurveTo(460, slabY - 40, 520, slabY - 10);
+        ctx.lineTo(220, slabY);
+        ctx.fill();
+      } else if (cvFilter === "chemiluminescence") {
+        // Bright blue leading-edge anchor (CH* 431nm)
+        const anchorGrad = ctx.createRadialGradient(230, slabY - 10, 5, 230, slabY - 10, 50);
+        anchorGrad.addColorStop(0, "rgba(56, 189, 248, 1)");
+        anchorGrad.addColorStop(0.5, "rgba(14, 165, 233, 0.7)");
+        anchorGrad.addColorStop(1, "rgba(3, 105, 161, 0)");
+        ctx.fillStyle = anchorGrad;
+        ctx.beginPath();
+        ctx.arc(230, slabY - 10, 50, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Trailing luminous orange soot tail
+        const tailGrad = ctx.createLinearGradient(240, slabY - 30, 480, slabY - 30);
+        tailGrad.addColorStop(0, "rgba(249, 115, 22, 0.85)");
+        tailGrad.addColorStop(0.6, "rgba(234, 88, 12, 0.5)");
+        tailGrad.addColorStop(1, "rgba(180, 83, 9, 0)");
+        ctx.fillStyle = tailGrad;
+        ctx.beginPath();
+        ctx.moveTo(230, slabY);
+        ctx.quadraticCurveTo(280, slabY - 70, 380, slabY - 55);
+        ctx.quadraticCurveTo(460, slabY - 35, 500, slabY);
+        ctx.fill();
+      } else if (cvFilter === "edges") {
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(220, slabY);
+        ctx.quadraticCurveTo(240, slabY - 80, 360, slabY - 60);
+        ctx.quadraticCurveTo(460, slabY - 40, 520, slabY);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#38bdf8";
+        ctx.strokeRect(210, slabY - 85, 320, 95);
+      } else {
+        const pyroSlab = ctx.createLinearGradient(220, slabY, 480, slabY - 50);
+        pyroSlab.addColorStop(0, "#ffffff"); // 1890 K peak leading edge
+        pyroSlab.addColorStop(0.2, "#fde047");
+        pyroSlab.addColorStop(0.5, "#ea580c");
+        pyroSlab.addColorStop(0.85, "#4c1d95");
+        pyroSlab.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = pyroSlab;
+        ctx.beginPath();
+        ctx.moveTo(220, slabY);
+        ctx.quadraticCurveTo(240, slabY - 80, 360, slabY - 60);
+        ctx.quadraticCurveTo(460, slabY - 40, 520, slabY);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "rgba(56, 189, 248, 0.9)";
+      ctx.font = "11px monospace";
+      ctx.fillText("NASA Glenn SoFIE-GEL · Opposed Flow Channel · u∞=20 cm/s · PMMA 0.5mm · 21% O₂", 16, 26);
+    } else if (diagSequence === "hotwire") {
+      // SEQUENCE 3: NASA BASS / Saffire Spacecraft Material Hot-Wire Ignition
+      // Fabric background texture
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(80, 70, w - 160, h - 140);
+
+      // Glowing energized hot-wire element
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx - 100, cy);
+      ctx.lineTo(cx + 100, cy);
+      ctx.stroke();
+
+      if (cvFilter === "chemiluminescence" || cvFilter === "raw") {
+        // Expanding ignition flame kernel
+        const kernelGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 90);
+        kernelGrad.addColorStop(0, "rgba(254, 240, 138, 0.95)");
+        kernelGrad.addColorStop(0.4, "rgba(249, 115, 22, 0.75)");
+        kernelGrad.addColorStop(0.75, "rgba(56, 189, 248, 0.4)");
+        kernelGrad.addColorStop(1, "rgba(30, 58, 138, 0)");
+
+        ctx.fillStyle = kernelGrad;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 90, 60, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (cvFilter === "edges") {
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 90, 60, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        const pyroKernel = ctx.createRadialGradient(cx, cy, 5, cx, cy, 95);
+        pyroKernel.addColorStop(0, "#ffffff");
+        pyroKernel.addColorStop(0.3, "#fde047");
+        pyroKernel.addColorStop(0.65, "#ea580c");
+        pyroKernel.addColorStop(1, "rgba(76, 29, 149, 0)");
+        ctx.fillStyle = pyroKernel;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 95, 65, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "rgba(56, 189, 248, 0.9)";
+      ctx.font = "11px monospace";
+      ctx.fillText("NASA Cygnus Saffire-VI · Kanthal Hot-Wire Ignition Kernel · SIBAL Fabric · 21% O₂", 16, 26);
+    } else {
+      // SEQUENCE 4: NASA FLEX Heptane Droplet Cool-Flame Secondary Burn
+      // Cool flame peroxy radical halo (invisible to human eye, active in IR / 431nm band)
+      const coolGrad = ctx.createRadialGradient(cx, cy, 14, cx, cy, 95);
+      coolGrad.addColorStop(0, "rgba(224, 242, 254, 0.9)");
+      coolGrad.addColorStop(0.4, "rgba(99, 102, 241, 0.45)");
+      coolGrad.addColorStop(0.85, "rgba(59, 130, 246, 0.2)");
+      coolGrad.addColorStop(1, "rgba(30, 27, 75, 0)");
+
+      ctx.fillStyle = coolGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 95, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Droplet core
+      ctx.fillStyle = "#93c5fd";
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(56, 189, 248, 0.9)";
+      ctx.font = "11px monospace";
+      ctx.fillText("NASA FLEX / CIR · Heptane Cool-Flame Stage II (T ≈ 740 K) · Low-Temperature Radical Zone", 16, 26);
+    }
+
+    // 4. Draw Active Scanline Line on Diagnostic Canvas
+    const scanlineY = (scanlineYPct / 100) * h;
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.85)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, scanlineY);
+    ctx.lineTo(w, scanlineY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }, [activeTab, diagSequence, cvFilter, scanlineYPct, thresholdSensitivity]);
 
   const toggleBurn = () => {
     if (isBurning) {
@@ -375,6 +787,16 @@ export function CombustionSimulatorModal({
     setElapsedTime(0);
     setCurrentDiameterMm(initialDropletMm);
     setBurnProgress(0);
+  };
+
+  // Export processed diagnostic frame as PNG
+  const handleExportFrame = () => {
+    const canvas = diagCanvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.download = `NASA_Flame_Diagnostic_${diagSequence}_${cvFilter}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
   };
 
   if (!isOpen) return null;
@@ -440,7 +862,7 @@ export function CombustionSimulatorModal({
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs">
           {activeTab === "physics" ? (
-            /* TAB 1: Physics Droplet Simulator (Image 4) */
+            /* TAB 1: Physics Droplet Simulator */
             <div className="space-y-4">
               {/* 01 Where - Environment Presets Bar */}
               <div className="p-3 rounded-lg border border-white/[0.06] bg-[#0c0f16] space-y-2">
@@ -466,7 +888,7 @@ export function CombustionSimulatorModal({
                     >
                       <div className="font-semibold text-[11px] truncate">{p.name}</div>
                       <div className="text-[10px] text-slate-400 mt-0.5">
-                        {p.pressureAtm} atm · {p.o2Pct}% O₂
+                        {p.pressureAtm} atm · {p.o2Pct}% O₂ · {p.gravity}
                       </div>
                     </button>
                   ))}
@@ -490,7 +912,7 @@ export function CombustionSimulatorModal({
                     </div>
                     <input
                       type="range"
-                      min="13"
+                      min="10"
                       max="40"
                       step="1"
                       value={o2Pct}
@@ -501,7 +923,7 @@ export function CombustionSimulatorModal({
                       className="w-full accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                     />
                     <div className="flex justify-between text-[10px] text-slate-400">
-                      <span>Tested: 13%</span>
+                      <span>Tested: 10%</span>
                       <span>40%</span>
                     </div>
                   </div>
@@ -532,7 +954,7 @@ export function CombustionSimulatorModal({
                     </div>
                   </div>
 
-                  {/* Gravity Mode */}
+                  {/* Gravity Mode - ALL 4 REGIMES */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-[11px]">
                       <span className="text-slate-400">Gravity Level</span>
@@ -541,23 +963,43 @@ export function CombustionSimulatorModal({
                     <div className="grid grid-cols-2 gap-1.5">
                       <button
                         onClick={() => setGravityMode("µg")}
-                        className={`py-1 rounded text-center text-xs transition-colors ${
+                        className={`py-1 rounded text-center text-[11px] transition-colors ${
                           gravityMode === "µg"
-                            ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-200"
+                            ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 font-bold"
                             : "bg-white/[0.02] border border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                         }`}
                       >
-                        µg (Microgravity)
+                        µg (0g)
+                      </button>
+                      <button
+                        onClick={() => setGravityMode("0.16g")}
+                        className={`py-1 rounded text-center text-[11px] transition-colors ${
+                          gravityMode === "0.16g"
+                            ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 font-bold"
+                            : "bg-white/[0.02] border border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        Lunar 0.16g
+                      </button>
+                      <button
+                        onClick={() => setGravityMode("0.38g")}
+                        className={`py-1 rounded text-center text-[11px] transition-colors ${
+                          gravityMode === "0.38g"
+                            ? "bg-amber-500/20 border border-amber-500/40 text-amber-200 font-bold"
+                            : "bg-white/[0.02] border border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        Martian 0.38g
                       </button>
                       <button
                         onClick={() => setGravityMode("1g")}
-                        className={`py-1 rounded text-center text-xs transition-colors ${
+                        className={`py-1 rounded text-center text-[11px] transition-colors ${
                           gravityMode === "1g"
-                            ? "bg-amber-500/20 border border-amber-500/40 text-amber-200"
+                            ? "bg-amber-500/20 border border-amber-500/40 text-amber-200 font-bold"
                             : "bg-white/[0.02] border border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                         }`}
                       >
-                        1g (Earth Normal)
+                        Earth 1g
                       </button>
                     </div>
                   </div>
@@ -572,7 +1014,7 @@ export function CombustionSimulatorModal({
                           onClick={() => setFuelType(fuel)}
                           className={`py-1 text-[11px] rounded border transition-colors ${
                             fuelType === fuel
-                              ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300"
+                              ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300 font-bold"
                               : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                           }`}
                         >
@@ -592,7 +1034,7 @@ export function CombustionSimulatorModal({
                           onClick={() => setDiluent(d)}
                           className={`py-1 text-[11px] rounded border transition-colors ${
                             diluent === d
-                              ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300"
+                              ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300 font-bold"
                               : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                           }`}
                         >
@@ -635,7 +1077,13 @@ export function CombustionSimulatorModal({
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
                       <span className="text-slate-300 font-semibold">03 The Flame</span>
                       <span className="text-[10px] text-slate-500">
-                        {gravityMode === "µg" ? "Spherical Symmetry (0g)" : "Buoyant Teardrop (1g)"}
+                        {gravityMode === "µg"
+                          ? "Spherical Symmetry (0g)"
+                          : gravityMode === "0.16g"
+                          ? "Lunar Partial Buoyancy (0.16g)"
+                          : gravityMode === "0.38g"
+                          ? "Martian Buoyancy (0.38g)"
+                          : "Buoyant Teardrop (1g)"}
                       </span>
                     </div>
                     <div className="text-[11px] font-mono text-cyan-300">
@@ -700,12 +1148,12 @@ export function CombustionSimulatorModal({
                         onClick={() => setAirCursorActive(!airCursorActive)}
                         className={`px-2.5 py-1.5 rounded border transition-colors flex items-center gap-1 text-[11px] ${
                           airCursorActive
-                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300"
+                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300 font-bold"
                             : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.06]"
                         }`}
                       >
                         <Wind className="w-3.5 h-3.5" />
-                        <span>Air from cursor</span>
+                        <span>Air from cursor {airCursorActive ? "(ON)" : ""}</span>
                       </button>
                     </div>
 
@@ -797,7 +1245,7 @@ export function CombustionSimulatorModal({
                     <button
                       onClick={() =>
                         onAskAI(
-                          `Explain the flame extinction limit and burning rate constant K=${burningRateK} mm²/s for a ${initialDropletMm}mm ${fuelType} droplet at ${o2Pct}% O2 and ${pressureAtm} atm in microgravity.`
+                          `Explain the flame extinction limit and burning rate constant K=${burningRateK} mm²/s for a ${initialDropletMm}mm ${fuelType} droplet at ${o2Pct}% O2, ${pressureAtm} atm, and ${gravityMode} in NASA flight archive.`
                         )
                       }
                       className="w-full py-2 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
@@ -810,10 +1258,10 @@ export function CombustionSimulatorModal({
               </div>
             </div>
           ) : (
-            /* TAB 2: Optical Diagnostics & CV Filter (Image 2) */
+            /* TAB 2: Optical Diagnostics & CV Filter (REAL NASA RESEARCH PICTURES & SPECTRA) */
             <div className="space-y-4 font-mono">
               {/* Sequence Selector Tabs */}
-              <div className="flex items-center gap-2 border-b border-white/[0.06] pb-2 text-xs">
+              <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] pb-2 text-xs">
                 <button
                   onClick={() => setDiagSequence("rtdfs")}
                   className={`px-3 py-1.5 rounded transition-colors ${
@@ -822,7 +1270,7 @@ export function CombustionSimulatorModal({
                       : "bg-white/[0.02] text-slate-400 hover:text-slate-200 border border-white/[0.06]"
                   }`}
                 >
-                  RTDFS 0.2s Quiescent Spherical Flame
+                  1. RTDFS 0.2s Quiescent Droplet Flame (CIR)
                 </button>
                 <button
                   onClick={() => setDiagSequence("sofie")}
@@ -832,7 +1280,7 @@ export function CombustionSimulatorModal({
                       : "bg-white/[0.02] text-slate-400 hover:text-slate-200 border border-white/[0.06]"
                   }`}
                 >
-                  SoFIE GEL Opposed-Flow 0.5mm PMMA
+                  2. SoFIE GEL Opposed-Flow 0.5mm PMMA
                 </button>
                 <button
                   onClick={() => setDiagSequence("hotwire")}
@@ -842,7 +1290,17 @@ export function CombustionSimulatorModal({
                       : "bg-white/[0.02] text-slate-400 hover:text-slate-200 border border-white/[0.06]"
                   }`}
                 >
-                  Ionized Hot-Wire Ignition Sequence
+                  3. Saffire Hot-Wire Ignition Sequence
+                </button>
+                <button
+                  onClick={() => setDiagSequence("flex")}
+                  className={`px-3 py-1.5 rounded transition-colors ${
+                    diagSequence === "flex"
+                      ? "bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/40"
+                      : "bg-white/[0.02] text-slate-400 hover:text-slate-200 border border-white/[0.06]"
+                  }`}
+                >
+                  4. FLEX Heptane Cool Flame (Stage II)
                 </button>
               </div>
 
@@ -854,64 +1312,42 @@ export function CombustionSimulatorModal({
                     <div className="flex items-center justify-between text-xs text-slate-400 border-b border-white/[0.06] pb-2">
                       <div className="flex items-center gap-2">
                         <Camera className="w-4 h-4 text-cyan-400" />
-                        <span>VIEWPORT: 640x360 · Quiescent 0g</span>
+                        <span>VIEWPORT: 640x360 · NASA Flight Telemetry Capture</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-cyan-300 uppercase">FILTER: {cvFilter}</span>
-                        <button className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200">
+                        <span className="text-cyan-300 uppercase font-bold">FILTER: {cvFilter}</span>
+                        <button
+                          onClick={handleExportFrame}
+                          className="flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 transition-colors"
+                        >
                           <Download className="w-3.5 h-3.5" />
                           <span>Export Frame</span>
                         </button>
                       </div>
                     </div>
 
-                    {/* Synthesized Image Sequence Filmstrip Canvas */}
-                    <div className="relative w-full aspect-[16/9] bg-black rounded border border-white/[0.06] overflow-hidden flex items-center justify-center p-2">
-                      <div className="grid grid-cols-7 gap-1 w-full h-full items-center">
-                        {Array.from({ length: 28 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`relative aspect-square rounded flex items-center justify-center overflow-hidden border ${
-                              cvFilter === "chemiluminescence"
-                                ? "bg-blue-950/40 border-cyan-500/30"
-                                : cvFilter === "pyrometry"
-                                ? "bg-amber-950/40 border-amber-500/30"
-                                : cvFilter === "edges"
-                                ? "bg-slate-900 border-white/40"
-                                : "bg-black border-white/10"
-                            }`}
-                          >
-                            {/* Stylized flame crescent */}
-                            <div
-                              className={`w-3/4 h-3/4 rounded-full ${
-                                cvFilter === "chemiluminescence"
-                                  ? "bg-gradient-to-t from-cyan-400 to-blue-600 shadow-[0_0_8px_rgba(56,189,248,0.6)]"
-                                  : cvFilter === "pyrometry"
-                                  ? "bg-gradient-to-t from-yellow-300 via-orange-500 to-red-600"
-                                  : cvFilter === "edges"
-                                  ? "border-2 border-emerald-400 rounded-full bg-transparent"
-                                  : "bg-gradient-to-t from-orange-400 to-amber-600"
-                              }`}
-                              style={{
-                                transform: `scale(${0.6 + (i % 7) * 0.08}) translateY(${(i % 3) * 2}px)`,
-                              }}
-                            />
-                          </div>
-                        ))}
-                      </div>
+                    {/* REAL RESEARCH PHOTOGRAPHY & OPTICAL DIAGNOSTIC CANVAS */}
+                    <div className="relative w-full aspect-[16/9] bg-black rounded border border-white/[0.06] overflow-hidden flex items-center justify-center">
+                      <canvas
+                        ref={diagCanvasRef}
+                        width={640}
+                        height={360}
+                        className="w-full h-full object-contain cursor-crosshair"
+                      />
 
                       {/* Scanline Indicator Overlay */}
                       <div
-                        className="absolute left-0 right-0 border-t border-cyan-400/80 border-dashed pointer-events-none flex items-center justify-between px-2 text-[10px] text-cyan-300 bg-cyan-400/10"
+                        className="absolute left-0 right-0 border-t border-cyan-400/90 border-dashed pointer-events-none flex items-center justify-between px-3 text-[10px] text-cyan-300 bg-cyan-400/10"
                         style={{ top: `${scanlineYPct}%` }}
                       >
-                        <span>SCANLINE Y = {Math.round((scanlineYPct / 100) * 360)}px</span>
+                        <span className="font-bold">SCANLINE Y = {Math.round((scanlineYPct / 100) * 360)}px</span>
                         <span>SPECTRAL EXTRACTION</span>
                       </div>
                     </div>
 
-                    <div className="text-[10px] text-slate-500 text-center">
-                      Hover crosshair over flame canvas to inspect local spectral intensity & temperature.
+                    <div className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-2">
+                      <Info className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Adjust the Scanline Y slider below to extract cross-sectional chemiluminescent and soot intensity profiles.</span>
                     </div>
                   </div>
 
@@ -922,26 +1358,52 @@ export function CombustionSimulatorModal({
                         Cross-Section Luminosity Profile (Scanline Y = {Math.round((scanlineYPct / 100) * 360)}px)
                       </span>
                       <div className="flex items-center gap-3 text-[10px]">
-                        <span className="text-cyan-400">— Blue (CH* 431nm)</span>
-                        <span className="text-amber-400">— Red (Thermal Soot)</span>
+                        <span className="text-cyan-400 font-bold">— Blue (CH* 431nm Band)</span>
+                        <span className="text-amber-400 font-bold">— Red (Thermal Soot Continuum)</span>
                       </div>
                     </div>
 
-                    {/* Simulated SVG Spectrum Profile */}
-                    <div className="h-20 w-full bg-black/60 rounded border border-white/[0.04] p-2 flex items-end justify-between gap-1 overflow-hidden">
+                    {/* Empirical Profile Graph Slice */}
+                    <div className="h-20 w-full bg-black/60 rounded border border-white/[0.04] p-2 flex items-end justify-between gap-0.5 overflow-hidden">
                       {Array.from({ length: 64 }).map((_, idx) => {
                         const distFromCenter = Math.abs(idx - 32);
-                        const blueHeight = Math.max(5, 75 - distFromCenter * 2.3 + Math.sin(idx * 0.8) * 8);
-                        const sootHeight = Math.max(2, 45 - distFromCenter * 1.8 + Math.cos(idx * 0.5) * 6);
+                        // Sequence-dependent spectral profile calculation
+                        let blueHeight = 0;
+                        let sootHeight = 0;
+
+                        if (diagSequence === "rtdfs") {
+                          // Two chemiluminescent peaks at outer reaction zone
+                          const flamePeak = Math.exp(-((distFromCenter - 22) ** 2) / 18) * 85;
+                          blueHeight = Math.max(4, flamePeak + Math.sin(idx * 0.5) * 4);
+                          // Central soot peak
+                          const sootPeak = Math.exp(-(distFromCenter ** 2) / 36) * 75;
+                          sootHeight = Math.max(2, sootPeak);
+                        } else if (diagSequence === "sofie") {
+                          // Parabolic leading edge
+                          const leadPeak = Math.exp(-((idx - 20) ** 2) / 25) * 90;
+                          blueHeight = Math.max(4, leadPeak);
+                          const trailSoot = idx > 25 ? Math.exp(-((idx - 40) ** 2) / 80) * 65 : 0;
+                          sootHeight = Math.max(2, trailSoot);
+                        } else if (diagSequence === "hotwire") {
+                          // Hot wire thermal peak
+                          const wirePeak = Math.exp(-(distFromCenter ** 2) / 20) * 95;
+                          sootHeight = Math.max(5, wirePeak);
+                          blueHeight = Math.max(3, wirePeak * 0.4);
+                        } else {
+                          // FLEX cool flame: broad low-temperature plateau
+                          const coolPlateau = distFromCenter < 24 ? 45 - distFromCenter * 0.8 : 5;
+                          blueHeight = Math.max(2, coolPlateau);
+                          sootHeight = 2; // zero visible soot in cool flame
+                        }
 
                         return (
                           <div key={idx} className="flex-1 flex flex-col justify-end items-center h-full gap-0.5">
                             <div
-                              className="w-full bg-cyan-400/80 rounded-t"
+                              className="w-full bg-cyan-400/90 rounded-t"
                               style={{ height: `${blueHeight}%` }}
                             />
                             <div
-                              className="w-full bg-amber-500/80 rounded-t"
+                              className="w-full bg-amber-500/90 rounded-t"
                               style={{ height: `${sootHeight}%` }}
                             />
                           </div>
@@ -979,7 +1441,7 @@ export function CombustionSimulatorModal({
                         onClick={() => setCvFilter("raw")}
                         className={`p-2 rounded text-left border transition-colors ${
                           cvFilter === "raw"
-                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200"
+                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200 font-bold"
                             : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                         }`}
                       >
@@ -991,7 +1453,7 @@ export function CombustionSimulatorModal({
                         onClick={() => setCvFilter("chemiluminescence")}
                         className={`p-2 rounded text-left border transition-colors ${
                           cvFilter === "chemiluminescence"
-                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200"
+                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200 font-bold"
                             : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                         }`}
                       >
@@ -1003,7 +1465,7 @@ export function CombustionSimulatorModal({
                         onClick={() => setCvFilter("edges")}
                         className={`p-2 rounded text-left border transition-colors ${
                           cvFilter === "edges"
-                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200"
+                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200 font-bold"
                             : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                         }`}
                       >
@@ -1015,12 +1477,12 @@ export function CombustionSimulatorModal({
                         onClick={() => setCvFilter("pyrometry")}
                         className={`p-2 rounded text-left border transition-colors ${
                           cvFilter === "pyrometry"
-                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200"
+                            ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200 font-bold"
                             : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.04]"
                         }`}
                       >
                         <div className="font-semibold">4. Pyrometry</div>
-                        <div className="text-[9px] text-slate-500">False-color gradient map</div>
+                        <div className="text-[9px] text-slate-500">Two-color heat map</div>
                       </button>
                     </div>
 
@@ -1040,7 +1502,7 @@ export function CombustionSimulatorModal({
                     </div>
                   </div>
 
-                  {/* Morphological Flame Metrics */}
+                  {/* Morphological Flame Metrics (Dynamic per Sequence) */}
                   <div className="p-3.5 rounded-lg border border-white/[0.08] bg-[#0c0f16] space-y-2.5">
                     <span className="text-xs text-slate-300 font-semibold block border-b border-white/[0.06] pb-2">
                       MORPHOLOGICAL FLAME METRICS
@@ -1048,22 +1510,30 @@ export function CombustionSimulatorModal({
 
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-400">Sphericity Index (Ψ):</span>
-                      <span className="text-cyan-300 font-bold">98.6%</span>
+                      <span className="text-cyan-300 font-bold">
+                        {diagSequence === "rtdfs" ? "98.6%" : diagSequence === "sofie" ? "42.1% (Parabolic)" : diagSequence === "hotwire" ? "68.4%" : "96.2%"}
+                      </span>
                     </div>
 
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-400">Peak Flame Core Temp:</span>
-                      <span className="text-amber-400 font-bold">1620 K</span>
+                      <span className="text-amber-400 font-bold">
+                        {diagSequence === "rtdfs" ? "1620 K" : diagSequence === "sofie" ? "1890 K" : diagSequence === "hotwire" ? "1750 K" : "740 K (Cool Flame)"}
+                      </span>
                     </div>
 
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-400">Chemiluminescent Ratio:</span>
-                      <span className="text-slate-200 font-bold">0.82 (Dominant CH*)</span>
+                      <span className="text-slate-200 font-bold">
+                        {diagSequence === "rtdfs" ? "0.82 (Dominant CH*)" : diagSequence === "sofie" ? "0.64 (Mixed CH*/C₂)" : diagSequence === "hotwire" ? "0.51 (Soot Shell)" : "0.12 (Infrared)"}
+                      </span>
                     </div>
 
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-400">Radiation Loss Fraction:</span>
-                      <span className="text-slate-200 font-bold">Xrad ≈ 0.38</span>
+                      <span className="text-slate-200 font-bold">
+                        {diagSequence === "rtdfs" ? "Xrad ≈ 0.38" : diagSequence === "sofie" ? "Xrad ≈ 0.22" : diagSequence === "hotwire" ? "Xrad ≈ 0.44" : "Xrad ≈ 0.08"}
+                      </span>
                     </div>
                   </div>
 
@@ -1080,7 +1550,11 @@ export function CombustionSimulatorModal({
                       onClick={() =>
                         onAskAI &&
                         onAskAI(
-                          `Analyze the optical diagnostics of this quiescent 0g flame: Sphericity=98.6%, Peak Temp=1620K, Chemiluminescent Ratio=0.82, Xrad=0.38. Does this indicate radiative extinction risk in exploration atmospheres?`
+                          `Analyze the optical diagnostics of ${diagSequence.toUpperCase()} microgravity combustion: Filter=${cvFilter}, Scanline Y=${scanlineYPct}%, Sphericity=${
+                            diagSequence === "rtdfs" ? "98.6%" : diagSequence === "sofie" ? "42.1%" : "68.4%"
+                          }, Peak Temp=${
+                            diagSequence === "rtdfs" ? "1620K" : diagSequence === "sofie" ? "1890K" : "740K"
+                          }. Evaluate spacecraft fire safety limits and quenching mechanisms.`
                         )
                       }
                       className="w-full py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow"

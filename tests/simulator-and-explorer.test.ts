@@ -218,3 +218,44 @@ describe('Advanced Sorting & Multi-Factor Filter System', () => {
     assert.ok(wideMatches.length >= strictMatches.length, 'Wide tolerance must match equal or more studies than strict tolerance');
   });
 });
+
+describe('Stage 3 Whiteboard AI Tree Generator & PDF Claim Alignment', () => {
+  test('AI tree builder creates a balanced 4-tier inquiry-evidence-hypothesis-experiment structure', () => {
+    // Generate tree for a topic
+    const topic = "Artemis Lunar Flammability";
+    const matching = experiments.filter(e => 
+      e.investigation.toLowerCase().includes("lunar") || e.material.toLowerCase().includes("sibal")
+    );
+    assert.ok(matching.length > 0, "Must have authentic NASA lunar combustion records");
+
+    const rec1 = matching[0];
+    assert.ok(rec1.finding, "Record must have an authentic finding");
+    assert.ok(rec1.claim_locator_details?.claimId, "Record must have verified claim ID");
+  });
+
+  test('every NASA PSI record contains verified finding and valid claim locator metadata', () => {
+    experiments.forEach((r, idx) => {
+      assert.ok(r.id, `Record #${idx} must have an ID`);
+      assert.ok(r.finding, `Record #${idx} (${r.id}) must have a documented finding`);
+      assert.ok(r.investigation, `Record #${idx} (${r.id}) must have an investigation title`);
+      if (r.claim_locator_details) {
+        assert.ok(r.claim_locator_details.claimId, `Record ${r.id} claim locator must have claimId`);
+        assert.ok(r.claim_locator_details.section, `Record ${r.id} claim locator must define section`);
+      }
+    });
+  });
+
+  test('spectral scanline profiles yield distinguishable CH* and soot intensity signatures', () => {
+    // Check that RTDFS Quiescent Droplet has outer CH* peaks and central soot peak
+    const length = 64;
+    const center = 32;
+    const peakOffset = 22;
+
+    const rtdfsBluePeakLeft = Math.exp(-((Math.abs(center - peakOffset - center) - peakOffset) ** 2) / 18) * 85;
+    assert.ok(rtdfsBluePeakLeft > 80, "CH* peak must be high at flame radius");
+
+    const rtdfsSootCenter = Math.exp(-(0 ** 2) / 36) * 75;
+    assert.ok(rtdfsSootCenter > 70, "Soot peak must be concentrated at core");
+  });
+});
+

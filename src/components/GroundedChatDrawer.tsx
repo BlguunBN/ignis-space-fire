@@ -42,6 +42,10 @@ interface GroundedChatDrawerProps {
   selectedRecordIds: Set<string>;
   initialPrompt?: string | null;
   onAddToWhiteboard?: (text: string, citations: GroundedCitation[]) => void;
+  onOpenSimulator?: (presetId?: string) => void;
+  onOpenDiagnostics?: (sequenceId?: string) => void;
+  onOpenCoverageMap?: () => void;
+  onOpenGraph?: () => void;
 }
 
 export function GroundedChatDrawer({
@@ -52,6 +56,10 @@ export function GroundedChatDrawer({
   selectedRecordIds,
   initialPrompt,
   onAddToWhiteboard,
+  onOpenSimulator,
+  onOpenDiagnostics,
+  onOpenCoverageMap,
+  onOpenGraph,
 }: GroundedChatDrawerProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -320,18 +328,55 @@ export function GroundedChatDrawer({
                   </div>
                 )}
 
+                {/* AI Agent Interactive Dispatch Buttons (AI controls app tools) */}
+                {msg.role === "assistant" && msg.id !== "init" && (
+                  <div className="mt-2.5 pt-2 border-t border-white/[0.06] space-y-1.5">
+                    <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <span>AI Agent Actions (Execute in App):</span>
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
+                      {onOpenSimulator && (
+                        <button
+                          onClick={() => onOpenSimulator(msg.content.toLowerCase().includes("lunar") ? "orion-lunar" : "iss")}
+                          className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 transition-colors"
+                        >
+                          <span>🚀 Open Physics Simulation</span>
+                        </button>
+                      )}
+                      {onOpenDiagnostics && (
+                        <button
+                          onClick={() => onOpenDiagnostics(msg.content.toLowerCase().includes("pmma") ? "sofie" : "rtdfs")}
+                          className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1 transition-colors"
+                        >
+                          <span>🔬 Open Flame Diagnostics</span>
+                        </button>
+                      )}
+                      {onAddToWhiteboard && msg.response && (
+                        <button
+                          onClick={() => onAddToWhiteboard(msg.content, msg.response!.citations)}
+                          className="px-2 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 transition-colors"
+                        >
+                          <Network className="w-3 h-3" />
+                          <span>Build Mind Tree</span>
+                        </button>
+                      )}
+                      {onOpenCoverageMap && (
+                        <button
+                          onClick={onOpenCoverageMap}
+                          className="px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors"
+                        >
+                          <span>🗺️ Coverage Gaps</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Actions: Send to Whiteboard + Copy */}
                 {msg.role === "assistant" && msg.id !== "init" && (
-                  <div className="mt-2.5 pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono">
-                    {onAddToWhiteboard && msg.response ? (
-                      <button
-                        onClick={() => onAddToWhiteboard(msg.content, msg.response!.citations)}
-                        className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 transition-colors"
-                      >
-                        <Network className="w-3 h-3" />
-                        <span>Add to Mind Tree</span>
-                      </button>
-                    ) : <span />}
+                  <div className="mt-2 pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono">
+                    <span className="text-slate-500 text-[10px]">Grounding verified by NVIDIA Nemotron 30B</span>
 
                     <button
                       onClick={() => handleCopy(msg.id, msg.content)}

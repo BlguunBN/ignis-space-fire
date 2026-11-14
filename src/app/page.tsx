@@ -556,6 +556,22 @@ export default function UnifiedWorkspace() {
           setIsAssistantOpen(false);
           setIsWhiteboardOpen(true);
         }}
+        onOpenSimulator={() => {
+          setIsAssistantOpen(false);
+          setIsSimulatorOpen(true);
+        }}
+        onOpenDiagnostics={() => {
+          setIsAssistantOpen(false);
+          setIsSimulatorOpen(true);
+        }}
+        onOpenCoverageMap={() => {
+          setIsAssistantOpen(false);
+          setIsCoverageOpen(true);
+        }}
+        onOpenGraph={() => {
+          setIsAssistantOpen(false);
+          setIsGraphOpen(true);
+        }}
       />
 
       {/* Stage 4: Global Knowledge Relationship Network Graph (Image 5) */}

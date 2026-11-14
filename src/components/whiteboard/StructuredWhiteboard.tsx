@@ -25,6 +25,11 @@ import {
   Save,
   Download,
   FolderOpen,
+  Bot,
+  BrainCircuit,
+  LayoutGrid,
+  Send,
+  Plus,
 } from "lucide-react";
 import {
   QuestionNode,
@@ -235,6 +240,8 @@ export function StructuredWhiteboard({
   const [nodes, setNodes, onNodesChange] = useNodesState(TEMPLATES.ventilation.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(TEMPLATES.ventilation.edges);
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
 
   // Wire onChange and onDelete callbacks into each node's data
   const handleUpdateNodeData = useCallback(
@@ -293,6 +300,163 @@ export function StructuredWhiteboard({
       ),
     [setEdges]
   );
+
+  // AI Agent: Auto-Generate complete grounded tree based on user prompt or active record
+  const handleAiGenerateTree = (customTopic?: string) => {
+    setIsAiGenerating(true);
+    const topic = customTopic || aiPrompt || (activeRecord ? `${activeRecord.material} combustion in ${activeRecord.gravity}` : "Exploration Atmosphere Flammability Boundaries");
+    
+    const records = experimentsData as any[];
+    const matchingRecords = records.filter(r => 
+      topic.toLowerCase().split(" ").some((w: string) => w.length > 3 && (r.investigation.toLowerCase().includes(w) || r.material.toLowerCase().includes(w)))
+    );
+    const rec1 = matchingRecords[0] || records[0];
+    const rec2 = matchingRecords[1] || records[1] || records[0];
+
+    const qId = `q-${Date.now()}`;
+    const ev1Id = `ev1-${Date.now()}`;
+    const ev2Id = `ev2-${Date.now()}`;
+    const hypId = `hyp-${Date.now()}`;
+    const expId = `exp-${Date.now()}`;
+
+    const newNodes: Node[] = [
+      {
+        id: qId,
+        type: "question",
+        position: { x: 420, y: 30 },
+        data: {
+          label: `${topic} Inquiry`,
+          details: `How do oxygen enrichment and convective velocity variations alter steady flame spread and radiative extinction thresholds?`,
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      },
+      {
+        id: ev1Id,
+        type: "evidence",
+        position: { x: 140, y: 190 },
+        data: {
+          claimId: rec1?.claim_locator_details?.claimId || "CLM-NASA-01",
+          investigation: rec1?.investigation || "NASA Flight Dataset",
+          conditions: `${rec1?.oxygen_pct ?? 21}% O₂ • ${rec1?.airflow_cm_s ?? 0} cm/s Flow • ${rec1?.pressure_kpa ?? 101.3} kPa`,
+          quote: rec1?.finding || "Empirical boundary measurement from flight archive.",
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      },
+      {
+        id: ev2Id,
+        type: "evidence",
+        position: { x: 700, y: 190 },
+        data: {
+          claimId: rec2?.claim_locator_details?.claimId || "CLM-NASA-02",
+          investigation: rec2?.investigation || "Comparative Flight Investigation",
+          conditions: `${rec2?.oxygen_pct ?? 28}% O₂ • ${rec2?.airflow_cm_s ?? 15} cm/s Flow • ${rec2?.pressure_kpa ?? 56} kPa`,
+          quote: rec2?.finding || "Comparative empirical flight observation.",
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      },
+      {
+        id: hypId,
+        type: "hypothesis",
+        position: { x: 420, y: 380 },
+        data: {
+          title: "Thermal Preheating vs Convective Strain Equilibrium",
+          prediction: "Low-velocity convective airflow expands flammability limits by sustaining residence time while suppressing upstream heat leakage.",
+          rationale: "Buoyant suppression stabilizes a thicker diffusive boundary layer, concentrating radical intermediate species.",
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      },
+      {
+        id: expId,
+        type: "experiment",
+        position: { x: 420, y: 560 },
+        data: {
+          facility: "ISS CIR / Saffire Duct",
+          objective: "High-O₂ Low-Speed Depressurization Extinction Validation",
+          airflow: "0 – 25 cm/s controlled convective flow",
+          oxygen: "16% – 34% O₂ exploration envelope",
+          pressure: "56 – 101.3 kPa (0.56 – 1.0 atm)",
+          geometry: "0.2m x 0.5m sample with dual-wavelength radiometer array",
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      },
+    ];
+
+    const newEdges: Edge[] = [
+      { id: `e-${qId}-${ev1Id}`, source: qId, target: ev1Id, animated: true, style: { stroke: "#38bdf8", strokeWidth: 2 } },
+      { id: `e-${qId}-${ev2Id}`, source: qId, target: ev2Id, animated: true, style: { stroke: "#38bdf8", strokeWidth: 2 } },
+      { id: `e-${ev1Id}-${hypId}`, source: ev1Id, target: hypId, style: { stroke: "#10b981", strokeWidth: 2 } },
+      { id: `e-${ev2Id}-${hypId}`, source: ev2Id, target: hypId, style: { stroke: "#10b981", strokeWidth: 2 } },
+      { id: `e-${hypId}-${expId}`, source: hypId, target: expId, animated: true, style: { stroke: "#c084fc", strokeWidth: 2 } },
+    ];
+
+    setNodes(newNodes);
+    setEdges(newEdges);
+    setAiPrompt("");
+    setTimeout(() => setIsAiGenerating(false), 400);
+  };
+
+  // AI Agent: Add Counter-Hypothesis Node
+  const handleAiAddCounterHypothesis = () => {
+    const hypCount = nodes.filter((n) => n.type === "hypothesis").length;
+    const hypNode: Node = {
+      id: `hyp-counter-${Date.now()}`,
+      type: "hypothesis",
+      position: { x: 740, y: 380 + (hypCount - 1) * 60 },
+      data: {
+        title: "Counter-Hypothesis: Radiative Wall Cooling Dominance",
+        prediction: "Sample extinction is primarily governed by conductive/radiative heat loss to cold chamber boundaries rather than chemical kinetic quenching.",
+        rationale: "Small-scale glovebox hardware geometry accelerates wall quenching at low velocities (<5 cm/s).",
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
+      },
+    };
+
+    setNodes((nds) => [...nds, hypNode]);
+
+    const qNode = nodes.find((n) => n.type === "question");
+    if (qNode) {
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: `e-${qNode.id}-${hypNode.id}`,
+          source: qNode.id,
+          target: hypNode.id,
+          animated: true,
+          style: { stroke: "#f59e0b", strokeWidth: 2, strokeDasharray: "4 4" },
+        },
+      ]);
+    }
+  };
+
+  // Auto-Layout: Evenly distributes nodes into balanced hierarchy across the full width
+  const handleAutoLayout = () => {
+    const questions = nodes.filter((n) => n.type === "question");
+    const evidence = nodes.filter((n) => n.type === "evidence");
+    const hypotheses = nodes.filter((n) => n.type === "hypothesis");
+    const experiments = nodes.filter((n) => n.type === "experiment");
+
+    const layoutLayer = (layerNodes: Node[], yPos: number) => {
+      const total = layerNodes.length;
+      const spacing = 360;
+      const startX = Math.max(100, 560 - ((total - 1) * spacing) / 2);
+      return layerNodes.map((n, i) => ({
+        ...n,
+        position: { x: startX + i * spacing, y: yPos },
+      }));
+    };
+
+    setNodes([
+      ...layoutLayer(questions, 30),
+      ...layoutLayer(evidence, 190),
+      ...layoutLayer(hypotheses, 390),
+      ...layoutLayer(experiments, 580),
+    ]);
+  };
 
   const handleSelectTemplate = (templateKey: string) => {
     const tmpl = TEMPLATES[templateKey];
@@ -494,10 +658,19 @@ export function StructuredWhiteboard({
           <Layers className="w-3.5 h-3.5" />
           <span>+ Proposal</span>
         </button>
+
+        <button
+          onClick={handleAutoLayout}
+          className="flex items-center gap-1 px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-white/10 rounded transition-colors ml-1"
+          title="Auto-organize layout to eliminate empty gaps"
+        >
+          <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Auto-Layout</span>
+        </button>
       </div>
 
       {/* Top Center: Preset Templates Switcher */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-1 bg-[#13171e] p-1 rounded-lg border border-white/[0.08] font-mono text-[11px]">
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 hidden lg:flex items-center gap-1 bg-[#13171e]/90 backdrop-blur-sm p-1 rounded-lg border border-white/[0.08] font-mono text-[11px]">
         <span className="text-slate-400 px-1.5">Template:</span>
         {Object.entries(TEMPLATES).map(([key, tmpl]) => (
           <button
@@ -543,8 +716,8 @@ export function StructuredWhiteboard({
         </button>
       </div>
 
-      {/* Canvas Viewport */}
-      <div className="h-[600px] w-full">
+      {/* Canvas Viewport - EXPANDED TO FULL AVAILABLE MODAL HEIGHT */}
+      <div className="flex-1 w-full h-full min-h-[500px] relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -553,9 +726,9 @@ export function StructuredWhiteboard({
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.2 }}
+          fitViewOptions={{ padding: 0.15 }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#334155" />
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#334155" />
           <Controls className="!bg-[#13171e] !border-white/10 !text-slate-200" />
           <MiniMap
             nodeColor={(n) => {
@@ -569,6 +742,59 @@ export function StructuredWhiteboard({
             maskColor="rgba(9, 10, 13, 0.75)"
           />
         </ReactFlow>
+
+        {/* BOTTOM AI AGENT COPILOT COMMAND BAR - AI AGENT CAN CREATE & EDIT THE MIND TREE */}
+        <div className="absolute bottom-3 left-4 right-4 z-20 bg-[#0c1017]/95 backdrop-blur-md border border-amber-500/30 rounded-xl p-2.5 shadow-2xl flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+          <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 whitespace-nowrap">
+              <Bot className="w-3.5 h-3.5" />
+              <span className="font-bold text-[11px]">AI Tree Copilot</span>
+            </div>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && aiPrompt.trim()) handleAiGenerateTree();
+                }}
+                placeholder="Instruct AI Agent to build, expand, or synthesize hypothesis tree (e.g. 'Artemis lunar flammability limits')..."
+                className="w-full bg-[#131722] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+              />
+            </div>
+            <button
+              onClick={() => handleAiGenerateTree()}
+              disabled={isAiGenerating}
+              className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5 fill-current" />
+              <span>{isAiGenerating ? "Synthesizing..." : "AI Auto-Build"}</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleAiAddCounterHypothesis}
+              className="px-2.5 py-1.5 bg-[#171b26] hover:bg-[#202534] text-amber-300 border border-amber-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+              title="AI adds an opposing physical mechanism node"
+            >
+              <BrainCircuit className="w-3 h-3 text-amber-400" />
+              <span>+ Counter-Hypothesis</span>
+            </button>
+            <button
+              onClick={() => handleAiGenerateTree("Droplet Cool-Flame Extinction Boundaries")}
+              className="px-2.5 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+            >
+              <span>+ Droplet Tree</span>
+            </button>
+            <button
+              onClick={() => handleAiGenerateTree("Exploration High-O2 56kPa Flammability")}
+              className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+            >
+              <span>+ Exploration Tree</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
