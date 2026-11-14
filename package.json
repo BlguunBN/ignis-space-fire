@@ -1,0 +1,35 @@
+{
+  "name": "ignis-space-fire",
+  "version": "0.1.0",
+  "private": true,
+  "description": "IGNIS - NASA microgravity combustion research intelligence dashboard (Space Apps 2026, Flame in Freefall)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.{ts,tsx}"
+  },
+  "dependencies": {
+    "@tanstack/react-table": "^8.21.3",
+    "@xyflow/react": "^12.12.1",
+    "clsx": "^2.1.1",
+    "fuse.js": "^7.5.0",
+    "lucide-react": "^0.460.0",
+    "next": "^16.4.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.13.3",
+    "tailwind-merge": "^2.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}
