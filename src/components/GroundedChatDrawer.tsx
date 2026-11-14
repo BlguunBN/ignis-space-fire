@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { FadeUp } from "./ui/animated/fade-up";
+import { StatusPulse } from "./ui/animated/status-pulse";
 import {
   X,
   Send,
@@ -692,13 +694,20 @@ export function GroundedChatDrawer({
           ))}
 
           {loading && (
-            <div className="flex items-center gap-3 p-3.5 rounded-xl border border-white/[0.08] bg-[#10141d] w-fit shadow-md">
-              <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
-              <div className="flex flex-col">
-                <span className="text-cyan-400 font-semibold text-xs font-mono">Searching and preparing an answer…</span>
-                <span className="text-[11px] text-slate-400 font-sans">Thinking and grounding against NASA PSI flight records</span>
+            <FadeUp>
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-white/[0.08] bg-[#10141d] w-fit shadow-md">
+                <StatusPulse
+                  dotClassName="bg-cyan-400"
+                  ringClassName="bg-cyan-400/50"
+                  label={
+                    <div className="flex flex-col">
+                      <span className="text-cyan-400 font-semibold text-xs font-mono">Searching and preparing an answer…</span>
+                      <span className="text-[11px] text-slate-400 font-sans">Thinking and grounding against NASA PSI flight records</span>
+                    </div>
+                  }
+                />
               </div>
-            </div>
+            </FadeUp>
           )}
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { FadeUp } from "./ui/animated/fade-up";
 import {
   Search,
   ExternalLink,
@@ -498,7 +499,7 @@ export function ResearchExplorerGrid({
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredRecords.slice(0, visibleCount).map((rec) => {
+                {filteredRecords.slice(0, visibleCount).map((rec, idx) => {
                   const isSelected = selectedIds.has(rec.id);
                   const outcome = getOutcome(rec);
                   const relevance = getRelevance(rec);
@@ -508,8 +509,8 @@ export function ResearchExplorerGrid({
                   const gravityStr = rec.gravity.replace(/_/g, " ");
 
                   return (
+                    <FadeUp key={rec.id} delay={Math.min(idx * 0.03, 0.3)}>
                     <div
-                      key={rec.id}
                       className={`rounded-lg border bg-[#13171e] p-5 flex flex-col justify-between transition-colors duration-150 hover:border-white/[0.2] ${isSelected ? "border-amber-400/30" : "border-white/[0.09]"}`}
                     >
                       <div>
@@ -575,6 +576,7 @@ export function ResearchExplorerGrid({
                         </div>
                       </div>
                     </div>
+                    </FadeUp>
                   );
                 })}
               </div>
