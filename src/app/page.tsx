@@ -37,6 +37,7 @@ export default function UnifiedWorkspace() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isGraphOpen, setIsGraphOpen] = useState(false);
   const [isIngestionOpen, setIsIngestionOpen] = useState(false);
+  const [assistantInitialPrompt, setAssistantInitialPrompt] = useState<string | null>(null);
   const [whiteboardSynthesis, setWhiteboardSynthesis] = useState<string | null>(null);
 
   // Configure Fuse.js for fuzzy retrieval
@@ -278,12 +279,19 @@ export default function UnifiedWorkspace() {
         record={activeRecord}
       />
 
-      {/* Destination 2: Parameter Space Coverage & Gap Matrix Modal */}
+      {/* Destination 2: Parameter Space Coverage & Research Gaps Matrix Modal */}
       <CoverageMapModal
         isOpen={isCoverageOpen}
         onClose={() => setIsCoverageOpen(false)}
         records={allRecords}
         onApplyCellFilter={(newQ) => setQuery((prev) => ({ ...prev, ...newQ }))}
+        onAskAI={(prompt) => {
+          setAssistantInitialPrompt(prompt);
+          setIsAssistantOpen(true);
+        }}
+        onSelectRecord={(recId) => {
+          setActiveId(recId);
+        }}
       />
 
       {/* Destination 3: Sources & Methodology Modal */}
@@ -308,12 +316,20 @@ export default function UnifiedWorkspace() {
       {/* Stage 3: Grounded AI Assistant Drawer */}
       <GroundedChatDrawer
         isOpen={isAssistantOpen}
-        onClose={() => setIsAssistantOpen(false)}
+        onClose={() => {
+          setIsAssistantOpen(false);
+          setAssistantInitialPrompt(null);
+        }}
         corpus={allRecords}
         selectedRecordIds={selectedIds}
+        initialPrompt={assistantInitialPrompt}
         onInspectClaim={(recId) => {
           setActiveId(recId);
           setIsSourceModalOpen(true);
+        }}
+        onAddToWhiteboard={() => {
+          setIsAssistantOpen(false);
+          setIsWhiteboardOpen(true);
         }}
       />
 

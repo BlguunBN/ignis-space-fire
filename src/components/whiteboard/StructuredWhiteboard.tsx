@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   ReactFlow,
   MiniMap,
@@ -22,7 +22,9 @@ import {
   Layers,
   RotateCcw,
   FileText,
-  Plus,
+  Save,
+  Download,
+  FolderOpen,
 } from "lucide-react";
 import {
   QuestionNode,
@@ -31,6 +33,7 @@ import {
   ExperimentNode,
 } from "./CustomNodes";
 import { ExperimentRecord } from "../../types/evidence";
+import experimentsData from "../../data/experiments.json";
 
 const nodeTypes = {
   question: QuestionNode,
@@ -39,102 +42,185 @@ const nodeTypes = {
   experiment: ExperimentNode,
 };
 
-const initialNodes: Node[] = [
-  {
-    id: "q-1",
-    type: "question",
-    position: { x: 380, y: 20 },
-    data: {
-      label: "Forced Airflow Flame Spread Divergence",
-      details:
-        "Why does large-scale fuel (Saffire 0.4m x 1m) sustain steady combustion at 20 cm/s flow where glovebox scale samples (BASS 1cm) extinguish?",
-    },
+const TEMPLATES: Record<string, { label: string; nodes: Node[]; edges: Edge[] }> = {
+  ventilation: {
+    label: "Ventilation Flame Spread (Saffire vs BASS)",
+    nodes: [
+      {
+        id: "q-1",
+        type: "question",
+        position: { x: 380, y: 20 },
+        data: {
+          label: "Forced Airflow Flame Spread Divergence",
+          details:
+            "Why does large-scale fuel (Saffire 0.4m x 1m) sustain steady combustion at 20 cm/s flow where glovebox scale samples (BASS 1cm) extinguish?",
+        },
+      },
+      {
+        id: "ev-1",
+        type: "evidence",
+        position: { x: 80, y: 180 },
+        data: {
+          claimId: "CLM-SAFFIRE-001",
+          investigation: "Saffire-I Flight Experiment",
+          conditions: "21% O₂ • 20 cm/s Flow • 101.3 kPa",
+          quote:
+            "Large-scale flame spread in microgravity without buoyancy proceeds steadily under forced airflow. 0.4 m x 1.0 m solid burns continuously.",
+        },
+      },
+      {
+        id: "ev-2",
+        type: "evidence",
+        position: { x: 560, y: 180 },
+        data: {
+          claimId: "CLM-BASS-002",
+          investigation: "BASS-II Opposed Flow PMMA",
+          conditions: "21% O₂ • 3.5 cm/s Flow • 101.3 kPa",
+          quote:
+            "Narrow glovebox flow duct causes accelerated radiative extinction near low-speed boundary for 1-2 cm thick PMMA slabs.",
+        },
+      },
+      {
+        id: "hyp-1",
+        type: "hypothesis",
+        position: { x: 340, y: 400 },
+        data: {
+          title: "Cumulative Radiative Preheating & Thermal Scale Invariant",
+          prediction:
+            "Large-scale Saffire fuel experiences cumulative radiative feedback from upstream flame zone that sustains pyrolysis at higher airflow velocities.",
+          rationale:
+            "Downstream sample geometry absorbs unburned radiation that is lost to cold walls in glovebox scale apparatus.",
+        },
+      },
+      {
+        id: "exp-1",
+        type: "experiment",
+        position: { x: 340, y: 580 },
+        data: {
+          facility: "ISS CIR",
+          objective: "Intermediate-Scale Radiative Feedback Duct Test",
+          airflow: "10 – 25 cm/s flow",
+          oxygen: "21% – 26% O₂",
+          pressure: "56 – 101 kPa",
+          geometry: "0.2m x 0.5m slab with radiometer array",
+        },
+      },
+    ],
+    edges: [
+      { id: "e-q1-ev1", source: "q-1", target: "ev-1", animated: true, style: { stroke: "#38bdf8", strokeWidth: 2 } },
+      { id: "e-q1-ev2", source: "q-1", target: "ev-2", animated: true, style: { stroke: "#38bdf8", strokeWidth: 2 } },
+      { id: "e-ev1-hyp1", source: "ev-1", target: "hyp-1", style: { stroke: "#10b981", strokeWidth: 2 } },
+      { id: "e-ev2-hyp1", source: "ev-2", target: "hyp-1", style: { stroke: "#10b981", strokeWidth: 2 } },
+      { id: "e-hyp1-exp1", source: "hyp-1", target: "exp-1", animated: true, style: { stroke: "#c084fc", strokeWidth: 2 } },
+    ],
   },
-  {
-    id: "ev-1",
-    type: "evidence",
-    position: { x: 100, y: 160 },
-    data: {
-      claimId: "CLM-SAFFIRE-1",
-      investigation: "Saffire-I Flight Experiment",
-      conditions: "21% O₂ • 20 cm/s Flow • 101.3 kPa",
-      quote:
-        "Large-scale flame spread in microgravity without buoyancy proceeds steadily under forced airflow. 0.4 m x 1.0 m solid burns continuously.",
-    },
+  exploration: {
+    label: "Exploration Atmospheres (26% O₂ / 56 kPa)",
+    nodes: [
+      {
+        id: "q-exp",
+        type: "question",
+        position: { x: 380, y: 20 },
+        data: {
+          label: "Artemis Exploration Atmosphere Flammability Shift",
+          details: "How does 26% O2 / 56 kPa alter material flammability certification boundaries vs 1 atm?",
+        },
+      },
+      {
+        id: "ev-saffire-4",
+        type: "evidence",
+        position: { x: 300, y: 180 },
+        data: {
+          claimId: "CLM-SAFFIRE-004",
+          investigation: "Saffire-IV Exploration Atmosphere",
+          conditions: "26% O₂ • 20 cm/s Flow • 57 kPa",
+          quote: "Elevated oxygen concentration significantly accelerates thick PMMA and composite flame propagation.",
+        },
+      },
+      {
+        id: "hyp-exp",
+        type: "hypothesis",
+        position: { x: 340, y: 400 },
+        data: {
+          title: "Low Pressure / High O₂ Balancing Mechanism",
+          prediction: "Reduced chamber pressure partially compensates for enhanced oxidizer mole fraction.",
+          rationale: "Reduced overall gas thermal capacity increases flame temperature while low pressure widens quenching distance.",
+        },
+      },
+      {
+        id: "exp-exp",
+        type: "experiment",
+        position: { x: 340, y: 580 },
+        data: {
+          facility: "Cygnus Duct (Saffire)",
+          objective: "High-O2 Depressurization Extinction Matrix",
+          airflow: "15 cm/s",
+          oxygen: "26% – 34% O₂",
+          pressure: "56 kPa",
+          geometry: "0.4m x 1.0m PMMA / SIBAL composite",
+        },
+      },
+    ],
+    edges: [
+      { id: "e-q-ev4", source: "q-exp", target: "ev-saffire-4", animated: true, style: { stroke: "#38bdf8", strokeWidth: 2 } },
+      { id: "e-ev4-hyp", source: "ev-saffire-4", target: "hyp-exp", style: { stroke: "#10b981", strokeWidth: 2 } },
+      { id: "e-hyp-exp", source: "hyp-exp", target: "exp-exp", animated: true, style: { stroke: "#c084fc", strokeWidth: 2 } },
+    ],
   },
-  {
-    id: "ev-2",
-    type: "evidence",
-    position: { x: 550, y: 160 },
-    data: {
-      claimId: "CLM-BASS-2",
-      investigation: "BASS-II Opposed Flow PMMA",
-      conditions: "21% O₂ • 3.5 cm/s Flow • 101.3 kPa",
-      quote:
-        "Narrow glovebox flow duct causes accelerated radiative extinction near low-speed boundary for 1-2 cm thick PMMA slabs.",
-    },
+  droplets: {
+    label: "Droplet Extinction & Cool Flames (FLEX)",
+    nodes: [
+      {
+        id: "q-flex",
+        type: "question",
+        position: { x: 380, y: 20 },
+        data: {
+          label: "Second Extinction Limit in Liquid Droplet Cool Flames",
+          details: "Under what conditions do multi-component fuel droplets sustain low-temperature burning in 0g?",
+        },
+      },
+      {
+        id: "ev-flex",
+        type: "evidence",
+        position: { x: 300, y: 180 },
+        data: {
+          claimId: "CLM-FLEX-001",
+          investigation: "FLEX Flame Extinction (Droplets)",
+          conditions: "18% O₂ • 0 cm/s Flow • 101.3 kPa",
+          quote: "Large isolated droplets exhibit self-sustaining cool flames at temperatures below 800 K after radiative extinction.",
+        },
+      },
+      {
+        id: "hyp-flex",
+        type: "hypothesis",
+        position: { x: 340, y: 400 },
+        data: {
+          title: "Chemical Kinetic Quenching Boundary",
+          prediction: "Cool flame duration depends non-linearly on initial droplet diameter due to radical diffusion balance.",
+          rationale: "Quiescent spherical symmetry traps fuel vapor and intermediate peroxy radicals in high local concentrations.",
+        },
+      },
+      {
+        id: "exp-flex",
+        type: "experiment",
+        position: { x: 340, y: 580 },
+        data: {
+          facility: "ISS CIR",
+          objective: "Free-Floating Multi-Component Droplet Combustion",
+          airflow: "0 cm/s (pure quiescent)",
+          oxygen: "15% – 21% O₂",
+          pressure: "101.3 kPa",
+          geometry: "2.0 – 5.0 mm heptane/alkane tethered droplets",
+        },
+      },
+    ],
+    edges: [
+      { id: "e-q-flex", source: "q-flex", target: "ev-flex", animated: true, style: { stroke: "#38bdf8", strokeWidth: 2 } },
+      { id: "e-ev-hyp", source: "ev-flex", target: "hyp-flex", style: { stroke: "#10b981", strokeWidth: 2 } },
+      { id: "e-hyp-exp", source: "hyp-flex", target: "exp-flex", animated: true, style: { stroke: "#c084fc", strokeWidth: 2 } },
+    ],
   },
-  {
-    id: "hyp-1",
-    type: "hypothesis",
-    position: { x: 340, y: 380 },
-    data: {
-      title: "Radiative Preheating & Thermal Scale Invariant",
-      prediction:
-        "Large-scale Saffire fuel experiences cumulative radiative feedback from upstream flame zone that sustains pyrolysis at higher airflow velocities.",
-      rationale:
-        "Downstream sample geometry absorbs unburned radiation that is lost to cold walls in glovebox scale apparatus.",
-    },
-  },
-  {
-    id: "exp-1",
-    type: "experiment",
-    position: { x: 340, y: 560 },
-    data: {
-      facility: "ISS CIR / ACME",
-      objective: "Intermediate-Scale Radiative Feedback Duct Test",
-      airflow: "10 – 25 cm/s flow",
-      oxygen: "21% – 26% O₂",
-      pressure: "56 – 101 kPa",
-    },
-  },
-];
-
-const initialEdges: Edge[] = [
-  {
-    id: "e-q1-ev1",
-    source: "q-1",
-    target: "ev-1",
-    animated: true,
-    style: { stroke: "#38bdf8", strokeWidth: 2 },
-  },
-  {
-    id: "e-q1-ev2",
-    source: "q-1",
-    target: "ev-2",
-    animated: true,
-    style: { stroke: "#38bdf8", strokeWidth: 2 },
-  },
-  {
-    id: "e-ev1-hyp1",
-    source: "ev-1",
-    target: "hyp-1",
-    style: { stroke: "#10b981", strokeWidth: 2 },
-  },
-  {
-    id: "e-ev2-hyp1",
-    source: "ev-2",
-    target: "hyp-1",
-    style: { stroke: "#10b981", strokeWidth: 2 },
-  },
-  {
-    id: "e-hyp1-exp1",
-    source: "hyp-1",
-    target: "exp-1",
-    animated: true,
-    style: { stroke: "#c084fc", strokeWidth: 2 },
-  },
-];
+};
 
 interface StructuredWhiteboardProps {
   activeRecord: ExperimentRecord | null;
@@ -145,8 +231,53 @@ export function StructuredWhiteboard({
   activeRecord,
   onExportBrief,
 }: StructuredWhiteboardProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [activeTemplate, setActiveTemplate] = useState("ventilation");
+  const [nodes, setNodes, onNodesChange] = useNodesState(TEMPLATES.ventilation.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(TEMPLATES.ventilation.edges);
+  const [savedFeedback, setSavedFeedback] = useState(false);
+
+  // Wire onChange and onDelete callbacks into each node's data
+  const handleUpdateNodeData = useCallback(
+    (id: string, newData: any) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                ...newData,
+              },
+            };
+          }
+          return node;
+        })
+      );
+    },
+    [setNodes]
+  );
+
+  const handleDeleteNode = useCallback(
+    (id: string) => {
+      setNodes((nds) => nds.filter((n) => n.id !== id));
+      setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
+    },
+    [setNodes, setEdges]
+  );
+
+  // Inject callbacks into nodes
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        data: {
+          ...n.data,
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      }))
+    );
+  }, [handleUpdateNodeData, handleDeleteNode, setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) =>
@@ -163,9 +294,22 @@ export function StructuredWhiteboard({
     [setEdges]
   );
 
-  const handleReset = () => {
-    setNodes(initialNodes);
-    setEdges(initialEdges);
+  const handleSelectTemplate = (templateKey: string) => {
+    const tmpl = TEMPLATES[templateKey];
+    if (tmpl) {
+      setActiveTemplate(templateKey);
+      setNodes(
+        tmpl.nodes.map((n) => ({
+          ...n,
+          data: {
+            ...n.data,
+            onChange: handleUpdateNodeData,
+            onDelete: handleDeleteNode,
+          },
+        }))
+      );
+      setEdges(tmpl.edges);
+    }
   };
 
   const handleAddQuestion = () => {
@@ -175,14 +319,16 @@ export function StructuredWhiteboard({
       position: { x: 300 + Math.random() * 80, y: 50 + Math.random() * 50 },
       data: {
         label: "New Research Inquiry",
-        details: "Specify combustion parameter hypothesis or gap...",
+        details: "Specify combustion parameter hypothesis or boundary gap...",
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
       },
     };
     setNodes((nds) => [...nds, newNode]);
   };
 
   const handleAddEvidence = () => {
-    const rec = activeRecord;
+    const rec = activeRecord || (experimentsData as any)[0];
     const newNode: Node = {
       id: `ev-${Date.now()}`,
       type: "evidence",
@@ -194,6 +340,8 @@ export function StructuredWhiteboard({
           ? `${rec.oxygen_pct ?? 21}% O₂ • ${rec.airflow_cm_s ?? 0} cm/s Flow • ${rec.pressure_kpa ?? 101.3} kPa`
           : "Standard Atmospheric Conditions",
         quote: rec?.finding || "Empirical observation from NASA PSI archive.",
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
       },
     };
     setNodes((nds) => [...nds, newNode]);
@@ -205,9 +353,11 @@ export function StructuredWhiteboard({
       type: "hypothesis",
       position: { x: 320 + Math.random() * 80, y: 360 + Math.random() * 60 },
       data: {
-        title: "Microgravity Flammability Boundary Hypothesis",
+        title: "Microgravity Flammability Hypothesis",
         prediction: "Flammability threshold shifts with reduced gravity and ambient pressure.",
         rationale: "Buoyant momentum suppression increases local gas residence time.",
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
       },
     };
     setNodes((nds) => [...nds, newNode]);
@@ -219,14 +369,52 @@ export function StructuredWhiteboard({
       type: "experiment",
       position: { x: 340 + Math.random() * 80, y: 520 + Math.random() * 60 },
       data: {
-        facility: "ISS CIR / Glovebox",
+        facility: "ISS CIR",
         objective: "Validation of Opposed Flow Flame Extinction Boundary",
         airflow: "0 – 20 cm/s flow",
         oxygen: "18% – 30% O₂",
         pressure: "56 – 101.3 kPa",
+        geometry: "0.2m x 0.5m polymer slab",
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
       },
     };
     setNodes((nds) => [...nds, newNode]);
+  };
+
+  const handleSaveToLocal = () => {
+    try {
+      const state = { nodes, edges };
+      localStorage.setItem("ignis_whiteboard_state", JSON.stringify(state));
+      setSavedFeedback(true);
+      setTimeout(() => setSavedFeedback(false), 2000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleLoadFromLocal = () => {
+    try {
+      const raw = localStorage.getItem("ignis_whiteboard_state");
+      if (raw) {
+        const state = JSON.parse(raw);
+        if (state.nodes && state.edges) {
+          setNodes(
+            state.nodes.map((n: Node) => ({
+              ...n,
+              data: {
+                ...n.data,
+                onChange: handleUpdateNodeData,
+                onDelete: handleDeleteNode,
+              },
+            }))
+          );
+          setEdges(state.edges);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleSerializeToBrief = () => {
@@ -261,7 +449,7 @@ export function StructuredWhiteboard({
     const experiments = nodes.filter((n) => n.type === "experiment");
     experiments.forEach((exp) => {
       lines.push(
-        `- **${exp.data.objective}** [Facility: ${exp.data.facility}]\n  - Airflow: ${exp.data.airflow}\n  - Oxygen: ${exp.data.oxygen}\n  - Pressure: ${exp.data.pressure}`
+        `- **${exp.data.objective}** [Facility: ${exp.data.facility}]\n  - Airflow: ${exp.data.airflow}\n  - Oxygen: ${exp.data.oxygen}\n  - Pressure: ${exp.data.pressure}\n  - Sample Geometry: ${exp.data.geometry || "Standard"}`
       );
     });
 
@@ -273,7 +461,7 @@ export function StructuredWhiteboard({
 
   return (
     <div className="h-full w-full flex flex-col relative rounded-lg overflow-hidden border border-white/[0.08] bg-[#090a0d]">
-      {/* Control Bar Overlay */}
+      {/* Top Left: Add Nodes Toolbar */}
       <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-2 font-mono text-xs">
         <button
           onClick={handleAddQuestion}
@@ -304,18 +492,46 @@ export function StructuredWhiteboard({
           className="flex items-center gap-1 px-2.5 py-1 bg-purple-400/10 hover:bg-purple-400/20 text-purple-300 border border-purple-400/30 rounded transition-colors"
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>+ Experiment</span>
+          <span>+ Proposal</span>
         </button>
       </div>
 
+      {/* Top Center: Preset Templates Switcher */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-1 bg-[#13171e] p-1 rounded-lg border border-white/[0.08] font-mono text-[11px]">
+        <span className="text-slate-400 px-1.5">Template:</span>
+        {Object.entries(TEMPLATES).map(([key, tmpl]) => (
+          <button
+            key={key}
+            onClick={() => handleSelectTemplate(key)}
+            className={`px-2 py-0.5 rounded transition-colors ${
+              activeTemplate === key
+                ? "bg-amber-400/20 text-amber-300 font-bold border border-amber-400/40"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            {tmpl.label.split("(")[0].trim()}
+          </button>
+        ))}
+      </div>
+
+      {/* Top Right: Persistence & Export Toolbar */}
       <div className="absolute top-3 right-3 z-20 flex items-center gap-2 font-mono text-xs">
         <button
-          onClick={handleReset}
+          onClick={handleSaveToLocal}
           className="px-2.5 py-1 bg-[#13171e] hover:bg-white/[0.06] text-slate-300 rounded border border-white/10 flex items-center gap-1 transition-colors"
-          title="Reset to default template"
+          title="Save mind tree locally"
         >
-          <RotateCcw className="w-3 h-3" />
-          <span>Reset</span>
+          <Save className="w-3 h-3 text-cyan-400" />
+          <span>{savedFeedback ? "Saved!" : "Save"}</span>
+        </button>
+
+        <button
+          onClick={handleLoadFromLocal}
+          className="px-2.5 py-1 bg-[#13171e] hover:bg-white/[0.06] text-slate-300 rounded border border-white/10 flex items-center gap-1 transition-colors"
+          title="Load saved mind tree"
+        >
+          <FolderOpen className="w-3 h-3 text-emerald-400" />
+          <span>Load</span>
         </button>
 
         <button

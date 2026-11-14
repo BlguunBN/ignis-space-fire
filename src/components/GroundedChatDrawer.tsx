@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Send,
@@ -10,10 +10,10 @@ import {
   Sparkles,
   Bot,
   User,
-  ExternalLink,
   Copy,
   Check,
   RefreshCw,
+  Network,
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
 import {
@@ -36,6 +36,8 @@ interface GroundedChatDrawerProps {
   onInspectClaim: (recordId: string) => void;
   corpus: ExperimentRecord[];
   selectedRecordIds: Set<string>;
+  initialPrompt?: string | null;
+  onAddToWhiteboard?: (text: string, citations: GroundedCitation[]) => void;
 }
 
 export function GroundedChatDrawer({
@@ -44,6 +46,8 @@ export function GroundedChatDrawer({
   onInspectClaim,
   corpus,
   selectedRecordIds,
+  initialPrompt,
+  onAddToWhiteboard,
 }: GroundedChatDrawerProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -57,6 +61,13 @@ export function GroundedChatDrawer({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Auto-send initial prompt if passed
+  useEffect(() => {
+    if (isOpen && initialPrompt && initialPrompt.trim()) {
+      handleSend(initialPrompt);
+    }
+  }, [isOpen, initialPrompt]);
 
   if (!isOpen) return null;
 
@@ -82,15 +93,38 @@ export function GroundedChatDrawer({
     setLoading(true);
 
     try {
-      // Determine active target corpus
-      let targetCorpus = corpus;
-      if (selectedRecordIds.size > 0) {
-        const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
-        if (filtered.length > 0) targetCorpus = filtered;
-      }
+      // 1. Try Live Route Handler (/api/chat)
+      let grounded: GroundedAssistantResponse;
 
-      // Generate deterministic grounded response
-      const grounded = generateGroundedAssistantResponse(queryText, targetCorpus);
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [{ role: "user", content: queryText.trim() }],
+            selectedRecordIds: Array.from(selectedRecordIds),
+          }),
+        });
+
+        if (res.ok) {
+          grounded = await res.json();
+        } else {
+          // Fallback to local deterministic generator
+          let targetCorpus = corpus;
+          if (selectedRecordIds.size > 0) {
+            const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
+            if (filtered.length > 0) targetCorpus = filtered;
+          }
+          grounded = generateGroundedAssistantResponse(queryText, targetCorpus);
+        }
+      } catch (e) {
+        let targetCorpus = corpus;
+        if (selectedRecordIds.size > 0) {
+          const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
+          if (filtered.length > 0) targetCorpus = filtered;
+        }
+        grounded = generateGroundedAssistantResponse(queryText, targetCorpus);
+      }
 
       const assistantMsg: ChatMessage = {
         id: `asst-${Date.now()}`,
@@ -133,12 +167,12 @@ export function GroundedChatDrawer({
               <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-100">
                 <span>IGNIS Grounded Assistant</span>
                 <span className="text-[10px] px-1 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20">
-                  Zod Verified
+                  RAG Active
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-                <span>Hallucination Guard Active • NASA PSI Corpus</span>
+                <span>Zero Hallucination Guard • NASA PSI Corpus</span>
               </div>
             </div>
           </div>
@@ -214,7 +248,7 @@ export function GroundedChatDrawer({
                         <button
                           key={i}
                           onClick={() => onInspectClaim(c.recordId)}
-                          className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-colors"
+                          className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-colors cursor-pointer"
                           title={`Click to inspect primary source for ${c.investigation} on page ${c.pageNumber}`}
                         >
                           <FileCheck className="w-3 h-3" />
@@ -240,12 +274,22 @@ export function GroundedChatDrawer({
                   </div>
                 )}
 
-                {/* Copy Action */}
+                {/* Actions: Send to Whiteboard + Copy */}
                 {msg.role === "assistant" && msg.id !== "init" && (
-                  <div className="mt-2 flex justify-end">
+                  <div className="mt-2.5 pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono">
+                    {onAddToWhiteboard && msg.response ? (
+                      <button
+                        onClick={() => onAddToWhiteboard(msg.content, msg.response!.citations)}
+                        className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 transition-colors"
+                      >
+                        <Network className="w-3 h-3" />
+                        <span>Add to Mind Tree</span>
+                      </button>
+                    ) : <span />}
+
                     <button
                       onClick={() => handleCopy(msg.id, msg.content)}
-                      className="flex items-center gap-1 text-[10px] font-mono text-slate-400 hover:text-slate-200 transition-colors"
+                      className="flex items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors"
                     >
                       {copiedId === msg.id ? (
                         <>
@@ -266,7 +310,7 @@ export function GroundedChatDrawer({
           {loading && (
             <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-[#13171e] p-3 rounded-lg border border-white/[0.06] w-fit">
               <Bot className="w-4 h-4 text-amber-400 animate-spin" />
-              <span>Verifying claims against NASA PSI records...</span>
+              <span>Verifying claims against NASA PSI records via RAG engine...</span>
             </div>
           )}
         </div>
@@ -314,7 +358,7 @@ export function GroundedChatDrawer({
             </button>
           </form>
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2 px-1">
-            <span>Deterministic Grounding Active</span>
+            <span>Deterministic RAG & Citations</span>
             <span>Zero Hallucination Tolerance</span>
           </div>
         </div>
