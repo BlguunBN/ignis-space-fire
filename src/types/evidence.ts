@@ -1,6 +1,27 @@
 export type RecordType = "experiment_run" | "investigation_summary" | "paper_finding";
 export type VerificationStatus = "verified" | "needs_review" | "unsupported";
 
+export interface BoundingBox {
+  x: number; // percentage from left, 0-100
+  y: number; // percentage from top, 0-100
+  width: number; // percentage width, 0-100
+  height: number; // percentage height, 0-100
+}
+
+export interface ClaimLocator {
+  claimId: string;
+  sourceId: string;
+  pdfUrl?: string;
+  pageNumber: number;
+  boundingBox: BoundingBox;
+  section: string;
+  tableOrFigure?: string;
+  quote: string;
+  reviewStatus: VerificationStatus;
+  reviewer: string;
+  reviewDate: string;
+}
+
 export interface ExperimentRecord {
   id: string;
   programme: string;
@@ -25,6 +46,7 @@ export interface ExperimentRecord {
   source_url: string;
   quality: "primary_nasa" | "peer_reviewed_nasa" | "supporting";
   verified_by?: string;
+  claim_locator_details?: ClaimLocator;
 }
 
 export interface SearchQuery {

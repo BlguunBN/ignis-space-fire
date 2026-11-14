@@ -12,7 +12,7 @@ import { InvestigationDetail } from "../components/InvestigationDetail";
 import { TelemetryChart } from "../components/TelemetryChart";
 import { GroundedBriefDrawer } from "../components/GroundedBriefDrawer";
 import { CompareModal } from "../components/CompareModal";
-import { SourceInspectorModal } from "../components/SourceInspectorModal";
+import { PDFEvidenceViewer } from "../components/PDFEvidenceViewer";
 import { generateDeterministicBrief } from "../lib/synthesis";
 
 const allRecords = experimentsData as ExperimentRecord[];
@@ -257,8 +257,8 @@ export default function UnifiedWorkspace() {
         onOpenBrief={() => setIsBriefOpen(true)}
       />
 
-      {/* Primary Source Citation & Provenance Inspector Modal */}
-      <SourceInspectorModal
+      {/* Stage 2 Primary PDF Evidence Viewer with Coordinate Bounding Box */}
+      <PDFEvidenceViewer
         isOpen={isSourceModalOpen}
         onClose={() => setIsSourceModalOpen(false)}
         record={activeRecord}
