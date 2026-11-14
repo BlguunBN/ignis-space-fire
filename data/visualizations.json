@@ -1,0 +1,182 @@
+[
+  {
+    "experimentId": "sofie-gel",
+    "investigation": "SoFIE-GEL & RTDFS",
+    "programme": "SoFIE",
+    "apparatusDescription": "ISS Combustion Integrated Rack (CIR) equipped with the SoFIE insert. Accommodates solid fuel PMMA slabs/spheres and fabric sheets in quiescent or controlled low-velocity opposed airflow.",
+    "assets": [
+      {
+        "id": "sofie-rtdfs-sequence",
+        "experimentId": "sofie-gel",
+        "title": "SoFIE Flight Sequence (0.2s Stated Interval)",
+        "representation": "original_media",
+        "format": "frames",
+        "localPath": "/nasa/sofie-gel/frames/frame_01.png",
+        "framesPattern": "/nasa/sofie-gel/frames/frame_{idx}.png",
+        "frameCount": 12,
+        "intervalSeconds": 0.2,
+        "locator": {
+          "sourceId": "NASA SVS 31394",
+          "url": "https://svs.gsfc.nasa.gov/31394",
+          "doi": "10.60555/sofie-gel-2022",
+          "originalCaption": "Part of the Solid Fuel Ignition and Extinction investigation (SoFIE), showing a burning sample in microgravity with periodic oxygen drawing. Images are 0.2 s apart."
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA Scientific Visualization Studio / BPS Division",
+        "processingNotes": "Cropped from 1920x1080 high-resolution montage released by NASA SVS; frame order preserved."
+      },
+      {
+        "id": "sofie-pmma-still",
+        "experimentId": "sofie-gel",
+        "title": "SoFIE-GEL 0.5mm PMMA Opposed-Flow Combustion",
+        "representation": "original_media",
+        "format": "image",
+        "localPath": "/nasa/sofie-gel/sofie-gel-pmma-1080p.png",
+        "locator": {
+          "sourceId": "NASA SVS 31394",
+          "url": "https://svs.gsfc.nasa.gov/31394",
+          "originalCaption": "Solid Fuel Ignition and Extinction (SoFIE) Growth and Extinction Limits (GEL) experiment aboard the space station. Opposed flow air over 0.5mm PMMA."
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA / ISS Combustion Integrated Rack",
+        "processingNotes": "Direct high-definition flight camera snapshot."
+      },
+      {
+        "id": "sofie-cir-schematic",
+        "experimentId": "sofie-gel",
+        "title": "SoFIE Flow Tunnel Apparatus Schematic",
+        "representation": "schematic",
+        "format": "svg",
+        "locator": {
+          "sourceId": "NASA GRC SoFIE Documentation",
+          "url": "https://science.nasa.gov/biological-physical/investigations/sofie-gel/",
+          "originalCaption": "Schematic of CIR flow duct and sample mounting mechanism."
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA Glenn Research Center (Illustrated Schematic)",
+        "processingNotes": "Vector apparatus layout for geometry context."
+      }
+    ],
+    "scenes": [
+      {
+        "id": "scene-1-setup",
+        "experimentId": "sofie-gel",
+        "title": "1. Experimental Apparatus Setup",
+        "kind": "setup",
+        "caption": "The SoFIE chamber is mounted inside the ISS Combustion Integrated Rack (CIR). A 0.5 mm thick PMMA solid polymer specimen is installed inside a 100 mm flow duct with controlled oxidizer flow.",
+        "referencedAssetId": "sofie-cir-schematic",
+        "sourceLocators": [
+          {
+            "sourceId": "NASA SVS 31394",
+            "url": "https://science.nasa.gov/biological-physical/investigations/sofie-gel/"
+          }
+        ],
+        "reviewed": true
+      },
+      {
+        "id": "scene-2-observation",
+        "experimentId": "sofie-gel",
+        "title": "2. Flight Sequence & Flame Pulsation",
+        "kind": "observation",
+        "caption": "In microgravity without buoyant updraft, the burning specimen draws fresh oxygen via vapor expansion. The flame periodically brightens (0.2s interval) as oxygen is drawn in, followed by dimming as local fuel accumulates.",
+        "referencedAssetId": "sofie-rtdfs-sequence",
+        "sourceLocators": [
+          {
+            "sourceId": "NASA SVS 31394",
+            "url": "https://svs.gsfc.nasa.gov/31394",
+            "originalCaption": "Images are 0.2 s apart"
+          }
+        ],
+        "reviewed": true
+      },
+      {
+        "id": "scene-3-findings",
+        "experimentId": "sofie-gel",
+        "title": "3. Observed Scientific Findings",
+        "kind": "findings",
+        "caption": "Under Exploration Atmospheres (elevated O2 at 34%, reduced pressure at 56 kPa), thick PMMA flammability boundaries expand substantially. Extinction limits shift to significantly lower air velocities than predicted by 1g buoyancy models.",
+        "referencedAssetId": "sofie-pmma-still",
+        "sourceLocators": [
+          {
+            "sourceId": "NASA PSI-124",
+            "url": "https://science.nasa.gov/biological-physical/investigations/sofie-gel/",
+            "doi": "10.60555/sofie-gel-2022"
+          }
+        ],
+        "reviewed": true
+      },
+      {
+        "id": "scene-4-limits",
+        "experimentId": "sofie-gel",
+        "title": "4. Scientific Boundaries & Limitations",
+        "kind": "limitations",
+        "caption": "NASA Caution: All recorded data represents orbital 0g microgravity. Do not extrapolate quantitatively as a predictive model for Lunar (0.16g) or Martian (0.38g) partial-gravity environments without dedicated reduced-gravity testing.",
+        "referencedAssetId": "sofie-pmma-still",
+        "sourceLocators": [
+          {
+            "sourceId": "NASA SVS 31394",
+            "url": "https://svs.gsfc.nasa.gov/31394"
+          }
+        ],
+        "reviewed": true
+      }
+    ]
+  },
+  {
+    "experimentId": "saffire-1",
+    "investigation": "Saffire-I Vehicle Fire",
+    "programme": "Saffire",
+    "apparatusDescription": "Cygnus resupply vehicle cargo module flight flow tunnel (0.4m x 1.0m test sample), instrumented with HD radiometers, video cameras, thermocouple arrays, and pressure sensors.",
+    "assets": [
+      {
+        "id": "saffire-1-schematic",
+        "experimentId": "saffire-1",
+        "title": "Saffire Cygnus Cargo Flight Flow Tunnel",
+        "representation": "schematic",
+        "format": "svg",
+        "locator": {
+          "sourceId": "NASA PSI-98",
+          "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
+          "doi": "10.60555/0t15-1z43"
+        },
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA Glenn Research Center Saffire Team",
+        "processingNotes": "Duct geometry illustration for large-scale flight context."
+      }
+    ],
+    "scenes": [
+      {
+        "id": "saffire-1-scene-1",
+        "experimentId": "saffire-1",
+        "title": "1. Cygnus Flight Flow Tunnel",
+        "kind": "setup",
+        "caption": "The Saffire experiment was conducted inside the Cygnus OA-5 cargo vehicle after departing ISS. Fans provided 20 cm/s forced ventilation across a large 0.4 m x 1.0 m solid SIBAL fabric.",
+        "referencedAssetId": "saffire-1-schematic",
+        "sourceLocators": [
+          {
+            "sourceId": "NASA PSI-98",
+            "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
+            "doi": "10.60555/0t15-1z43"
+          }
+        ],
+        "reviewed": true
+      },
+      {
+        "id": "saffire-1-scene-2",
+        "experimentId": "saffire-1",
+        "title": "2. Steady Flame Propagation",
+        "kind": "findings",
+        "caption": "Unlike small 1g tests where convective buoyancy causes rapid upward spread, large-scale microgravity flame spread proceeds steadily under forced airflow, burning for over 8 minutes continuously.",
+        "referencedAssetId": "saffire-1-schematic",
+        "sourceLocators": [
+          {
+            "sourceId": "Urban et al. 2019",
+            "url": "https://doi.org/10.1016/j.combustflame.2018.10.012",
+            "doi": "10.1016/j.combustflame.2018.10.012"
+          }
+        ],
+        "reviewed": true
+      }
+    ]
+  }
+]

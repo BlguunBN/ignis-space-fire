@@ -12,9 +12,11 @@ import {
   Sparkles,
   Database,
   Cpu,
+  Tv,
+  SplitSquareVertical,
 } from "lucide-react";
 
-export type NavTab = "explore" | "chart" | "table" | "coverage" | "methodology";
+export type NavTab = "explore" | "studio" | "compare_lab" | "chart" | "table" | "coverage" | "methodology";
 
 interface AppSidebarProps {
   activeTab: NavTab;
@@ -30,7 +32,9 @@ export function AppSidebar({
   onOpenCompare,
 }: AppSidebarProps) {
   const navItems: Array<{ id: NavTab; label: string; icon: React.ReactNode; badge?: string }> = [
+    { id: "studio", label: "Experiment Studio", icon: <Tv className="w-4 h-4" />, badge: "Visual" },
     { id: "explore", label: "Evidence Explorer", icon: <Search className="w-4 h-4" /> },
+    { id: "compare_lab", label: "Visual Compare Lab", icon: <SplitSquareVertical className="w-4 h-4" /> },
     { id: "chart", label: "Flame Dynamics", icon: <Activity className="w-4 h-4" /> },
     { id: "table", label: "Master Comparison", icon: <TableIcon className="w-4 h-4" /> },
     { id: "coverage", label: "Coverage Matrix", icon: <Grid3X3 className="w-4 h-4" /> },
@@ -47,19 +51,19 @@ export function AppSidebar({
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm tracking-tight text-[#F3F5F7]">IGNIS</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#1B2027] border border-[#303741] text-[#A1AAB5]">
-                2026
+              <span className="font-bold text-sm tracking-tight text-[#F3F5F7]">IGNIS 2.0</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#1B2027] border border-[#303741] text-[#E99847]">
+                Studio
               </span>
             </div>
-            <p className="text-[11px] text-[#A1AAB5] leading-tight">Fire Safety Intelligence</p>
+            <p className="text-[11px] text-[#A1AAB5] leading-tight">Visual Research Workspace</p>
           </div>
         </div>
 
         {/* Navigation Items */}
         <nav className="space-y-1">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] px-2 block mb-1.5 font-mono">
-            Navigation
+            Workspace Views
           </span>
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
@@ -79,9 +83,13 @@ export function AppSidebar({
                   </span>
                   <span>{item.label}</span>
                 </div>
-                {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#E99847]"></span>
-                )}
+                {item.badge ? (
+                  <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded border ${
+                    isActive ? "bg-[#E99847]/10 text-[#E99847] border-[#E99847]/30" : "bg-[#0C0F13] text-[#5CB59B] border-[#5CB59B]/30"
+                  }`}>
+                    {item.badge}
+                  </span>
+                ) : null}
               </button>
             );
           })}

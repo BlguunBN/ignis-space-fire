@@ -2,7 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import experimentsData from "@/data/experiments.json";
+import visualizationsData from "@/data/visualizations.json";
 import { ExperimentRecord, SearchQuery, RankedEvidence } from "@/types/evidence";
+import { VisualExperimentPackage } from "@/types/visualization";
 import { rankEvidence } from "@/lib/ranking";
 import { SynthesisResponse } from "@/lib/synthesis";
 import { EvidenceCard } from "@/components/EvidenceCard";
@@ -12,6 +14,8 @@ import { MethodologyModal } from "@/components/MethodologyModal";
 import { InterpretationPanel } from "@/components/InterpretationPanel";
 import { FlameDynamicsChart } from "@/components/FlameDynamicsChart";
 import { MasterComparisonTable } from "@/components/MasterComparisonTable";
+import { PaperVisualStoryboard } from "@/components/papers/PaperVisualStoryboard";
+import { VisualComparison } from "@/components/experiment/VisualComparison";
 import { AppSidebar, NavTab } from "@/components/layout/AppSidebar";
 import {
   Search,
@@ -19,16 +23,20 @@ import {
   RotateCcw,
   ShieldAlert,
   FileQuestion,
-  Sparkles,
+  Tv,
 } from "lucide-react";
 
 export default function Home() {
   const allExperiments = experimentsData as ExperimentRecord[];
+  const visualPackages = visualizationsData as VisualExperimentPackage[];
 
-  // Navigation State
-  const [activeTab, setActiveTab] = useState<NavTab>("explore");
+  // Navigation State (defaults to flagship studio view)
+  const [activeTab, setActiveTab] = useState<NavTab>("studio");
 
-  // Query State
+  // Selected Experiment for Visual Studio
+  const [selectedStudioExpId, setSelectedStudioExpId] = useState<string>("sofie-gel");
+
+  // Query State for Explorer
   const [material, setMaterial] = useState("");
   const [oxygenPct, setOxygenPct] = useState<number | null>(null);
   const [airflowCmS, setAirflowCmS] = useState<number | null>(null);
@@ -37,9 +45,8 @@ export default function Home() {
   const [freeText, setFreeText] = useState("");
 
   // Compare Basket State
-  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
+  const [selectedForCompare, setSelectedForCompare] = useState<string[]>(["sofie-gel", "saffire-1"]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
-  const [isMethodologyModalOpen, setIsMethodologyModalOpen] = useState(false);
 
   // Interpretation State
   const [synthesis, setSynthesis] = useState<SynthesisResponse | null>(null);
@@ -66,6 +73,17 @@ export default function Home() {
     }
     return rankEvidence(dataset, query);
   }, [allExperiments, programme, query]);
+
+  // Selected package and record for Studio
+  const activeStudioExp = useMemo(
+    () => allExperiments.find((e) => e.id === selectedStudioExpId) || allExperiments[0],
+    [allExperiments, selectedStudioExpId]
+  );
+
+  const activeVisualPackage = useMemo(
+    () => visualPackages.find((v) => v.experimentId === activeStudioExp.id) || visualPackages[0],
+    [visualPackages, activeStudioExp]
+  );
 
   // Handle Preset Scenarios
   const applyPreset = (preset: string) => {
@@ -161,8 +179,8 @@ export default function Home() {
     }
   };
 
-  const exp1 = selectedForCompare[0] ? allExperiments.find((e) => e.id === selectedForCompare[0]) : null;
-  const exp2 = selectedForCompare[1] ? allExperiments.find((e) => e.id === selectedForCompare[1]) : null;
+  const compareExp1 = allExperiments.find((e) => e.id === selectedForCompare[0]) || allExperiments[0];
+  const compareExp2 = allExperiments.find((e) => e.id === selectedForCompare[1]) || allExperiments[1];
 
   return (
     <div className="min-h-screen bg-[#0C0F13] text-[#F3F5F7] flex flex-col lg:flex-row">
@@ -179,11 +197,11 @@ export default function Home() {
         {/* Top Header Bar */}
         <header className="border-b border-[#303741] bg-[#15191F]/80 backdrop-blur px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#E99847]">
-              NASA Flame in Freefall
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#E99847] font-mono">
+              IGNIS 2.0
             </span>
             <span className="text-[#303741]">/</span>
-            <span className="text-xs text-[#A1AAB5]">SI-Powered Fire Safety Intelligence</span>
+            <span className="text-xs text-[#A1AAB5]">NASA Microgravity Visual Research Studio</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -191,7 +209,7 @@ export default function Home() {
               10 Verified Investigations
             </span>
             <span className="text-[11px] px-2 py-0.5 rounded bg-[#1B2027] text-[#78A9D8] border border-[#303741] font-mono">
-              NVIDIA Nemotron NIM
+              NASA SVS 31394 Flight Media
             </span>
           </div>
         </header>
@@ -210,10 +228,20 @@ export default function Home() {
         <main className="p-4 sm:p-6 space-y-6 max-w-7xl w-full mx-auto">
           {/* Preset Inquiry Chips */}
           <div className="bg-[#1B2027] p-3.5 rounded-xl border border-[#303741] space-y-2">
-            <span className="text-[10px] font-bold text-[#737F8C] uppercase tracking-wider block">
-              One-Click Demonstration Queries:
+            <span className="text-[10px] font-bold text-[#737F8C] uppercase tracking-wider block font-mono">
+              One-Click Demonstration Scenarios:
             </span>
             <div className="flex flex-wrap gap-2 text-xs">
+              <button
+                onClick={() => {
+                  setSelectedStudioExpId("sofie-gel");
+                  setActiveTab("studio");
+                }}
+                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#5CB59B] border border-[#5CB59B]/40 transition cursor-pointer font-medium flex items-center gap-1.5"
+              >
+                <Tv className="w-3.5 h-3.5" />
+                Inspect SoFIE Flight Footage (0.2s sequence)
+              </button>
               <button
                 onClick={() => applyPreset("pmma")}
                 className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
@@ -238,17 +266,68 @@ export default function Home() {
               >
                 Cool Flame Extinction & CO₂ (FLEX)
               </button>
-              <button
-                onClick={() => applyPreset("exploration-atm")}
-                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
-              >
-                Exploration Atmosphere (26-34% O₂)
-              </button>
             </div>
           </div>
 
-          {/* Active Tab View */}
+          {/* FLAGSHIP VIEW: Experiment Studio (Paper Visual Storyboard) */}
+          {activeTab === "studio" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-[#303741]">
+                <div>
+                  <h2 className="text-base font-bold text-[#F3F5F7] flex items-center gap-2">
+                    <Tv className="w-4 h-4 text-[#E99847]" />
+                    Visual Experiment Studio: {activeStudioExp.investigation}
+                  </h2>
+                  <p className="text-xs text-[#A1AAB5] mt-0.5">
+                    Interactive paper explorer: Inspect real NASA flight imagery, apparatus geometry, condition controls, and verified findings.
+                  </p>
+                </div>
+
+                {/* Studio Experiment Switcher */}
+                <div className="flex items-center gap-1.5 bg-[#15191F] p-1 rounded-lg border border-[#303741] text-xs">
+                  <span className="text-[#737F8C] px-2 text-[10px] uppercase font-mono font-semibold">
+                    Target Paper:
+                  </span>
+                  <button
+                    onClick={() => setSelectedStudioExpId("sofie-gel")}
+                    className={`px-2.5 py-1 rounded font-medium transition cursor-pointer ${
+                      selectedStudioExpId === "sofie-gel"
+                        ? "bg-[#0C0F13] text-[#5CB59B] border border-[#5CB59B]/40 font-semibold"
+                        : "text-[#A1AAB5] hover:text-[#F3F5F7]"
+                    }`}
+                  >
+                    SoFIE-GEL (ISS)
+                  </button>
+                  <button
+                    onClick={() => setSelectedStudioExpId("saffire-1")}
+                    className={`px-2.5 py-1 rounded font-medium transition cursor-pointer ${
+                      selectedStudioExpId === "saffire-1"
+                        ? "bg-[#0C0F13] text-[#E99847] border border-[#E99847]/40 font-semibold"
+                        : "text-[#A1AAB5] hover:text-[#F3F5F7]"
+                    }`}
+                  >
+                    Saffire-I (Cygnus)
+                  </button>
+                </div>
+              </div>
+
+              <PaperVisualStoryboard pkg={activeVisualPackage} experiment={activeStudioExp} />
+            </div>
+          )}
+
+          {/* VIEW: Visual Compare Lab */}
+          {activeTab === "compare_lab" && (
+            <VisualComparison
+              exp1={compareExp1}
+              exp2={compareExp2}
+              visualPkg1={activeVisualPackage}
+            />
+          )}
+
+          {/* VIEW: Empirical Flame Spread Measurements */}
           {activeTab === "chart" && <FlameDynamicsChart />}
+
+          {/* VIEW: Master Comparison Table */}
           {activeTab === "table" && (
             <MasterComparisonTable
               data={allExperiments}
@@ -256,13 +335,18 @@ export default function Home() {
               onToggleCompare={toggleCompare}
             />
           )}
+
+          {/* VIEW: Coverage Matrix */}
           {activeTab === "coverage" && <GapMatrix experiments={allExperiments} />}
+
+          {/* VIEW: Provenance & Limits */}
           {activeTab === "methodology" && (
             <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-6">
-              <MethodologyModal onClose={() => setActiveTab("explore")} />
+              <MethodologyModal onClose={() => setActiveTab("studio")} />
             </div>
           )}
 
+          {/* VIEW: Evidence Explorer */}
           {activeTab === "explore" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Filter Panel (4 cols) */}
@@ -282,7 +366,7 @@ export default function Home() {
 
                 {/* Fuse.js Search */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1 font-mono">
                     Fuzzy Literature Query (Fuse.js)
                   </label>
                   <div className="relative">
@@ -299,7 +383,7 @@ export default function Home() {
 
                 {/* Material Select */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1 font-mono">
                     Material / Fuel Class
                   </label>
                   <select
@@ -320,7 +404,7 @@ export default function Home() {
                 {/* Oxygen Level */}
                 <div>
                   <div className="flex justify-between text-[10px] text-[#737F8C] mb-1">
-                    <span className="uppercase tracking-wider font-semibold">Oxygen Concentration</span>
+                    <span className="uppercase tracking-wider font-semibold font-mono">Oxygen Concentration</span>
                     <span className="font-mono text-[#78A9D8]">
                       {oxygenPct ? `${oxygenPct}%` : "Any"}
                     </span>
@@ -345,7 +429,7 @@ export default function Home() {
                 {/* Airflow Velocity */}
                 <div>
                   <div className="flex justify-between text-[10px] text-[#737F8C] mb-1">
-                    <span className="uppercase tracking-wider font-semibold">Ventilation Velocity</span>
+                    <span className="uppercase tracking-wider font-semibold font-mono">Ventilation Velocity</span>
                     <span className="font-mono text-[#78A9D8]">
                       {airflowCmS !== null ? `${airflowCmS} cm/s` : "Any"}
                     </span>
@@ -374,7 +458,7 @@ export default function Home() {
 
                 {/* Phenomenon Select */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1 font-mono">
                     Target Measurement / Phenomenon
                   </label>
                   <select
@@ -393,7 +477,7 @@ export default function Home() {
 
                 {/* Programme Select */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1 font-mono">
                     NASA Flight Programme
                   </label>
                   <select
@@ -432,10 +516,10 @@ export default function Home() {
                 {/* Evidence Cards */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs text-[#A1AAB5]">
-                    <span className="uppercase tracking-wider font-bold text-[10px] text-[#737F8C]">
+                    <span className="uppercase tracking-wider font-bold text-[10px] text-[#737F8C] font-mono">
                       Ranked NASA Microgravity Investigations
                     </span>
-                    <span className="text-[11px]">Sorted by Transparent Relevance Score</span>
+                    <span className="text-[11px]">Sorted by Heuristic Relevance Score</span>
                   </div>
 
                   {rankedResults.length === 0 ? (
@@ -462,8 +546,8 @@ export default function Home() {
       </div>
 
       {/* Compare Modal */}
-      {isCompareOpen && exp1 && exp2 && (
-        <CompareModal exp1={exp1} exp2={exp2} onClose={() => setIsCompareOpen(false)} />
+      {isCompareOpen && (
+        <CompareModal exp1={compareExp1} exp2={compareExp2} onClose={() => setIsCompareOpen(false)} />
       )}
     </div>
   );
