@@ -1,21 +1,44 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, Flame, Compass, RefreshCw, FileText } from "lucide-react";
+import {
+  ShieldCheck,
+  Flame,
+  Compass,
+  RefreshCw,
+  FileText,
+  Grid3X3,
+  BookOpen,
+  ArrowRightLeft,
+} from "lucide-react";
 
 interface HeaderProps {
   corpusCount: number;
   onReset: () => void;
   onOpenBrief: () => void;
+  onOpenCompare: () => void;
+  onOpenCoverage: () => void;
+  onOpenSources: () => void;
   selectedCount: number;
+  activeView: "workspace" | "coverage" | "sources";
 }
 
-export function Header({ corpusCount, onReset, onOpenBrief, selectedCount }: HeaderProps) {
+export function Header({
+  corpusCount,
+  onReset,
+  onOpenBrief,
+  onOpenCompare,
+  onOpenCoverage,
+  onOpenSources,
+  selectedCount,
+  activeView,
+}: HeaderProps) {
   const [time, setTime] = useState("");
 
   useEffect(() => {
     const update = () => {
-      setTime(new Date().toUTCString().replace("GMT", "UTC"));
+      const now = new Date();
+      setTime(now.toISOString().slice(11, 19) + " UTC");
     };
     update();
     const interval = setInterval(update, 1000);
@@ -23,54 +46,90 @@ export function Header({ corpusCount, onReset, onOpenBrief, selectedCount }: Hea
   }, []);
 
   return (
-    <header className="border-b border-slate-800 bg-slate-950/90 backdrop-blur px-4 py-3 sticky top-0 z-40">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* Left branding */}
+    <header className="border-b border-white/10 bg-[#06080B]/90 backdrop-blur-xl px-4 py-2.5 sticky top-0 z-40 shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-w-[1750px] mx-auto">
+        {/* Left Branding */}
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center shadow-lg shadow-amber-500/20 border border-amber-400/30">
-            <Flame className="w-5 h-5 text-white animate-pulse" />
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-red-600 flex items-center justify-center shadow-lg shadow-amber-500/20 border border-amber-400/40">
+            <Flame className="w-4 h-4 text-white animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-base font-bold tracking-wider text-white">
-                IGNIS <span className="text-amber-400 text-xs px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">2.0</span>
+              <span className="font-mono text-sm font-bold tracking-wider text-slate-100">
+                IGNIS <span className="text-amber-400 text-[10px] px-1.5 py-0.2 rounded bg-amber-400/10 border border-amber-400/30">2.0</span>
               </span>
-              <span className="hidden sm:inline-block text-xs font-mono text-slate-400">
-                // NASA Space Apps Flame in Freefall
+              <span className="hidden xl:inline-block text-[11px] font-mono text-slate-400">
+                NASA Space Apps • Flame in Freefall
               </span>
             </div>
-            <p className="text-xs text-slate-400">Microgravity Combustion Intelligence & Evidence Triage</p>
+            <p className="text-[11px] text-slate-400">Microgravity Combustion Intelligence & Evidence Triage</p>
           </div>
         </div>
 
-        {/* Center telemetry stats */}
-        <div className="hidden md:flex items-center gap-4 text-xs font-mono">
-          <div className="flex items-center gap-1.5 text-slate-300 bg-slate-900 px-2.5 py-1 rounded border border-slate-800">
+        {/* Center Navigation Tabs (The 3 Persistent Destinations) */}
+        <nav className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-white/10 text-xs font-mono">
+          <button
+            onClick={() => {}}
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all ${
+              activeView === "workspace"
+                ? "bg-amber-400 text-slate-950 shadow-sm"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>Research Workspace</span>
+          </button>
+
+          <button
+            onClick={onOpenCoverage}
+            className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
+          >
+            <Grid3X3 className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Coverage & Gap Matrix</span>
+          </button>
+
+          <button
+            onClick={onOpenSources}
+            className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Sources & Methods</span>
+          </button>
+        </nav>
+
+        {/* Right Telemetry & Actions */}
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="hidden md:flex items-center gap-2 bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-white/10 text-slate-300">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Corpus: <strong className="text-emerald-400">{corpusCount}</strong> Verified Investigations</span>
+            <span><strong className="text-emerald-400">{corpusCount}</strong> Verified Studies</span>
+            <span className="text-slate-600">|</span>
+            <span className="text-cyan-400">{time || "00:00:00 UTC"}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-slate-400 bg-slate-900 px-2.5 py-1 rounded border border-slate-800">
-            <Compass className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{time || "UTC CLOCK"}</span>
-          </div>
-        </div>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-2">
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 text-xs font-mono text-slate-400 hover:text-slate-200 bg-slate-900 hover:bg-slate-800 px-2.5 py-1.5 rounded border border-slate-800 transition-colors"
-            title="Reset Search and Filters"
+            className="p-1.5 text-slate-400 hover:text-slate-200 bg-slate-900 hover:bg-slate-800 rounded-lg border border-white/10 transition-colors"
+            title="Reset Filters and State"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Reset</span>
           </button>
+
+          {selectedCount >= 2 && (
+            <button
+              onClick={onOpenCompare}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold transition-all animate-in fade-in"
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+              <span>Compare ({selectedCount})</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenBrief}
-            className="flex items-center gap-2 text-xs font-mono font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 px-3 py-1.5 rounded shadow-sm shadow-amber-400/20 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20 transition-all"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Evidence Brief {selectedCount > 0 && `(${selectedCount})`}</span>
+            <span>Evidence Brief</span>
           </button>
         </div>
       </div>

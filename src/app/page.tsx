@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Fuse from "fuse.js";
-import { ArrowRightLeft, BookOpen, Layers } from "lucide-react";
+import { ArrowRightLeft } from "lucide-react";
 import experimentsData from "../data/experiments.json";
 import { ExperimentRecord, SearchQuery } from "../types/evidence";
 import { Header } from "../components/Header";
@@ -13,6 +13,8 @@ import { TelemetryChart } from "../components/TelemetryChart";
 import { GroundedBriefDrawer } from "../components/GroundedBriefDrawer";
 import { CompareModal } from "../components/CompareModal";
 import { PDFEvidenceViewer } from "../components/PDFEvidenceViewer";
+import { CoverageMapModal } from "../components/CoverageMapModal";
+import { SourcesModal } from "../components/SourcesModal";
 import { generateDeterministicBrief } from "../lib/synthesis";
 
 const allRecords = experimentsData as ExperimentRecord[];
@@ -26,6 +28,8 @@ export default function UnifiedWorkspace() {
   const [isBriefOpen, setIsBriefOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
+  const [isCoverageOpen, setIsCoverageOpen] = useState(false);
+  const [isSourcesOpen, setIsSourcesOpen] = useState(false);
 
   // Configure Fuse.js for fuzzy retrieval
   const fuse = useMemo(() => {
@@ -150,17 +154,21 @@ export default function UnifiedWorkspace() {
   }, [query, selectedRecords, filteredRecords]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
+    <div className="min-h-screen bg-[#06080B] text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
       {/* Top Telemetry Header */}
       <Header
         corpusCount={allRecords.length}
         onReset={handleReset}
         onOpenBrief={() => setIsBriefOpen(true)}
+        onOpenCompare={() => setIsCompareOpen(true)}
+        onOpenCoverage={() => setIsCoverageOpen(true)}
+        onOpenSources={() => setIsSourcesOpen(true)}
         selectedCount={selectedIds.size}
+        activeView="workspace"
       />
 
       {/* Main Workspace (40% Left Pane / 60% Right Pane) */}
-      <main className="flex-1 p-3 md:p-4 max-w-[1700px] w-full mx-auto">
+      <main className="flex-1 p-3 md:p-4 max-w-[1750px] w-full mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
           {/* LEFT PANE (40% width on large screens) */}
           <section className="lg:col-span-5 space-y-3.5 flex flex-col">
@@ -189,7 +197,7 @@ export default function UnifiedWorkspace() {
                   title="Compare selected studies side-by-side"
                 >
                   <ArrowRightLeft className="w-3.5 h-3.5" />
-                  <span>Compare Selected ({selectedRecords.length})</span>
+                  <span>Compare ({selectedRecords.length})</span>
                 </button>
 
                 <div className="flex items-center gap-1.5 border-l border-slate-800 pl-2">
@@ -262,6 +270,21 @@ export default function UnifiedWorkspace() {
         isOpen={isSourceModalOpen}
         onClose={() => setIsSourceModalOpen(false)}
         record={activeRecord}
+      />
+
+      {/* Destination 2: Parameter Space Coverage & Gap Matrix Modal */}
+      <CoverageMapModal
+        isOpen={isCoverageOpen}
+        onClose={() => setIsCoverageOpen(false)}
+        records={allRecords}
+        onApplyCellFilter={(newQ) => setQuery((prev) => ({ ...prev, ...newQ }))}
+      />
+
+      {/* Destination 3: Sources & Methodology Modal */}
+      <SourcesModal
+        isOpen={isSourcesOpen}
+        onClose={() => setIsSourcesOpen(false)}
+        records={allRecords}
       />
     </div>
   );

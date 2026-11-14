@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 export default {
   content: [
@@ -7,7 +7,27 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        void: "var(--bg-void)",
+        canvas: "var(--surface-canvas)",
+        card: "var(--surface-card)",
+        elevated: "var(--surface-elevated)",
+        subtle: "var(--surface-subtle)",
+      },
+      fontFamily: {
+        mono: [
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Monaco",
+          "Consolas",
+          "Liberation Mono",
+          "Courier New",
+          "monospace",
+        ],
+      },
+    },
   },
   plugins: [],
-} satisfies Config
+} satisfies Config;
