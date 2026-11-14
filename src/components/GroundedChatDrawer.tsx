@@ -18,6 +18,10 @@ import {
   BrainCircuit,
   ChevronDown,
   ChevronUp,
+  Zap,
+  ArrowRight,
+  Eye,
+  Filter,
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
 import {
@@ -25,6 +29,14 @@ import {
   GroundedCitation,
 } from "../lib/grounded-assistant";
 import { NemotronResponse } from "../lib/nvidia-nemotron";
+import {
+  AgentToolCall,
+  BuildHypothesisTreeArgs,
+  RunCombustionSimulationArgs,
+  InspectOpticalDiagnosticsArgs,
+  FilterResearchExplorerArgs,
+  OpenPrimaryEvidenceArgs,
+} from "../lib/agent-tools";
 
 interface ChatMessage {
   id: string;
@@ -41,9 +53,15 @@ interface GroundedChatDrawerProps {
   corpus: ExperimentRecord[];
   selectedRecordIds: Set<string>;
   initialPrompt?: string | null;
-  onAddToWhiteboard?: (text: string, citations: GroundedCitation[]) => void;
+  onAddToWhiteboard?: (
+    text: string,
+    citations?: GroundedCitation[],
+    customTree?: BuildHypothesisTreeArgs
+  ) => void;
+  onRunSimulation?: (args: RunCombustionSimulationArgs) => void;
   onOpenSimulator?: (presetId?: string) => void;
-  onOpenDiagnostics?: (sequenceId?: string) => void;
+  onOpenDiagnostics?: (plateId?: string, filterMode?: string) => void;
+  onFilterExplorer?: (args: FilterResearchExplorerArgs) => void;
   onOpenCoverageMap?: () => void;
   onOpenGraph?: () => void;
 }
@@ -56,8 +74,10 @@ export function GroundedChatDrawer({
   selectedRecordIds,
   initialPrompt,
   onAddToWhiteboard,
+  onRunSimulation,
   onOpenSimulator,
   onOpenDiagnostics,
+  onFilterExplorer,
   onOpenCoverageMap,
   onOpenGraph,
 }: GroundedChatDrawerProps) {
@@ -66,7 +86,7 @@ export function GroundedChatDrawer({
       id: "init",
       role: "assistant",
       content:
-        "Welcome to IGNIS Agentic Copilot powered by NVIDIA Nemotron-3.5-Lightning (30B). Deep reasoning and strict citation grounding against NASA Physical Sciences Informatics (PSI) flight records are active.",
+        "Welcome to Research assistant powered by NVIDIA Nemotron-3.5-Lightning (30B). Deep reasoning and strict citation grounding against NASA Physical Sciences Informatics (PSI) flight records are active.",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -155,6 +175,40 @@ export function GroundedChatDrawer({
         };
       }
 
+      // Option A: Auto-execute tool actions across the IGNIS research environment
+      if (grounded.toolCalls && grounded.toolCalls.length > 0) {
+        for (const tc of grounded.toolCalls) {
+          if (tc.name === "build_hypothesis_tree") {
+            const args = tc.args as BuildHypothesisTreeArgs;
+            if (onAddToWhiteboard) {
+              onAddToWhiteboard(args.question?.title || queryText, grounded.citations, args);
+            }
+          } else if (tc.name === "run_combustion_simulation") {
+            const args = tc.args as RunCombustionSimulationArgs;
+            if (onRunSimulation) {
+              onRunSimulation(args);
+            } else if (onOpenSimulator) {
+              onOpenSimulator(args.gravity === "0.16g" ? "orion-lunar" : "iss");
+            }
+          } else if (tc.name === "inspect_optical_diagnostics") {
+            const args = tc.args as InspectOpticalDiagnosticsArgs;
+            if (onOpenDiagnostics) {
+              onOpenDiagnostics(args.plateId, args.filterMode);
+            }
+          } else if (tc.name === "filter_research_explorer") {
+            const args = tc.args as FilterResearchExplorerArgs;
+            if (onFilterExplorer) {
+              onFilterExplorer(args);
+            }
+          } else if (tc.name === "open_primary_evidence") {
+            const args = tc.args as OpenPrimaryEvidenceArgs;
+            if (onInspectClaim && args?.recordId) {
+              onInspectClaim(args.recordId);
+            }
+          }
+        }
+      }
+
       const assistantMsg: ChatMessage = {
         id: `asst-${Date.now()}`,
         role: "assistant",
@@ -164,6 +218,14 @@ export function GroundedChatDrawer({
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
+
+      // Auto-expand reasoning accordion for the latest answer
+      if (grounded.reasoning) {
+        setExpandedReasoning((prev) => ({
+          ...prev,
+          [assistantMsg.id]: true,
+        }));
+      }
     } catch (err) {
       const errorMsg: ChatMessage = {
         id: `err-${Date.now()}`,
@@ -185,16 +247,16 @@ export function GroundedChatDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-xl bg-[#0c0f14] border-l border-white/[0.08] flex flex-col h-full shadow-2xl animate-in slide-in-from-right duration-200">
+      <div className="w-full max-w-2xl bg-[#101216] border-l border-white/[0.08] flex flex-col h-full shadow-2xl animate-in slide-in-from-right duration-200">
         {/* Drawer Header */}
-        <div className="p-3.5 border-b border-white/[0.08] bg-[#090a0d] flex items-center justify-between">
+        <div className="px-6 py-5 border-b border-white/[0.08] bg-[#101216] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
               <Bot className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-100">
-                <span>IGNIS Agentic Copilot</span>
+                <span>Research assistant</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                   <Cpu className="w-2.5 h-2.5" /> Nemotron 30B
                 </span>
@@ -226,6 +288,7 @@ export function GroundedChatDrawer({
             </button>
             <button
               onClick={onClose}
+              aria-label="Close assistant"
               className="p-1.5 text-slate-400 hover:text-slate-200 rounded hover:bg-white/[0.04] transition-colors"
             >
               <X className="w-4 h-4" />
@@ -234,7 +297,7 @@ export function GroundedChatDrawer({
         </div>
 
         {/* Message Thread Viewport */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs">
+        <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-7 space-y-6 font-sans text-sm">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -258,7 +321,7 @@ export function GroundedChatDrawer({
               </div>
 
               <div
-                className={`p-3 rounded-lg max-w-[95%] leading-relaxed ${
+                className={`p-4 rounded-2xl max-w-[95%] leading-relaxed ${
                   msg.role === "user"
                     ? "bg-amber-400/10 border border-amber-400/20 text-slate-100"
                     : "bg-[#13171e] border border-white/[0.06] text-slate-200"
@@ -266,24 +329,49 @@ export function GroundedChatDrawer({
               >
                 {/* Nemotron Thinking / Reasoning Process Dropdown */}
                 {msg.response?.reasoning && (
-                  <div className="mb-2.5 rounded border border-white/[0.08] bg-[#090b10] overflow-hidden text-[11px] font-mono">
+                  <div className="mb-2.5 rounded-lg border border-amber-500/20 bg-[#07090e] overflow-hidden text-[11px] font-mono shadow-inner">
                     <button
                       onClick={() => toggleReasoning(msg.id)}
-                      className="w-full px-2.5 py-1.5 flex items-center justify-between bg-white/[0.02] hover:bg-white/[0.05] text-slate-400 hover:text-slate-200 transition-colors text-left"
+                      className="w-full px-3 py-2 flex items-center justify-between bg-amber-500/[0.05] hover:bg-amber-500/[0.08] text-slate-300 transition-colors text-left border-b border-amber-500/10"
                     >
-                      <span className="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium">
-                        <BrainCircuit className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Thinking Process ({Math.round(msg.response.reasoning.length / 4)} tokens)</span>
+                      <span className="flex items-center gap-2 text-[11px] text-amber-300 font-semibold">
+                        <BrainCircuit className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                        <span>NVIDIA Nemotron Thinking Process ({Math.round(msg.response.reasoning.length / 4)} tokens)</span>
                       </span>
-                      {expandedReasoning[msg.id] ? (
-                        <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-                      )}
+                      <span className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                          Verified CoT
+                        </span>
+                        {expandedReasoning[msg.id] ? (
+                          <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                        )}
+                      </span>
                     </button>
                     {expandedReasoning[msg.id] && (
-                      <div className="p-2.5 border-t border-white/[0.06] text-slate-400 text-[10px] leading-relaxed max-h-60 overflow-y-auto whitespace-pre-wrap font-mono select-text bg-[#07090c]">
-                        {msg.response.reasoning}
+                      <div className="p-3 text-slate-300 text-[10px] leading-relaxed max-h-72 overflow-y-auto font-mono select-text bg-[#05070a] border-t border-white/[0.04] space-y-1">
+                        {msg.response.reasoning.split("\n").map((line, idx) => {
+                          if (line.startsWith("[")) {
+                            return (
+                              <div key={idx} className="text-cyan-300 font-bold mt-2 pt-1 border-t border-white/[0.04] tracking-wide">
+                                {line}
+                              </div>
+                            );
+                          }
+                          if (line.startsWith("•") || line.startsWith("-")) {
+                            return (
+                              <div key={idx} className="text-slate-300 pl-2">
+                                {line}
+                              </div>
+                            );
+                          }
+                          return (
+                            <div key={idx} className="text-slate-400">
+                              {line}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -329,71 +417,274 @@ export function GroundedChatDrawer({
                   </div>
                 )}
 
-                {/* AI Agent Interactive Dispatch & Modeler Sync */}
-                {msg.role === "assistant" && msg.id !== "init" && (
-                  <div className="mt-2.5 pt-2 border-t border-white/[0.06] space-y-2">
-                    {/* Dedicated Stage 3 Modeler Card */}
-                    {onAddToWhiteboard && msg.response && (
-                      <div className="p-2.5 rounded-lg bg-amber-400/[0.08] border border-amber-400/30 flex flex-col gap-2">
-                        <div className="flex items-center justify-between text-[11px] font-mono">
-                          <div className="flex items-center gap-1.5 text-amber-300 font-bold">
-                            <Network className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Microgravity Hypothesis Modeler</span>
-                          </div>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                            Stage 3 Studio
+                {/* AI Agent Interactive Execution Cards (Option A: Auto-Synced) */}
+                {msg.role === "assistant" && msg.id !== "init" && msg.response && (
+                  <div className="mt-3 pt-2.5 border-t border-white/[0.06] space-y-2.5">
+                    {/* Render Structured Tool Call Execution Cards */}
+                    {msg.response.toolCalls && msg.response.toolCalls.length > 0 ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <Zap className="w-3 h-3 fill-current text-emerald-400" />
+                            <span>Live Agent Actions Executed ({msg.response.toolCalls.length}):</span>
+                          </span>
+                          <span className="text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20 text-[9px]">
+                            Auto-Synced
                           </span>
                         </div>
-                        <p className="text-[10px] text-slate-300 font-sans leading-tight">
-                          AI Agent synthesizes a 4-tier causal mind tree (Question → Flight Evidence → Physical Hypothesis → Validation Experiment) directly on the graph canvas.
-                        </p>
-                        <button
-                          onClick={() => {
-                            const userQuery = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === "user")?.content || msg.content;
-                            onAddToWhiteboard(userQuery, msg.response!.citations);
-                          }}
-                          className="w-full py-1.5 px-3 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 fill-current" />
-                          <span>🚀 Open & Build in Modeler (Stage 3)</span>
-                        </button>
+
+                        {msg.response.toolCalls.map((tc, tcIdx) => {
+                          if (tc.name === "build_hypothesis_tree") {
+                            const args = tc.args as BuildHypothesisTreeArgs;
+                            return (
+                              <div
+                                key={tcIdx}
+                                className="p-3 rounded-lg bg-amber-400/[0.08] border border-amber-400/30 flex flex-col gap-2 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between text-[11px] font-mono">
+                                  <div className="flex items-center gap-1.5 text-amber-300 font-bold">
+                                    <Network className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>🧠 Stage 3 Hypothesis Modeler Synthesized</span>
+                                  </div>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Canvas Synced
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-slate-300 space-y-1 font-mono">
+                                  <div>
+                                    <span className="text-slate-500">Hypothesis:</span>{" "}
+                                    <span className="text-slate-100 font-semibold">{args.hypothesis?.title || "Thermodynamic Mechanism"}</span>
+                                  </div>
+                                  <div className="truncate">
+                                    <span className="text-slate-500">Facility:</span>{" "}
+                                    <span className="text-cyan-300">{args.validationExperiment?.facility}</span> •{" "}
+                                    <span className="text-amber-300">{args.validationExperiment?.airflow}</span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    if (onAddToWhiteboard) {
+                                      onAddToWhiteboard(args.question?.title || msg.content, msg.response!.citations, args);
+                                    }
+                                  }}
+                                  className="w-full py-1.5 px-3 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                >
+                                  <Sparkles className="w-3.5 h-3.5 fill-current" />
+                                  <span>Open & Inspect Modeler (Stage 3)</span>
+                                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          if (tc.name === "run_combustion_simulation") {
+                            const args = tc.args as RunCombustionSimulationArgs;
+                            return (
+                              <div
+                                key={tcIdx}
+                                className="p-3 rounded-lg bg-cyan-500/[0.08] border border-cyan-500/30 flex flex-col gap-2 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between text-[11px] font-mono">
+                                  <div className="flex items-center gap-1.5 text-cyan-300 font-bold">
+                                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                                    <span>🔥 Microgravity Combustion Simulator Configured</span>
+                                  </div>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Engine Ready
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-slate-300 font-mono space-y-0.5">
+                                  <div>
+                                    <span className="text-slate-500">Regime:</span>{" "}
+                                    <span className="text-cyan-300 font-semibold">{args.gravity}</span> •{" "}
+                                    <span className="text-amber-300">{args.oxygenPct}% O₂</span> •{" "}
+                                    <span className="text-slate-200">{args.pressureAtm} atm</span> •{" "}
+                                    <span className="text-emerald-300">{args.fuel}</span>
+                                  </div>
+                                  <div className="text-slate-400 truncate">
+                                    {args.description}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    if (onRunSimulation) {
+                                      onRunSimulation(args);
+                                    } else if (onOpenSimulator) {
+                                      onOpenSimulator(args.gravity === "0.16g" ? "orion-lunar" : "iss");
+                                    }
+                                  }}
+                                  className="w-full py-1.5 px-3 rounded-md bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                >
+                                  <span>🚀 Launch & View Simulation</span>
+                                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          if (tc.name === "inspect_optical_diagnostics") {
+                            const args = tc.args as InspectOpticalDiagnosticsArgs;
+                            return (
+                              <div
+                                key={tcIdx}
+                                className="p-3 rounded-lg bg-blue-500/[0.08] border border-blue-500/30 flex flex-col gap-2 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between text-[11px] font-mono">
+                                  <div className="flex items-center gap-1.5 text-blue-300 font-bold">
+                                    <Eye className="w-3.5 h-3.5 text-blue-400" />
+                                    <span>🔬 Optical Diagnostics & CV Filter Calibrated</span>
+                                  </div>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Filter Active
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-slate-300 font-mono">
+                                  <span>Target:</span>{" "}
+                                  <span className="text-blue-300 font-semibold">{args.plateId?.toUpperCase()} Flight Plate</span> •{" "}
+                                  <span className="text-cyan-300 font-semibold">{args.filterMode} Mode</span>
+                                  <div className="text-slate-400 truncate mt-0.5">{args.rationale}</div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    if (onOpenDiagnostics) {
+                                      onOpenDiagnostics(args.plateId, args.filterMode);
+                                    }
+                                  }}
+                                  className="w-full py-1.5 px-3 rounded-md bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                >
+                                  <span>🔬 Inspect Optical Plate & CV Filter</span>
+                                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          if (tc.name === "filter_research_explorer") {
+                            const args = tc.args as FilterResearchExplorerArgs;
+                            return (
+                              <div
+                                key={tcIdx}
+                                className="p-3 rounded-lg bg-purple-500/[0.08] border border-purple-500/30 flex flex-col gap-2 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between text-[11px] font-mono">
+                                  <div className="flex items-center gap-1.5 text-purple-300 font-bold">
+                                    <Filter className="w-3.5 h-3.5 text-purple-400" />
+                                    <span>📊 NASA PSI Research Explorer Filtered</span>
+                                  </div>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Applied
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-slate-300 font-mono">
+                                  <span>Filters:</span>{" "}
+                                  {args.searchQuery && <span className="text-purple-300 font-semibold">"{args.searchQuery}" </span>}
+                                  {args.gravityRegimes && <span className="text-cyan-300">[{args.gravityRegimes.join(", ")}] </span>}
+                                  {args.materialClasses && <span className="text-amber-300">{args.materialClasses.join(", ")}</span>}
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    if (onFilterExplorer) {
+                                      onFilterExplorer(args);
+                                    }
+                                  }}
+                                  className="w-full py-1.5 px-3 rounded-md bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                >
+                                  <span>📊 View Filtered Records in Explorer</span>
+                                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          if (tc.name === "open_primary_evidence") {
+                            const args = tc.args as OpenPrimaryEvidenceArgs;
+                            return (
+                              <div
+                                key={tcIdx}
+                                className="p-3 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/30 flex flex-col gap-2 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between text-[11px] font-mono">
+                                  <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
+                                    <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                    <span>📄 Primary PDF Evidence Grounded</span>
+                                  </div>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Verified
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-slate-300 font-mono">
+                                  <span>Claim ID:</span>{" "}
+                                  <span className="text-emerald-300 font-semibold">{args.claimId}</span> •{" "}
+                                  <span className="text-slate-400">Record: {args.recordId}</span>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    if (onInspectClaim && args.recordId) {
+                                      onInspectClaim(args.recordId);
+                                    }
+                                  }}
+                                  className="w-full py-1.5 px-3 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer"
+                                >
+                                  <span>📄 Inspect Verified Primary PDF</span>
+                                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          return null;
+                        })}
+                      </div>
+                    ) : (
+                      /* Fallback Manual Launch Actions if no specific tool calls were emitted */
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-cyan-400" />
+                          <span>AI Agent Navigation:</span>
+                        </span>
+                        <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
+                          {onAddToWhiteboard && (
+                            <button
+                              onClick={() => {
+                                const userQuery = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === "user")?.content || msg.content;
+                                onAddToWhiteboard(userQuery, msg.response!.citations);
+                              }}
+                              className="px-2 py-1 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 transition-colors"
+                            >
+                              <span>🚀 Open in Modeler</span>
+                            </button>
+                          )}
+                          {onOpenSimulator && (
+                            <button
+                              onClick={() => onOpenSimulator(msg.content.toLowerCase().includes("lunar") ? "orion-lunar" : "iss")}
+                              className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 transition-colors"
+                            >
+                              <span>🚀 Open Simulation</span>
+                            </button>
+                          )}
+                          {onOpenDiagnostics && (
+                            <button
+                              onClick={() => onOpenDiagnostics(msg.content.toLowerCase().includes("pmma") ? "sofie" : "rtdfs")}
+                              className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1 transition-colors"
+                            >
+                              <span>🔬 Diagnostics</span>
+                            </button>
+                          )}
+                          {onOpenCoverageMap && (
+                            <button
+                              onClick={onOpenCoverageMap}
+                              className="px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors"
+                            >
+                              <span>🗺️ Coverage Gaps</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
-
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-cyan-400" />
-                        <span>AI Agent Tool Actions:</span>
-                      </span>
-                      <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
-                        {onOpenSimulator && (
-                          <button
-                            onClick={() => onOpenSimulator(msg.content.toLowerCase().includes("lunar") ? "orion-lunar" : "iss")}
-                            className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 transition-colors"
-                          >
-                            <span>🚀 Open Physics Simulation</span>
-                          </button>
-                        )}
-                        {onOpenDiagnostics && (
-                          <button
-                            onClick={() => onOpenDiagnostics(msg.content.toLowerCase().includes("pmma") ? "sofie" : "rtdfs")}
-                            className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1 transition-colors"
-                          >
-                            <span>🔬 Open Flame Diagnostics</span>
-                          </button>
-                        )}
-                        {onOpenCoverageMap && (
-                          <button
-                            onClick={onOpenCoverageMap}
-                            className="px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors"
-                          >
-                            <span>🗺️ Coverage Gaps</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 )}
+
+                {/* Actions: Send to Whiteboard + Copy */}
 
                 {/* Actions: Send to Whiteboard + Copy */}
                 {msg.role === "assistant" && msg.id !== "init" && (
@@ -424,7 +715,7 @@ export function GroundedChatDrawer({
             <div className="flex items-center gap-2.5 text-xs font-mono text-slate-300 bg-[#13171e] p-3 rounded-lg border border-amber-400/20 w-fit animate-pulse">
               <Bot className="w-4 h-4 text-amber-400 animate-spin" />
               <div className="flex flex-col">
-                <span className="text-amber-300 font-semibold text-[11px]">NVIDIA Nemotron-3.5 Reasoning...</span>
+                <span className="text-amber-300 font-semibold text-[11px]">Searching and preparing an answer…</span>
                 <span className="text-[10px] text-slate-400">Thinking and grounding against NASA PSI flight records</span>
               </div>
             </div>
@@ -459,6 +750,7 @@ export function GroundedChatDrawer({
             className="flex items-center gap-2"
           >
             <input
+              aria-label="Ask a research question"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -467,6 +759,7 @@ export function GroundedChatDrawer({
             />
             <button
               type="submit"
+              aria-label="Send message"
               disabled={!input.trim() || loading}
               className="px-3 py-2 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold text-xs flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -475,7 +768,7 @@ export function GroundedChatDrawer({
           </form>
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2 px-1">
             <span>NVIDIA Nemotron 30B • RAG Grounding</span>
-            <span>Zero Hallucination Guard</span>
+            <span>Check sources and limitations</span>
           </div>
         </div>
       </div>

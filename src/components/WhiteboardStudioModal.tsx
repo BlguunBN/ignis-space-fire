@@ -5,6 +5,7 @@ import { X, Network, PenTool, FileText, Sparkles } from "lucide-react";
 import { StructuredWhiteboard } from "./whiteboard/StructuredWhiteboard";
 import { ExcalidrawCanvas } from "./whiteboard/ExcalidrawCanvas";
 import { ExperimentRecord } from "../types/evidence";
+import { BuildHypothesisTreeArgs } from "../lib/agent-tools";
 
 interface WhiteboardStudioModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface WhiteboardStudioModalProps {
   activeRecord: ExperimentRecord | null;
   onExportBrief?: (markdown: string) => void;
   initialPrompt?: string | null;
+  initialTree?: BuildHypothesisTreeArgs | null;
 }
 
 export function WhiteboardStudioModal({
@@ -20,6 +22,7 @@ export function WhiteboardStudioModal({
   activeRecord,
   onExportBrief,
   initialPrompt,
+  initialTree,
 }: WhiteboardStudioModalProps) {
   const [activeTab, setActiveTab] = useState<"tree" | "sketch">("tree");
 
@@ -91,6 +94,7 @@ export function WhiteboardStudioModal({
               activeRecord={activeRecord}
               onExportBrief={onExportBrief}
               initialPrompt={initialPrompt}
+              initialTree={initialTree}
             />
           ) : (
             <ExcalidrawCanvas />

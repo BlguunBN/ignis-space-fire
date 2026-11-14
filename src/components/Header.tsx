@@ -1,22 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  ShieldCheck,
-  Flame,
-  RotateCcw,
-  FileText,
-  Compass,
-  Grid3X3,
-  BookOpen,
-  ArrowRightLeft,
-  Network,
-  Bot,
-  Share2,
-  FileUp,
-  LayoutDashboard,
-  Columns,
-} from "lucide-react";
+import React, { useState } from "react";
+import { ArrowRightLeft, BookOpen, Bot, Columns, Compass, FileText, FileUp, Flame, Grid3X3, LayoutDashboard, Menu, Network, RotateCcw, Share2, X } from "lucide-react";
 
 interface HeaderProps {
   corpusCount: number;
@@ -37,215 +22,43 @@ interface HeaderProps {
   onSelectView?: (view: "dashboard" | "explorer" | "split") => void;
 }
 
-export function Header({
-  corpusCount,
-  onReset,
-  onOpenBrief,
-  onOpenCompare,
-  onOpenCoverage,
-  onOpenSources,
-  onOpenWhiteboard,
-  onOpenAssistant,
-  onOpenGraph,
-  onOpenIngestion,
-  onOpenSimulator,
-  onOpenUpload,
-  selectedCount,
-  activeView,
-  activeMainView,
-  onSelectView,
-}: HeaderProps) {
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      setTime(now.toISOString().slice(11, 19) + " UTC");
-    };
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
+export function Header({ corpusCount, onReset, onOpenBrief, onOpenCompare, onOpenCoverage, onOpenSources, onOpenWhiteboard, onOpenAssistant, onOpenGraph, onOpenIngestion, onOpenSimulator, onOpenUpload, selectedCount, activeMainView, onSelectView }: HeaderProps) {
+  const [open, setOpen] = useState(false);
+  const closeAfter = (action?: () => void) => () => { action?.(); setOpen(false); };
+  const item = (label: string, Icon: typeof Flame, action?: () => void, active = false) => action && (
+    <button type="button" onClick={closeAfter(action)} aria-current={active ? "page" : undefined} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400 ${active ? "bg-white/[0.09] text-white" : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"}`}>
+      <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? "text-amber-400" : "text-slate-500"}`} /><span>{label}</span>
+    </button>
+  );
   return (
-    <header className="border-b border-white/[0.08] bg-[#090a0d]/95 backdrop-blur-md px-4 py-2 sticky top-0 z-40">
-      <div className="flex items-center justify-between gap-4 max-w-[1750px] mx-auto">
-        {/* Left Branding - Minimalist Aerospace Identity */}
-        <div className="flex items-center gap-3">
-          <div className="h-7 w-7 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <Flame className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-sm font-semibold tracking-wider text-slate-100">
-              IGNIS
-            </span>
-            <span className="text-[10px] font-mono text-amber-400/90 bg-amber-400/10 border border-amber-400/20 px-1 py-0.2 rounded">
-              v2.0
-            </span>
-            <span className="hidden sm:inline-block text-xs text-slate-400 font-sans border-l border-white/10 pl-2 ml-1">
-              Microgravity Combustion Intelligence
-            </span>
-          </div>
-        </div>
-
-        {/* Center Navigation Tabs */}
-        <nav className="flex items-center gap-1 text-xs font-mono">
-          {onSelectView && (
-            <>
-              <button
-                onClick={() => onSelectView("dashboard")}
-                className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
-                  activeMainView === "dashboard"
-                    ? "text-slate-100 bg-white/[0.08] font-bold border border-white/[0.12] text-amber-300"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-                }`}
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
-                <span>Dashboard</span>
-              </button>
-
-              <button
-                onClick={() => onSelectView("explorer")}
-                className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
-                  activeMainView === "explorer"
-                    ? "text-cyan-300 bg-cyan-500/20 font-bold border border-cyan-500/40"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-                }`}
-              >
-                <Compass className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Research Explorer</span>
-              </button>
-
-              <button
-                onClick={() => onSelectView("split")}
-                className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
-                  activeMainView === "split"
-                    ? "text-slate-100 bg-white/[0.08] font-bold border border-white/[0.12]"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-                }`}
-              >
-                <Columns className="w-3.5 h-3.5 text-slate-300" />
-                <span>Split Workspace</span>
-              </button>
-            </>
-          )}
-
-          <button
-            onClick={onOpenWhiteboard}
-            className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
-          >
-            <Network className="w-3.5 h-3.5 text-purple-400" />
-            <span>Studio</span>
-          </button>
-
-          {onOpenGraph && (
-            <button
-              onClick={onOpenGraph}
-              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
-            >
-              <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Network Graph</span>
-            </button>
-          )}
-
-          <button
-            onClick={onOpenCoverage}
-            className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
-          >
-            <Grid3X3 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Coverage</span>
-          </button>
-
-          <button
-            onClick={onOpenSources}
-            className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Sources</span>
-          </button>
-
-          {onOpenSimulator && (
-            <button
-              onClick={onOpenSimulator}
-              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
-            >
-              <Flame className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
-              <span>Simulation</span>
-            </button>
-          )}
-
-          {onOpenUpload && (
-            <button
-              onClick={onOpenUpload}
-              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
-            >
-              <FileUp className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Upload Paper</span>
-            </button>
-          )}
-
-          {onOpenIngestion && (
-            <button
-              onClick={onOpenIngestion}
-              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
-            >
-              <FileUp className="w-3.5 h-3.5 text-amber-400" />
-              <span>Ingestion Queue</span>
-            </button>
-          )}
-        </nav>
-
-        {/* Right Telemetry & Actions */}
-        <div className="flex items-center gap-2 text-xs font-mono">
-          {/* Live Status Telemetry */}
-          <div className="hidden xl:flex items-center gap-2 text-slate-400 text-[11px] px-2 py-1 rounded border border-white/[0.06] bg-white/[0.02]">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-slate-300 font-medium">{corpusCount} Verified Studies</span>
-            <span className="text-white/10">•</span>
-            <span className="text-slate-400 tabular-nums">{time || "00:00:00 UTC"}</span>
-          </div>
-
-          {/* Reset Filters */}
-          <button
-            onClick={onReset}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] rounded border border-white/[0.06] transition-colors"
-            title="Reset filters and selections"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-
-          {/* AI Assistant Drawer Trigger */}
-          {onOpenAssistant && (
-            <button
-              onClick={onOpenAssistant}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/[0.08] transition-colors font-medium"
-            >
-              <Bot className="w-3.5 h-3.5 text-amber-400" />
-              <span>AI Assistant</span>
-            </button>
-          )}
-
-          {/* Compare Trigger (Contextual when >= 2 selected) */}
-          {selectedCount >= 2 && (
-            <button
-              onClick={onOpenCompare}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-medium transition-colors"
-            >
-              <ArrowRightLeft className="w-3.5 h-3.5" />
-              <span>Compare ({selectedCount})</span>
-            </button>
-          )}
-
-          {/* Primary Action - Evidence Brief */}
-          <button
-            onClick={onOpenBrief}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold transition-all shadow-sm shadow-amber-400/20 active:translate-y-px"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Evidence Brief</span>
-          </button>
-        </div>
+    <>
+      <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/[0.08] bg-[#0c0e12]/95 px-5 backdrop-blur md:hidden">
+        <span className="flex items-center gap-2 text-sm font-semibold tracking-[0.18em]"><Flame className="h-5 w-5 text-amber-400" /> IGNIS</span>
+        <button type="button" onClick={() => setOpen(true)} aria-label="Open navigation" aria-expanded={open} aria-controls="workspace-navigation" className="rounded-lg p-2 text-slate-300 hover:bg-white/10"><Menu className="h-5 w-5" /></button>
       </div>
-    </header>
+      {open && <button type="button" aria-label="Close navigation" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/70 md:hidden" />}
+      <aside id="workspace-navigation" className={`${open ? "translate-x-0" : "invisible -translate-x-full md:visible"} fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.08] bg-[#101216] px-4 py-6 transition-transform duration-200 motion-reduce:transition-none md:sticky md:top-0 md:h-screen md:shrink-0 md:translate-x-0`}>
+        <div className="mb-9 flex items-center justify-between px-2">
+          <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/10 text-amber-400"><Flame className="h-5 w-5" /></div><div><div className="text-sm font-semibold tracking-[0.18em] text-white">IGNIS</div><div className="mt-0.5 text-[11px] text-slate-500">Research workspace</div></div></div>
+          <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="rounded-lg p-2 text-slate-400 md:hidden"><X className="h-4 w-4" /></button>
+        </div>
+        <nav aria-label="Workspace navigation" className="min-h-0 flex-1 space-y-6 overflow-y-auto">
+          <div><p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Workspace</p>
+            {item("Overview", LayoutDashboard, onSelectView ? () => onSelectView("dashboard") : undefined, activeMainView === "dashboard")}
+            {item("Explore", Compass, onSelectView ? () => onSelectView("explorer") : undefined, activeMainView === "explorer")}
+            {item("Analysis", Columns, onSelectView ? () => onSelectView("split") : undefined, activeMainView === "split")}
+            {item("AI Assistant", Bot, onOpenAssistant)}
+            {item("Whiteboard", Network, onOpenWhiteboard)}
+          </div>
+          <div><p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Research tools</p>
+            {item("Sources", BookOpen, onOpenSources)}{item("Coverage", Grid3X3, onOpenCoverage)}{item("Relationships", Share2, onOpenGraph)}{item("Simulator", Flame, onOpenSimulator)}{item("Upload paper", FileUp, onOpenUpload)}{item("Ingestion queue", FileUp, onOpenIngestion)}
+          </div>
+          <div><p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Actions</p>
+            {item("Evidence brief", FileText, onOpenBrief)}{selectedCount >= 2 && item(`Compare (${selectedCount})`, ArrowRightLeft, onOpenCompare)}{item("Reset filters", RotateCcw, onReset)}
+          </div>
+        </nav>
+        <div className="mt-5 border-t border-white/[0.07] px-3 pt-4 text-xs text-slate-500"><span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />{corpusCount} studies in library</div>
+      </aside>
+    </>
   );
 }

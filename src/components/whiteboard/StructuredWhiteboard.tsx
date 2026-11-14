@@ -39,6 +39,7 @@ import {
 } from "./CustomNodes";
 import { ExperimentRecord } from "../../types/evidence";
 import experimentsData from "../../data/experiments.json";
+import { BuildHypothesisTreeArgs } from "../../lib/agent-tools";
 
 const nodeTypes = {
   question: QuestionNode,
@@ -231,12 +232,14 @@ interface StructuredWhiteboardProps {
   activeRecord: ExperimentRecord | null;
   onExportBrief?: (markdown: string) => void;
   initialPrompt?: string | null;
+  initialTree?: BuildHypothesisTreeArgs | null;
 }
 
 export function StructuredWhiteboard({
   activeRecord,
   onExportBrief,
   initialPrompt,
+  initialTree,
 }: StructuredWhiteboardProps) {
   const [activeTemplate, setActiveTemplate] = useState("ventilation");
   const [nodes, setNodes, onNodesChange] = useNodesState(TEMPLATES.ventilation.nodes);
@@ -519,12 +522,164 @@ export function StructuredWhiteboard({
     };
   };
 
-  // Auto-run AI tree generation if initialPrompt is passed from parent or chat
+  // Builds complete grounded tree from structured agent tool arguments
+  const buildNodesFromCustomTree = useCallback((tree: BuildHypothesisTreeArgs) => {
+    const qId = `q-${Date.now()}`;
+    const hypId = `hyp-${Date.now()}`;
+    const expId = `exp-${Date.now()}`;
+
+    const evNodes: Node[] = [];
+    const evEdges: Edge[] = [];
+
+    const claims = (tree.evidenceClaims && tree.evidenceClaims.length > 0)
+      ? tree.evidenceClaims
+      : ["CLM-SAFFIRE-001", "CLM-BASS-002"];
+
+    claims.slice(0, 3).forEach((claimId, idx) => {
+      const matchedRec = (experimentsData as ExperimentRecord[]).find(
+        (r) =>
+          r.claim_locator_details?.claimId?.toUpperCase() === claimId.toUpperCase() ||
+          `CLM-${r.id.toUpperCase()}` === claimId.toUpperCase() ||
+          r.id.toLowerCase() === claimId.toLowerCase()
+      );
+
+      const evId = `ev-${Date.now()}-${idx}`;
+      const xPos = idx === 0 ? 80 : idx === 1 ? 620 : 350;
+      const yPos = idx === 2 ? 260 : 190;
+
+      evNodes.push({
+        id: evId,
+        type: "evidence",
+        position: { x: xPos, y: yPos },
+        data: {
+          claimId: claimId,
+          investigation: matchedRec?.investigation || `NASA Flight Record (${claimId})`,
+          conditions: matchedRec
+            ? `${matchedRec.oxygen_pct != null ? `${matchedRec.oxygen_pct}% O₂` : "21% O₂"} • ${matchedRec.airflow_cm_s != null ? `${matchedRec.airflow_cm_s} cm/s` : "0 cm/s"} • ${matchedRec.pressure_kpa != null ? `${matchedRec.pressure_kpa} kPa` : "101.3 kPa"}`
+            : "Microgravity flight conditions",
+          quote: matchedRec?.finding || "Empirical microgravity combustion flight finding verified in NASA PSI.",
+          aiGenerated: true,
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      });
+
+      evEdges.push({
+        id: `e-${qId}-${evId}`,
+        source: qId,
+        target: evId,
+        animated: true,
+        style: { stroke: "#38bdf8", strokeWidth: 2 },
+      });
+
+      evEdges.push({
+        id: `e-${evId}-${hypId}`,
+        source: evId,
+        target: hypId,
+        style: { stroke: "#10b981", strokeWidth: 2 },
+      });
+    });
+
+    const questionNode: Node = {
+      id: qId,
+      type: "question",
+      position: { x: 380, y: 20 },
+      data: {
+        label: tree.question.title,
+        details: tree.question.details,
+        aiGenerated: true,
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
+      },
+    };
+
+    const hypothesisNode: Node = {
+      id: hypId,
+      type: "hypothesis",
+      position: { x: 350, y: 390 },
+      data: {
+        title: tree.hypothesis.title,
+        prediction: tree.hypothesis.prediction,
+        rationale: tree.hypothesis.rationale,
+        aiGenerated: true,
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
+      },
+    };
+
+    const expNode: Node = {
+      id: expId,
+      type: "experiment",
+      position: { x: 350, y: 580 },
+      data: {
+        facility: tree.validationExperiment.facility,
+        objective: tree.validationExperiment.objective,
+        airflow: tree.validationExperiment.airflow,
+        oxygen: tree.validationExperiment.oxygen,
+        pressure: tree.validationExperiment.pressure,
+        geometry: tree.validationExperiment.geometry,
+        aiGenerated: true,
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
+      },
+    };
+
+    const allNodes: Node[] = [questionNode, ...evNodes, hypothesisNode, expNode];
+    const allEdges: Edge[] = [
+      ...evEdges,
+      {
+        id: `e-${hypId}-${expId}`,
+        source: hypId,
+        target: expId,
+        animated: true,
+        style: { stroke: "#c084fc", strokeWidth: 2 },
+      },
+    ];
+
+    if (tree.counterHypothesis) {
+      const counterId = `counter-${Date.now()}`;
+      const counterNode: Node = {
+        id: counterId,
+        type: "hypothesis",
+        position: { x: 740, y: 390 },
+        data: {
+          title: tree.counterHypothesis.title,
+          prediction: tree.counterHypothesis.prediction,
+          rationale: tree.counterHypothesis.rationale,
+          isCounter: true,
+          aiGenerated: true,
+          onChange: handleUpdateNodeData,
+          onDelete: handleDeleteNode,
+        },
+      };
+      allNodes.push(counterNode);
+      if (evNodes.length > 1) {
+        allEdges.push({
+          id: `e-${evNodes[1].id}-${counterId}`,
+          source: evNodes[1].id,
+          target: counterId,
+          style: { stroke: "#ef4444", strokeWidth: 2, strokeDasharray: "5 5" },
+        });
+      }
+    }
+
+    return { nodes: allNodes, edges: allEdges };
+  }, [handleUpdateNodeData, handleDeleteNode]);
+
+  // Auto-run AI tree generation if initialTree or initialPrompt is passed from parent or chat
   useEffect(() => {
-    if (initialPrompt && initialPrompt.trim()) {
+    if (initialTree) {
+      const built = buildNodesFromCustomTree(initialTree);
+      setNodes(built.nodes);
+      setEdges(built.edges);
+      setAiStatusFeedback(`⚡ Nemotron AI Synthesized: ${initialTree.hypothesis.title}`);
+      centerGraph();
+      setTimeout(centerGraph, 100);
+      setTimeout(centerGraph, 400);
+    } else if (initialPrompt && initialPrompt.trim()) {
       handleAiGenerateTree(initialPrompt.trim());
     }
-  }, [initialPrompt]);
+  }, [initialTree, initialPrompt, buildNodesFromCustomTree, centerGraph]);
 
   // AI Agent: Auto-Generate complete grounded tree based on user prompt or active record
   const handleAiGenerateTree = (customTopic?: string) => {

@@ -95,14 +95,32 @@ interface CombustionSimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAskAI?: (prompt: string) => void;
+  initialTab?: "physics" | "diagnostics";
+  initialConfig?: {
+    gravity?: "µg" | "0.16g" | "0.38g" | "1g";
+    fuel?: "Methanol" | "Heptane" | "n-Decane";
+    oxygenPct?: number;
+    pressureAtm?: number;
+    diluent?: "Nitrogen" | "+ CO2" | "+ Helium";
+    forcedAirflowSpeed?: number;
+    description?: string;
+  } | null;
+  initialDiagConfig?: {
+    plateId?: "rtdfs" | "sofie" | "hotwire" | "flex" | "saffire";
+    filterMode?: "raw" | "chemiluminescence" | "edges" | "pyrometry";
+    rationale?: string;
+  } | null;
 }
 
 export function CombustionSimulatorModal({
   isOpen,
   onClose,
   onAskAI,
+  initialTab,
+  initialConfig,
+  initialDiagConfig,
 }: CombustionSimulatorModalProps) {
-  const [activeTab, setActiveTab] = useState<"physics" | "diagnostics">("physics");
+  const [activeTab, setActiveTab] = useState<"physics" | "diagnostics">(initialTab || "physics");
 
   // Physics Simulation States (Tab 1)
   const [selectedPreset, setSelectedPreset] = useState<string>("iss");
@@ -122,13 +140,49 @@ export function CombustionSimulatorModal({
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({ x: 280, y: 175 });
 
   // CV Diagnostics States (Tab 2)
-  const [diagSequence, setDiagSequence] = useState<"rtdfs" | "sofie" | "hotwire" | "flex">("rtdfs");
+  const [diagSequence, setDiagSequence] = useState<"rtdfs" | "sofie" | "hotwire" | "flex" | "saffire">("rtdfs");
   const [cvFilter, setCvFilter] = useState<"raw" | "chemiluminescence" | "edges" | "pyrometry">("chemiluminescence");
   const [scanlineYPct, setScanlineYPct] = useState<number>(50);
   const [thresholdSensitivity, setThresholdSensitivity] = useState<number>(45);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const diagCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Sync state when invoked by Agentic AI Copilot
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (initialConfig) {
+      if (initialConfig.gravity) setGravityMode(initialConfig.gravity);
+      if (initialConfig.fuel) setFuelType(initialConfig.fuel);
+      if (initialConfig.oxygenPct != null) setO2Pct(initialConfig.oxygenPct);
+      if (initialConfig.pressureAtm != null) setPressureAtm(initialConfig.pressureAtm);
+      if (initialConfig.diluent) setDiluent(initialConfig.diluent);
+      if (initialConfig.forcedAirflowSpeed != null) {
+        setAirCursorActive(initialConfig.forcedAirflowSpeed > 0);
+      }
+      if (initialConfig.gravity === "0.16g") {
+        setSelectedPreset("orion-lunar");
+      } else if (initialConfig.gravity === "1g") {
+        setSelectedPreset("earth-1g");
+      }
+    }
+  }, [initialConfig]);
+
+  useEffect(() => {
+    if (initialDiagConfig) {
+      if (initialDiagConfig.plateId) {
+        setDiagSequence(initialDiagConfig.plateId as any);
+      }
+      if (initialDiagConfig.filterMode) {
+        setCvFilter(initialDiagConfig.filterMode);
+      }
+    }
+  }, [initialDiagConfig]);
 
   // Derived Physics Metrics
   const baseK = fuelType === "Methanol" ? 0.56 : fuelType === "Heptane" ? 0.72 : 0.85;

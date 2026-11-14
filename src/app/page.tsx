@@ -24,7 +24,13 @@ import { ExecutiveAnalyticsDashboard } from "../components/ExecutiveAnalyticsDas
 import { PaperUploadModal } from "../components/PaperUploadModal";
 import { GuidedResearchStepper, GuidedStep } from "../components/GuidedResearchStepper";
 import { generateDeterministicBrief } from "../lib/synthesis";
-import { LayoutGrid, Columns, Sparkles, Flame, Upload, LayoutDashboard, Compass } from "lucide-react";
+
+import {
+  BuildHypothesisTreeArgs,
+  RunCombustionSimulationArgs,
+  InspectOpticalDiagnosticsArgs,
+  FilterResearchExplorerArgs,
+} from "../lib/agent-tools";
 
 export default function UnifiedWorkspace() {
   const [corpus, setCorpus] = useState<ExperimentRecord[]>(experimentsData as ExperimentRecord[]);
@@ -52,7 +58,11 @@ export default function UnifiedWorkspace() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [assistantInitialPrompt, setAssistantInitialPrompt] = useState<string | null>(null);
   const [whiteboardInitialPrompt, setWhiteboardInitialPrompt] = useState<string | null>(null);
+  const [whiteboardInitialTree, setWhiteboardInitialTree] = useState<BuildHypothesisTreeArgs | null>(null);
   const [whiteboardSynthesis, setWhiteboardSynthesis] = useState<string | null>(null);
+  const [simulatorInitialTab, setSimulatorInitialTab] = useState<"physics" | "diagnostics">("physics");
+  const [simulatorInitialConfig, setSimulatorInitialConfig] = useState<RunCombustionSimulationArgs | null>(null);
+  const [simulatorInitialDiagConfig, setSimulatorInitialDiagConfig] = useState<InspectOpticalDiagnosticsArgs | null>(null);
 
   // Configure Fuse.js for fuzzy retrieval
   const fuse = useMemo(() => {
@@ -260,7 +270,7 @@ export default function UnifiedWorkspace() {
   }, [query, selectedRecords, filteredRecords, whiteboardSynthesis]);
 
   return (
-    <div className="min-h-screen bg-[#090a0d] text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
+    <div className="min-h-screen bg-[#0b0d10] text-slate-100 flex flex-col md:flex-row font-sans selection:bg-amber-400 selection:text-slate-950">
       {/* Top Telemetry Header */}
       <Header
         corpusCount={corpus.length}
@@ -281,84 +291,19 @@ export default function UnifiedWorkspace() {
         onSelectView={setViewMode}
       />
 
-      {/* Guided Researcher Pathway Stepper */}
-      <GuidedResearchStepper
-        currentStep={guidedStep}
-        onSelectStep={handleSelectGuidedStep}
-      />
-
-      {/* Main Workspace Body */}
-      <main className="flex-1 p-3 md:p-4 max-w-[1750px] w-full mx-auto space-y-3">
-        {/* View Toggle Bar */}
-        <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
-          <div className="flex items-center gap-2">
-            <span>
-              NASA Flight Corpus: <strong className="text-slate-200">{filteredRecords.length}</strong> of {corpus.length} investigations
-            </span>
+      <main className="min-w-0 flex-1 w-full max-w-[1750px] mx-auto px-4 py-7 md:px-8 lg:px-10 md:py-10 space-y-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-400/80">Microgravity research</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{viewMode === "dashboard" ? "Overview" : viewMode === "explorer" ? "Explore research" : "Analysis"}</h1>
+            <p className="mt-2 text-sm text-slate-400">{viewMode === "dashboard" ? "Your starting point for combustion evidence." : viewMode === "explorer" ? "Find and inspect studies in the flight corpus." : "Compare investigations and examine their evidence."}</p>
           </div>
-
-          <div className="flex items-center gap-3">
-            {/* View Switcher Toggle: Dashboard vs Explorer vs Split */}
-            <div className="flex rounded-lg bg-white/[0.03] p-0.5 border border-white/[0.06]">
-              <button
-                onClick={() => setViewMode("dashboard")}
-                className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ${
-                  viewMode === "dashboard"
-                    ? "bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                title="Executive Mission Fire-Safety Analytics Dashboard"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
-                <span>Dashboard</span>
-              </button>
-
-              <button
-                onClick={() => setViewMode("explorer")}
-                className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ${
-                  viewMode === "explorer"
-                    ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                title="Research Explorer with Filter Sidebar"
-              >
-                <Compass className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Research Explorer</span>
-              </button>
-
-              <button
-                onClick={() => setViewMode("split")}
-                className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ${
-                  viewMode === "split"
-                    ? "bg-white/[0.08] text-slate-100 font-bold border border-white/[0.12]"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                title="Table & Scatter Plot Split Workspace"
-              >
-                <Columns className="w-3.5 h-3.5" />
-                <span>Split Workspace</span>
-              </button>
-            </div>
-
-            {/* Quick Actions */}
-            <button
-              onClick={() => setIsSimulatorOpen(true)}
-              className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/30 transition-colors"
-            >
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
-              <span>Simulate</span>
-            </button>
-
-            <button
-              onClick={() => setIsUploadOpen(true)}
-              className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Ingest Paper</span>
-            </button>
-          </div>
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-slate-400">{filteredRecords.length} of {corpus.length} studies</span>
         </div>
-
+        <details className="rounded-xl border border-white/[0.07] bg-white/[0.02]">
+          <summary className="cursor-pointer px-4 py-3 text-sm text-slate-300 hover:text-white">Research pathway</summary>
+          <GuidedResearchStepper currentStep={guidedStep} onSelectStep={handleSelectGuidedStep} />
+        </details>
         {/* Content View: Dashboard vs Research Explorer vs Split Workspace */}
         {viewMode === "dashboard" ? (
           <ExecutiveAnalyticsDashboard
@@ -469,6 +414,9 @@ export default function UnifiedWorkspace() {
       <CombustionSimulatorModal
         isOpen={isSimulatorOpen}
         onClose={() => setIsSimulatorOpen(false)}
+        initialTab={simulatorInitialTab}
+        initialConfig={simulatorInitialConfig}
+        initialDiagConfig={simulatorInitialDiagConfig}
         onAskAI={(prompt) => {
           setIsSimulatorOpen(false);
           setAssistantInitialPrompt(prompt);
@@ -533,9 +481,11 @@ export default function UnifiedWorkspace() {
         onClose={() => {
           setIsWhiteboardOpen(false);
           setWhiteboardInitialPrompt(null);
+          setWhiteboardInitialTree(null);
         }}
         activeRecord={activeRecord}
         initialPrompt={whiteboardInitialPrompt}
+        initialTree={whiteboardInitialTree}
         onExportBrief={(md) => {
           setWhiteboardSynthesis(md);
           setIsWhiteboardOpen(false);
@@ -557,18 +507,45 @@ export default function UnifiedWorkspace() {
           setActiveId(recId);
           setIsSourceModalOpen(true);
         }}
-        onAddToWhiteboard={(text) => {
+        onAddToWhiteboard={(text, citations, customTree) => {
           setWhiteboardInitialPrompt(text);
-          setIsAssistantOpen(false);
+          if (customTree) setWhiteboardInitialTree(customTree);
           setIsWhiteboardOpen(true);
         }}
-        onOpenSimulator={() => {
-          setIsAssistantOpen(false);
+        onRunSimulation={(args) => {
+          setSimulatorInitialConfig(args);
+          setSimulatorInitialTab("physics");
           setIsSimulatorOpen(true);
         }}
-        onOpenDiagnostics={() => {
-          setIsAssistantOpen(false);
+        onOpenSimulator={(preset) => {
+          setSimulatorInitialTab("physics");
           setIsSimulatorOpen(true);
+        }}
+        onOpenDiagnostics={(plateId, filterMode) => {
+          if (plateId || filterMode) {
+            setSimulatorInitialDiagConfig({
+              plateId: (plateId as any) || "rtdfs",
+              filterMode: (filterMode as any) || "chemiluminescence",
+              rationale: "AI Copilot Calibrated CV Diagnostic Inspection",
+            });
+          }
+          setSimulatorInitialTab("diagnostics");
+          setIsSimulatorOpen(true);
+        }}
+        onFilterExplorer={(args) => {
+          setQuery((prev) => ({
+            ...prev,
+            freeText: args.searchQuery || prev.freeText,
+            material: args.materialClasses?.[0] || prev.material,
+            oxygenPct: args.oxygenRange ? Math.round((args.oxygenRange[0] + args.oxygenRange[1]) / 2) : prev.oxygenPct,
+            pressureKpa: args.pressureRange ? Math.round((args.pressureRange[0] + args.pressureRange[1]) / 2) : prev.pressureKpa,
+            gravity: (args.gravityRegimes?.[0]?.toLowerCase().includes("micro")
+              ? "microgravity"
+              : args.gravityRegimes?.[0]?.toLowerCase().includes("lunar")
+              ? "partial"
+              : prev.gravity) as any,
+          }));
+          setViewMode("explorer");
         }}
         onOpenCoverageMap={() => {
           setIsAssistantOpen(false);

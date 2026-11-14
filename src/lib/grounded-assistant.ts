@@ -28,7 +28,10 @@ export const GroundedAssistantResponseSchema = z.object({
   boundaryWarnings: z.array(z.string()),
   scientificLimitations: z.array(z.string()),
   provenanceHash: z.string(),
-});
+  reasoning: z.string().optional(),
+  toolCalls: z.array(z.any()).optional(),
+  model: z.string().optional(),
+}).passthrough();
 
 export type GroundedAssistantResponse = z.infer<typeof GroundedAssistantResponseSchema>;
 

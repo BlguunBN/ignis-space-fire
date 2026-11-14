@@ -600,8 +600,9 @@ export function ExecutiveAnalyticsDashboard({
         </div>
       </div>
 
-      {/* 3. BOTTOM ANALYTICS WIDGETS ROW (3 COLUMNS) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <details className="group rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
+        <summary className="cursor-pointer text-sm font-medium text-slate-200 hover:text-white">More evidence analytics</summary>
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Widget 1: Outcome distribution */}
         <div className="bg-[#0b0d13] border border-white/[0.08] rounded-xl p-4 shadow-lg flex flex-col justify-between">
           <div>
@@ -757,6 +758,7 @@ export function ExecutiveAnalyticsDashboard({
           </div>
         </div>
       </div>
+      </details>
     </div>
   );
 }
