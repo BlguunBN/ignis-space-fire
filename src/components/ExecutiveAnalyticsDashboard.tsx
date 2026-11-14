@@ -324,7 +324,7 @@ export function ExecutiveAnalyticsDashboard({
             </div>
 
             {/* Custom Interactive SVG Scatter / Regime Chart */}
-            <div className="relative border border-white/[0.06] rounded-lg bg-[#07090e] p-3 md:p-4 my-2 overflow-hidden select-none">
+            <div className="relative border border-white/[0.06] rounded-lg bg-[#07090e] p-3 md:p-4 my-2 select-none">
               {/* 21% Earth Air Reference Line */}
               <div
                 className="absolute top-0 bottom-8 border-l border-dashed border-cyan-400/40 z-10 pointer-events-none"
@@ -387,6 +387,102 @@ export function ExecutiveAnalyticsDashboard({
                             </button>
                           );
                         })}
+
+                        {/* Interactive Inspector Floating Tooltip Card - Positioned DIRECTLY adjacent to the active dot */}
+                        {activeTooltip && activeTooltip.gravityY === grav.y && (() => {
+                          const xPercent = Math.min(
+                            100,
+                            Math.max(0, ((activeTooltip.oxygenPct - 10) / (40 - 10)) * 100)
+                          );
+                          // Place on left if the dot is on the right half, otherwise place on right
+                          const placeOnLeft = xPercent > 50;
+
+                          return (
+                            <div
+                              onMouseEnter={() => setHoveredPoint(activeTooltip)}
+                              onMouseLeave={() => setHoveredPoint(null)}
+                              className="absolute z-50 w-72 bg-[#0c1018]/95 backdrop-blur-md border border-cyan-500/40 rounded-xl p-3.5 shadow-2xl font-mono text-xs animate-in fade-in duration-150 pointer-events-auto"
+                              style={{
+                                ...(placeOnLeft
+                                  ? { right: `calc(${100 - xPercent}% + 14px)` }
+                                  : { left: `calc(${xPercent}% + 14px)` }),
+                                ...(grav.y === 0
+                                  ? { top: "-10px" }
+                                  : grav.y === 1
+                                  ? { top: "-28px" }
+                                  : grav.y === 2
+                                  ? { top: "-75px" }
+                                  : grav.y === 3
+                                  ? { bottom: "-28px" }
+                                  : { bottom: "-10px" }),
+                              }}
+                            >
+                              <div className="flex items-center justify-between border-b border-white/[0.08] pb-1.5 mb-2">
+                                <span className="font-bold text-cyan-300 truncate max-w-[130px]">
+                                  {activeTooltip.id}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    {activeTooltip.outcomeLabel}
+                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedPoint(null);
+                                      setHoveredPoint(null);
+                                    }}
+                                    className="p-0.5 rounded text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+                                    title="Close tooltip"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <h4 className="font-sans font-semibold text-slate-100 text-xs line-clamp-2 mb-2 leading-snug">
+                                {activeTooltip.name}
+                              </h4>
+
+                              <div className="space-y-1 text-[11px] text-slate-300">
+                                <div className="flex justify-between">
+                                  <span className="text-slate-500">Fuel:</span>
+                                  <span className="text-slate-200 font-medium truncate max-w-[160px]">{activeTooltip.fuel}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-500">Oxygen:</span>
+                                  <span className="text-cyan-300 font-bold">{activeTooltip.oxygenPct}%</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-500">Pressure:</span>
+                                  <span className="text-slate-200">{activeTooltip.pressure}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-500">Gravity:</span>
+                                  <span className="text-slate-200">{activeTooltip.gravityLabel}</span>
+                                </div>
+                                <div className="pt-1 border-t border-white/[0.06]">
+                                  <span className="text-slate-500 block text-[10px] uppercase">Result:</span>
+                                  <p className="text-[11px] text-slate-200 line-clamp-2 mt-0.5 font-sans leading-snug">
+                                    {activeTooltip.resultSummary}
+                                  </p>
+                                </div>
+                                <div className="flex justify-between text-[10px] text-slate-500 pt-1">
+                                  <span>Source:</span>
+                                  <span className="truncate max-w-[150px]">{activeTooltip.sourceText}</span>
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={() => {
+                                  if (onSelectRecord) onSelectRecord(activeTooltip.record.id);
+                                }}
+                                className="w-full mt-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-center text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+                              >
+                                <span>Click to open record →</span>
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
@@ -409,89 +505,6 @@ export function ExecutiveAnalyticsDashboard({
               <div className="text-center text-xs font-mono text-slate-400 mt-1">
                 Oxygen concentration tested (%)
               </div>
-
-              {/* Interactive Inspector Floating Tooltip Card - Intelligently Positioned */}
-              {activeTooltip && (
-                <div
-                  onMouseEnter={() => setHoveredPoint(activeTooltip)}
-                  onMouseLeave={() => setHoveredPoint(null)}
-                  className="absolute z-30 w-72 bg-[#0c1018]/95 backdrop-blur-md border border-cyan-500/30 rounded-xl p-3.5 shadow-2xl font-mono text-xs animate-in fade-in duration-150 pointer-events-auto"
-                  style={{
-                    // If point is on the right side (>24% O2), place tooltip on the left side to avoid covering dots
-                    // If point is on the left/center side (<=24% O2), place tooltip on the right side
-                    ...(activeTooltip.oxygenPct > 24
-                      ? { left: "140px" }
-                      : { right: "20px" }),
-                    ...(activeTooltip.gravityY >= 3
-                      ? { bottom: "45px" }
-                      : { top: "20px" }),
-                  }}
-                >
-                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-1.5 mb-2">
-                    <span className="font-bold text-cyan-300 truncate max-w-[130px]">
-                      {activeTooltip.id}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        {activeTooltip.outcomeLabel}
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedPoint(null);
-                          setHoveredPoint(null);
-                        }}
-                        className="p-0.5 rounded text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors"
-                        title="Close tooltip"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <h4 className="font-sans font-semibold text-slate-100 text-xs line-clamp-2 mb-2 leading-snug">
-                    {activeTooltip.name}
-                  </h4>
-
-                  <div className="space-y-1 text-[11px] text-slate-300">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Fuel:</span>
-                      <span className="text-slate-200 font-medium truncate max-w-[160px]">{activeTooltip.fuel}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Oxygen:</span>
-                      <span className="text-cyan-300 font-bold">{activeTooltip.oxygenPct}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Pressure:</span>
-                      <span className="text-slate-200">{activeTooltip.pressure}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Gravity:</span>
-                      <span className="text-slate-200">{activeTooltip.gravityLabel}</span>
-                    </div>
-                    <div className="pt-1 border-t border-white/[0.06]">
-                      <span className="text-slate-500 block text-[10px] uppercase">Result:</span>
-                      <p className="text-[11px] text-slate-200 line-clamp-2 mt-0.5 font-sans leading-snug">
-                        {activeTooltip.resultSummary}
-                      </p>
-                    </div>
-                    <div className="flex justify-between text-[10px] text-slate-500 pt-1">
-                      <span>Source:</span>
-                      <span className="truncate max-w-[150px]">{activeTooltip.sourceText}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      if (onSelectRecord) onSelectRecord(activeTooltip.record.id);
-                    }}
-                    className="w-full mt-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-center text-xs font-semibold transition-colors flex items-center justify-center gap-1"
-                  >
-                    <span>Click to open record →</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
