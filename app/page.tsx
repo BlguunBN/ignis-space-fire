@@ -4,12 +4,14 @@ import React, { useState, useMemo } from "react";
 import experimentsData from "@/data/experiments.json";
 import { ExperimentRecord, SearchQuery, RankedEvidence } from "@/types/evidence";
 import { rankEvidence } from "@/lib/ranking";
-import { generateGroundedInterpretation, SynthesisResponse } from "@/lib/synthesis";
+import { SynthesisResponse } from "@/lib/synthesis";
 import { EvidenceCard } from "@/components/EvidenceCard";
 import { CompareModal } from "@/components/CompareModal";
 import { GapMatrix } from "@/components/GapMatrix";
 import { MethodologyModal } from "@/components/MethodologyModal";
 import { InterpretationPanel } from "@/components/InterpretationPanel";
+import { FlameDynamicsChart } from "@/components/FlameDynamicsChart";
+import { MasterComparisonTable } from "@/components/MasterComparisonTable";
 import {
   Flame,
   Search,
@@ -22,6 +24,9 @@ import {
   ShieldAlert,
   Grid3X3,
   ListFilter,
+  Activity,
+  Table as TableIcon,
+  Sparkle,
 } from "lucide-react";
 
 export default function Home() {
@@ -39,8 +44,8 @@ export default function Home() {
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
 
-  // Active View Tab: 'evidence' or 'gap-matrix'
-  const [activeTab, setActiveTab] = useState<"evidence" | "gap-matrix">("evidence");
+  // Active View Tab: 'evidence' | 'chart' | 'table' | 'gap-matrix'
+  const [activeTab, setActiveTab] = useState<"evidence" | "chart" | "table" | "gap-matrix">("evidence");
 
   // Modals
   const [isMethodologyOpen, setIsMethodologyOpen] = useState(false);
@@ -62,7 +67,7 @@ export default function Home() {
     [material, oxygenPct, airflowCmS, phenomenon, programme, freeText]
   );
 
-  // Compute Ranked Evidence
+  // Compute Ranked Evidence with Fuse.js fuzzy text boost
   const rankedResults = useMemo(() => {
     let dataset = allExperiments;
     if (programme !== "ALL") {
@@ -75,35 +80,35 @@ export default function Home() {
   const applyPreset = (preset: string) => {
     setSynthesis(null);
     if (preset === "pmma") {
-      setFreeText("What evidence exists for PMMA solid polymer flame spread under low airflow?");
+      setFreeText("PMMA acrylic solid polymer flame spread under low airflow");
       setMaterial("PMMA");
       setOxygenPct(21);
       setAirflowCmS(3.5);
       setPhenomenon("flame_spread");
       setProgramme("ALL");
     } else if (preset === "saffire-fabric") {
-      setFreeText("Large-scale solid fabric flame spread in vehicle ventilation flow");
+      setFreeText("Saffire large-scale solid fabric flame spread in vehicle ventilation flow");
       setMaterial("cotton-fiberglass");
       setOxygenPct(21);
       setAirflowCmS(20);
       setPhenomenon("flame_spread");
       setProgramme("Saffire");
     } else if (preset === "smoke-detection") {
-      setFreeText("Microgravity smoke particle size and spacecraft fire detection");
+      setFreeText("SAME-R microgravity smoke particle size and spacecraft fire detection");
       setMaterial("Kapton / insulation");
       setOxygenPct(21);
       setAirflowCmS(2);
       setPhenomenon("smoke");
       setProgramme("ALL");
     } else if (preset === "cool-flame") {
-      setFreeText("Low-temperature cool flames and CO2 gaseous suppression limits");
+      setFreeText("FLEX droplet low-temperature cool flames and CO2 gaseous suppression");
       setMaterial("droplet");
       setOxygenPct(18);
       setAirflowCmS(0);
       setPhenomenon("extinction");
       setProgramme("FLEX");
     } else if (preset === "exploration-atm") {
-      setFreeText("Exploration atmosphere flammability (elevated O2 at 26-34%, reduced pressure)");
+      setFreeText("Exploration atmosphere flammability elevated O2 at 26-34% reduced pressure");
       setMaterial("PMMA");
       setOxygenPct(26);
       setAirflowCmS(20);
@@ -135,16 +140,31 @@ export default function Home() {
     });
   };
 
-  // Trigger Grounded AI Interpretation
+  // Trigger Grounded AI Interpretation via API Route (NVIDIA Nemotron 30B + Fallback)
   const handleGenerateInterpretation = async () => {
     setSynthesisLoading(true);
     try {
       const top3 = rankedResults.slice(0, 3);
-      // Client-side synthesis (deterministic fallback ensures zero failure risk)
-      const res = await generateGroundedInterpretation(query, top3);
-      setSynthesis(res);
+      const res = await fetch("/api/interpret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, topRanked: top3 }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setSynthesis(data);
+      } else {
+        // Direct local synthesis fallback if server returned error
+        const { generateGroundedInterpretation } = await import("@/lib/synthesis");
+        const fallback = await generateGroundedInterpretation(query, top3);
+        setSynthesis(fallback);
+      }
     } catch (e) {
-      console.error(e);
+      console.warn("Client fallback for interpretation:", e);
+      const { generateGroundedInterpretation } = await import("@/lib/synthesis");
+      const fallback = await generateGroundedInterpretation(query, rankedResults.slice(0, 3));
+      setSynthesis(fallback);
     } finally {
       setSynthesisLoading(false);
     }
@@ -167,6 +187,9 @@ export default function Home() {
                 <h1 className="text-xl font-extrabold tracking-tight text-white">IGNIS</h1>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase tracking-wider">
                   NASA Space Apps 2026
+                </span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  ✨ Team Twinkle Twinkle
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -212,7 +235,7 @@ export default function Home() {
         {/* Preset Inquiry Chips */}
         <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-2">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
-            Example Hackathon Inquiries (One-Click Demonstrations):
+            One-Click Demonstrations for Judges:
           </span>
           <div className="flex flex-wrap gap-2">
             <button
@@ -248,24 +271,48 @@ export default function Home() {
           </div>
         </div>
 
-        {/* View Switcher: Evidence Ranking vs Gap Matrix */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
+        {/* View Switcher: 4 Views */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveTab("evidence")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
                 activeTab === "evidence"
                   ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
                   : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
               }`}
             >
               <ListFilter className="w-4 h-4" />
-              Evidence Ranking & Cards ({rankedResults.length})
+              Evidence Ranking ({rankedResults.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab("chart")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+                activeTab === "chart"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
+                  : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              Empirical Flame Dynamics (Recharts)
+            </button>
+
+            <button
+              onClick={() => setActiveTab("table")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+                activeTab === "table"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
+                  : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <TableIcon className="w-4 h-4" />
+              Master Comparison Table (TanStack)
             </button>
 
             <button
               onClick={() => setActiveTab("gap-matrix")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
                 activeTab === "gap-matrix"
                   ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
                   : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
@@ -276,14 +323,23 @@ export default function Home() {
             </button>
           </div>
 
-          <span className="text-xs text-slate-500 hidden sm:inline">
-            NASA PSI & NTRS Grounded Corpus
+          <span className="text-xs text-slate-500 hidden sm:inline font-mono">
+            Fuse.js Fuzzy Search · NVIDIA Nemotron 30B
           </span>
         </div>
 
-        {activeTab === "gap-matrix" ? (
-          <GapMatrix />
-        ) : (
+        {/* View Routing */}
+        {activeTab === "chart" && <FlameDynamicsChart />}
+        {activeTab === "table" && (
+          <MasterComparisonTable
+            data={allExperiments}
+            selectedForCompare={selectedForCompare}
+            onToggleCompare={toggleCompare}
+          />
+        )}
+        {activeTab === "gap-matrix" && <GapMatrix />}
+
+        {activeTab === "evidence" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Filter Column (4 cols) */}
             <div className="lg:col-span-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
@@ -300,17 +356,17 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Natural Language Question */}
+              {/* Natural Language Question (with Fuse.js) */}
               <div>
                 <label className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block mb-1">
-                  Question / Search
+                  Fuzzy Search (Fuse.js Powered)
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={freeText}
                     onChange={(e) => setFreeText(e.target.value)}
-                    placeholder="e.g. PMMA flame spread under low airflow"
+                    placeholder="e.g. acrylic, low airflow, soot particle"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition pl-8"
                   />
                   <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-3" />
@@ -451,7 +507,7 @@ export default function Home() {
                   <span className="uppercase tracking-wider font-bold">
                     Ranked NASA Microgravity Investigations
                   </span>
-                  <span>Sorted by Evidence Relevance Score</span>
+                  <span>Deterministic Physics Score + Fuzzy Relevance</span>
                 </div>
 
                 {rankedResults.length === 0 ? (
@@ -490,7 +546,7 @@ export default function Home() {
       <footer className="border-t border-slate-800/80 bg-slate-950 py-6 px-4 mt-12 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
-            IGNIS: Intelligent Guidance from NASA Investigation Studies · NASA Space Apps Ulaanbaatar 2026
+            IGNIS: Intelligent Guidance from NASA Investigation Studies · Team Twinkle Twinkle · NASA Space Apps Ulaanbaatar 2026
           </div>
           <div className="flex items-center gap-4 text-slate-400">
             <span>License: Apache-2.0</span>

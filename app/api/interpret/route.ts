@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const query: SearchQuery = body.query || {};
     const topRanked: RankedEvidence[] = body.topRanked || [];
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.NVIDIA_API_KEY || process.env.OPENAI_API_KEY;
     const interpretation = await generateGroundedInterpretation(query, topRanked, apiKey);
 
     return NextResponse.json(interpretation);

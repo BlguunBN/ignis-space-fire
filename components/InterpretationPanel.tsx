@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { SynthesisResponse } from "@/lib/synthesis";
-import { Sparkles, ShieldCheck, AlertTriangle, ExternalLink, Cpu } from "lucide-react";
+import { Sparkles, ShieldCheck, AlertTriangle, ExternalLink, Cpu, Brain, ChevronDown, ChevronUp } from "lucide-react";
 
 interface InterpretationPanelProps {
   synthesis: SynthesisResponse | null;
@@ -15,6 +15,8 @@ export function InterpretationPanel({
   loading,
   onGenerate,
 }: InterpretationPanelProps) {
+  const [showReasoning, setShowReasoning] = useState(false);
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
@@ -26,7 +28,7 @@ export function InterpretationPanel({
             </h3>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Synthesised directly from top-ranked NASA experiments under strict grounding guardrails.
+            Powered by NVIDIA Nemotron-30B Reasoning Model under strict NASA evidence guardrails.
           </p>
         </div>
 
@@ -36,7 +38,7 @@ export function InterpretationPanel({
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-medium text-xs shadow-md shadow-purple-900/30 transition cursor-pointer"
         >
           <Sparkles className="w-4 h-4" />
-          {loading ? "Synthesising Evidence..." : "Generate AI Interpretation"}
+          {loading ? "Reasoning & Synthesising..." : "Generate AI Interpretation"}
         </button>
       </div>
 
@@ -48,24 +50,46 @@ export function InterpretationPanel({
       )}
 
       {loading && (
-        <div className="py-10 text-center text-slate-400 text-xs animate-pulse">
+        <div className="py-10 text-center text-slate-400 text-xs animate-pulse space-y-2">
           <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          Grounding synthesis strictly to retrieved NASA PSI and NTRS experiment records...
+          <div>Querying NVIDIA Nemotron-30B Reasoning Model...</div>
+          <div className="text-[11px] text-slate-500">
+            Applying physics grounding constraints and verifying non-extrapolation boundary.
+          </div>
         </div>
       )}
 
       {synthesis && !loading && (
         <div className="mt-5 space-y-5 text-xs animate-fade-in">
-          {/* Mode Badge */}
-          <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-[11px]">
+          {/* Engine & Model Badge */}
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-[11px]">
             <span className="text-slate-400">Synthesis Engine:</span>
-            <span className="font-semibold text-purple-400 flex items-center gap-1">
-              <Cpu className="w-3.5 h-3.5" />
-              {synthesis.aiMode === "live_llm"
-                ? "Live LLM (Constrained Grounding)"
-                : "Deterministic Science Synthesis (Offline Resilient)"}
+            <span className="font-semibold text-purple-300 flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-purple-400" />
+              {synthesis.modelUsed || "NVIDIA Nemotron-30B"}
             </span>
           </div>
+
+          {/* Optional: NVIDIA Reasoning Trace */}
+          {synthesis.reasoningSteps && (
+            <div className="bg-slate-950/80 rounded-xl border border-purple-900/40 p-3">
+              <button
+                onClick={() => setShowReasoning(!showReasoning)}
+                className="w-full flex items-center justify-between text-purple-400 hover:text-purple-300 font-semibold text-xs transition"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Brain className="w-4 h-4 text-purple-400" />
+                  NVIDIA Model Reasoning Trace
+                </span>
+                {showReasoning ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+              {showReasoning && (
+                <div className="mt-2.5 pt-2 border-t border-purple-950 text-slate-400 leading-relaxed font-mono text-[11px] whitespace-pre-wrap max-h-48 overflow-y-auto">
+                  {synthesis.reasoningSteps}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Core Summary */}
           <div className="bg-purple-950/20 p-4 rounded-xl border border-purple-900/30">

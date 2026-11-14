@@ -2,10 +2,11 @@
 
 **Intelligent Guidance from NASA Investigation Studies**  
 NASA Space Apps Challenge 2026 — *Flame in Freefall: AI/SI-Powered Fire Safety Insights from Microgravity Combustion Data*  
-Ulaanbaatar, Mongolia
+**Team: Twinkle Twinkle** | Ulaanbaatar, Mongolia
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![NVIDIA NIM](https://img.shields.io/badge/AI-NVIDIA_Nemotron_30B-76B900)](https://build.nvidia.com/)
 [![NASA PSI](https://img.shields.io/badge/Data-NASA_PSI_%26_NTRS-0B3D91)](https://psi.nasa.gov/)
 
 ---
@@ -22,10 +23,11 @@ However, this critical scientific data is fragmented across raw repository files
 **IGNIS** is an interactive evidence engine that implements the three core verbs demanded by NASA: **Summarise, Rank, and Interpret**.
 
 Rather than an unvalidated "fire danger chatbot," IGNIS provides:
-1. **Deterministic Evidence Relevance Engine**: Mathematically ranks NASA flight experiments against mission inquiry parameters (material, oxygen, pressure, airflow, phenomenon).
-2. **Side-by-Side Experiment Comparison**: Directly contrasts flight investigations (e.g., Saffire-I vehicle-scale vs. BASS-II sample scale).
-3. **NASA Evidence Gap Matrix**: Highlights where NASA empirical data is strong versus where Exploration missions face untested material/atmosphere gaps.
-4. **Grounded AI Interpretation**: Generates cross-study syntheses constrained strictly to verified NASA DOI records, with offline resilience.
+1. **Deterministic Physics + Fuse.js Fuzzy Ranking**: Transparently scores research relevance while allowing natural, typo-tolerant scientific queries.
+2. **Empirical Flame Dynamics (Recharts)**: Interactive visualization plotting real microgravity flight data points (Forced Airflow Velocity vs. Flame Spread Rate).
+3. **Master Comparison Table (TanStack Table)**: Multi-column sortable and filterable matrix across oxygen, airflow, pressure, and platform scale.
+4. **NASA Evidence Gap Matrix**: Highlights where NASA empirical data is strong versus where Exploration missions face untested material/atmosphere gaps.
+5. **Grounded AI with NVIDIA Nemotron-30B Reasoning**: Generates cross-study syntheses constrained strictly to verified NASA DOI records, exposing the model's internal reasoning trace, with an offline deterministic fallback.
 
 ---
 
@@ -33,20 +35,21 @@ Rather than an unvalidated "fire danger chatbot," IGNIS provides:
 
 ```
 NASA Physical Sciences Informatics (PSI) ────┐
-NASA Technical Reports Server (NTRS) ────────┼──> scripts/validate.py ──> data/experiments.json
+NASA Technical Reports Server (NTRS) ────────┼──> scripts/extract_pdf.py (pdfplumber) ──> data/experiments.json
 Peer-Reviewed Flight Literature ─────────────┘
 
-       ┌────────────────────────────────────────────────────────┐
-       │               Next.js App Engine (IGNIS)               │
-       ├────────────────────────────────────────────────────────┤
-       │  1. Deterministic Relevance Engine (lib/ranking.ts)    │
-       │  2. Interactive Filters & Preset Scenarios             │
-       │  3. Side-by-Side Comparison Modal                      │
-       │  4. Microgravity Evidence Gap Matrix                   │
-       │  5. Grounded AI Interpretation (lib/synthesis.ts)      │
-       │     - Constrained Prompt Architecture                  │
-       │     - Baseline-First Offline Deterministic Fallback    │
-       └────────────────────────────────────────────────────────┘
+       ┌────────────────────────────────────────────────────────────────────────┐
+       │                       Next.js 14 App Engine (IGNIS)                    │
+       ├────────────────────────────────────────────────────────────────────────┤
+       │  1. Physics Scoring + Fuse.js Fuzzy Text Matching (lib/ranking.ts)     │
+       │  2. Empirical Flame Dynamics Plot (components/FlameDynamicsChart.tsx)  │
+       │  3. Master Comparison Table (components/MasterComparisonTable.tsx)     │
+       │  4. Microgravity Evidence Gap Matrix (components/GapMatrix.tsx)        │
+       │  5. Grounded AI via NVIDIA Nemotron-30B (lib/synthesis.ts)            │
+       │     - Strict Grounding Constraints & Non-Extrapolation Guardrails      │
+       │     - NVIDIA Reasoning Trace Transparency                              │
+       │     - Baseline-First Offline Deterministic Science Fallback            │
+       └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -90,8 +93,8 @@ If an ambient parameter (such as cabin pressure) is not explicitly reported in t
 ## 7. Reproducibility & Local Setup
 
 ### Prerequisites
-- Node.js >= 18
-- Python >= 3.9
+- Node.js >= 18 (Tested on v22)
+- Python >= 3.9 (for PDF ingestion and validation)
 
 ### Quickstart
 ```bash
@@ -101,6 +104,9 @@ cd ignis-space-fire
 
 # Install dependencies
 npm install
+
+# (Optional) Extract tables and parameters from new NASA research PDFs
+python scripts/extract_pdf.py path/to/paper.pdf
 
 # Validate NASA evidence corpus
 python scripts/validate.py
@@ -115,5 +121,12 @@ Open [http://localhost:3000](http://localhost:3000) to view IGNIS.
 
 ---
 
-## 8. License
+## 8. Team
+- **Team Name:** Twinkle Twinkle
+- **Event:** NASA Space Apps Challenge Ulaanbaatar 2026
+- **Challenge:** Flame in Freefall — Microgravity Combustion Data
+
+---
+
+## 9. License
 Distributed under the **Apache-2.0 License**. See [LICENSE](LICENSE) for more information. Adheres to NASA Space Apps Challenge open source requirements.

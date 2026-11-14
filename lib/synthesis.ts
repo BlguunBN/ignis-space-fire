@@ -5,6 +5,7 @@ export interface SynthesisResponse {
   keyFindings: string[];
   fireSafetyImplications: string[];
   scientificLimitations: string[];
+  reasoningSteps?: string;
   citedSources: Array<{
     id: string;
     title: string;
@@ -13,24 +14,26 @@ export interface SynthesisResponse {
     platform: string;
   }>;
   aiMode: "live_llm" | "deterministic_fallback";
+  modelUsed?: string;
 }
 
 /**
  * Generate grounded scientific interpretation from ranked NASA microgravity evidence.
- * Guaranteed to run even without external API keys or during offline hackathon demos.
+ * Supports NVIDIA Nemotron-30B Reasoning Model with full offline deterministic fallback.
  */
 export async function generateGroundedInterpretation(
   query: SearchQuery,
   topRanked: RankedEvidence[],
   apiKey?: string
 ): Promise<SynthesisResponse> {
-  // If an API key is provided and fetch is accessible, we can attempt live LLM call
-  if (apiKey && process.env.OPENAI_API_KEY) {
+  const nvidiaKey = apiKey || process.env.NVIDIA_API_KEY;
+
+  if (nvidiaKey) {
     try {
-      const llmResult = await callOpenAICompatibleLLM(query, topRanked, apiKey);
+      const llmResult = await callNvidiaNemotronLLM(query, topRanked, nvidiaKey);
       if (llmResult) return llmResult;
     } catch (err) {
-      console.warn("LLM API call failed, falling back to deterministic synthesis:", err);
+      console.warn("NVIDIA LLM API call failed, falling back to deterministic synthesis:", err);
     }
   }
 
@@ -47,7 +50,7 @@ function buildDeterministicSynthesis(
   const materials = Array.from(new Set(topExps.map((e) => e.material))).join(", ");
   const programmes = Array.from(new Set(topExps.map((e) => e.programme))).join(", ");
 
-  const summary = `Based on ${topExps.length} top-ranked NASA microgravity investigations across the ${programmes} programme(s), combustion dynamics for ${materials} demonstrate that the absence of buoyant updraft fundamental alters flame stabilization, extinction thresholds, and smoke generation. Under low forced ventilation, flames exhibit rounded fronts with increased radiative sensitivity.`;
+  const summary = `Based on ${topExps.length} top-ranked NASA microgravity investigations across the ${programmes} programme(s), combustion dynamics for ${materials} demonstrate that the absence of buoyant updraft fundamentally alters flame stabilization, extinction thresholds, and smoke generation. Under low forced ventilation, flames exhibit rounded fronts with heightened radiative sensitivity and non-monotonic spread rates.`;
 
   const keyFindings = topExps.map((e) => `[${e.investigation}]: ${e.finding}`);
 
@@ -76,10 +79,11 @@ function buildDeterministicSynthesis(
     scientificLimitations,
     citedSources,
     aiMode: "deterministic_fallback",
+    modelUsed: "IGNIS Deterministic Science Engine",
   };
 }
 
-async function callOpenAICompatibleLLM(
+async function callNvidiaNemotronLLM(
   query: SearchQuery,
   topRanked: RankedEvidence[],
   apiKey: string
@@ -87,63 +91,113 @@ async function callOpenAICompatibleLLM(
   const topExps = topRanked.slice(0, 3).map((r) => r.experiment);
   const promptContext = JSON.stringify(topExps, null, 2);
 
-  const systemPrompt = `You are IGNIS, a NASA microgravity combustion evidence synthesis engine for spacecraft safety engineering.
-STRICT RULES:
-1. Ground every claim strictly in the provided JSON evidence.
-2. If any parameter or information is absent, state explicitly "not reported in the indexed evidence".
-3. NEVER predict spacecraft fire probability or claim a quantitative fire risk percentage.
-4. NEVER extrapolate microgravity results to lunar or Martian gravity; explicitly warn about this domain mismatch.
-5. Return clean JSON matching the requested structure.`;
+  const systemPrompt = `You are IGNIS, an expert research synthesis engine for NASA microgravity combustion data (NASA Space Apps 2026).
+STRICT EVIDENCE GROUNDING RULES:
+1. Base all synthesis STRICTLY on the supplied NASA flight experiment evidence.
+2. If any parameter is missing, explicitly state "not reported in the indexed evidence".
+3. NEVER extrapolate microgravity (~0g) results quantitatively to Lunar (0.16g) or Martian (0.38g) gravity. Explicitly cite this scientific boundary.
+4. Return a clean JSON object ONLY, with no markdown code blocks outside, matching this exact JSON schema:
+{
+  "summary": "Concise paragraph synthesizing cross-study insights",
+  "keyFindings": ["Point 1 with study cite", "Point 2 with study cite"],
+  "fireSafetyImplications": ["Implication 1", "Implication 2"],
+  "scientificLimitations": ["Limitation 1 regarding microgravity boundary"]
+}`;
 
-  const userPrompt = `USER INQUIRY:
+  const userPrompt = `MISSION INQUIRY:
 Material: ${query.material || "Unspecified"}
 Oxygen %: ${query.oxygenPct ?? "Unspecified"}
-Airflow: ${query.airflowCmS ?? "Unspecified"} cm/s
+Ventilation Airflow: ${query.airflowCmS ?? "Unspecified"} cm/s
 Phenomenon: ${query.phenomenon || "Unspecified"}
 Question: ${query.freeText || "Evaluate combustion safety insights"}
 
 INDEXED NASA EXPERIMENTAL EVIDENCE:
 ${promptContext}
 
-Provide a JSON object with keys:
-"summary": string,
-"keyFindings": string[],
-"fireSafetyImplications": string[],
-"scientificLimitations": string[]`;
+Respond with the requested JSON object.`;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const invokeUrl = process.env.NVIDIA_BASE_URL
+    ? `${process.env.NVIDIA_BASE_URL}/chat/completions`
+    : "https://integrate.api.nvidia.com/v1/chat/completions";
+
+  const modelName = process.env.NVIDIA_MODEL || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning";
+
+  const response = await fetch(invokeUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0.2,
-      response_format: { type: "json_object" },
+      model: modelName,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
+      temperature: 0.3,
+      max_tokens: 4096,
+      top_p: 0.95,
     }),
   });
 
-  if (!response.ok) return null;
-  const data = await response.json();
-  const parsed = JSON.parse(data.choices[0].message.content);
+  if (!response.ok) {
+    const errText = await response.text();
+    console.warn(`NVIDIA API returned ${response.status}: ${errText}`);
+    return null;
+  }
 
-  return {
-    summary: parsed.summary,
-    keyFindings: parsed.keyFindings || [],
-    fireSafetyImplications: parsed.fireSafetyImplications || [],
-    scientificLimitations: parsed.scientificLimitations || [],
-    citedSources: topExps.map((e) => ({
-      id: e.id,
-      title: `${e.investigation} (${e.programme})`,
-      doi: e.doi || e.psi_id || "NASA Publication",
-      sourceUrl: e.source_url,
-      platform: e.platform,
-    })),
-    aiMode: "live_llm",
-  };
+  const data = await response.json();
+  const choice = data.choices?.[0]?.message;
+  if (!choice) return null;
+
+  const rawContent = choice.content || "";
+  const reasoningContent = choice.reasoning_content || undefined;
+
+  // Clean json fences if present
+  let cleanJson = rawContent.trim();
+  if (cleanJson.startsWith("```json")) {
+    cleanJson = cleanJson.replace(/^```json\s*/, "").replace(/```$/, "").trim();
+  } else if (cleanJson.startsWith("```")) {
+    cleanJson = cleanJson.replace(/^```\s*/, "").replace(/```$/, "").trim();
+  }
+
+  try {
+    const parsed = JSON.parse(cleanJson);
+    return {
+      summary: parsed.summary || rawContent,
+      keyFindings: parsed.keyFindings || [],
+      fireSafetyImplications: parsed.fireSafetyImplications || [],
+      scientificLimitations: parsed.scientificLimitations || [],
+      reasoningSteps: reasoningContent,
+      citedSources: topExps.map((e) => ({
+        id: e.id,
+        title: `${e.investigation} (${e.programme})`,
+        doi: e.doi || e.psi_id || "NASA Publication",
+        sourceUrl: e.source_url,
+        platform: e.platform,
+      })),
+      aiMode: "live_llm",
+      modelUsed: "NVIDIA Nemotron-30B Reasoning (NIM)",
+    };
+  } catch (parseError) {
+    console.warn("Failed to parse JSON from NVIDIA model response, using text fallback:", parseError);
+    return {
+      summary: rawContent,
+      keyFindings: topExps.map((e) => `[${e.investigation}]: ${e.finding}`),
+      fireSafetyImplications: topExps.map((e) => `[${e.programme}]: ${e.fire_safety_relevance}`),
+      scientificLimitations: [
+        "NASA Caution: Findings restricted to microgravity conditions; do not extrapolate to Lunar or Martian gravity."
+      ],
+      reasoningSteps: reasoningContent,
+      citedSources: topExps.map((e) => ({
+        id: e.id,
+        title: `${e.investigation} (${e.programme})`,
+        doi: e.doi || e.psi_id || "NASA Publication",
+        sourceUrl: e.source_url,
+        platform: e.platform,
+      })),
+      aiMode: "live_llm",
+      modelUsed: "NVIDIA Nemotron-30B Reasoning (NIM)",
+    };
+  }
 }
