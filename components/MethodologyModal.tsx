@@ -10,52 +10,52 @@ interface MethodologyModalProps {
 export function MethodologyModal({ onClose }: MethodologyModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[#1B2027] border border-[#303741] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-[#151618] border border-[#2c2d30] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-none overflow-hidden">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#303741] flex items-center justify-between bg-[#15191F]">
+        <div className="p-4 sm:p-5 border-b border-[#2c2d30] flex items-center justify-between bg-[#101113]">
           <div>
-            <h2 className="text-base font-bold text-[#F3F5F7] flex items-center gap-2">
-              <Award className="w-4 h-4 text-[#E99847]" />
+            <h2 className="text-base font-bold text-[#f2f1ed] flex items-center gap-2">
+              <Award className="w-4 h-4 text-[#d7ab80]" />
               Scientific Methodology, Provenance & Boundaries
             </h2>
-            <p className="text-xs text-[#A1AAB5] mt-0.5">
+            <p className="text-xs text-[#a6a8aa] mt-0.5">
               NASA Space Apps Ulaanbaatar 2026 — Team Twinkle Twinkle
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-[#1B2027] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
+            className="p-1.5 rounded-lg bg-[#151618] text-[#a6a8aa] hover:text-[#f2f1ed] border border-[#2c2d30] transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5 overflow-y-auto space-y-5 text-xs text-[#A1AAB5] leading-relaxed">
+        <div className="p-5 overflow-y-auto space-y-5 text-xs text-[#a6a8aa] leading-relaxed">
           {/* Scientific Caution */}
-          <div className="p-3.5 rounded-xl bg-[#0C0F13] border border-[#E99847]/40">
-            <h3 className="text-xs font-bold text-[#E99847] flex items-center gap-1.5 mb-1.5">
+          <div className="p-3.5 rounded-xl bg-[#0e0f11] border border-[#E99847]/40">
+            <h3 className="text-xs font-bold text-[#d7ab80] flex items-center gap-1.5 mb-1.5">
               <ShieldAlert className="w-4 h-4" />
               Microgravity Boundary vs. Lunar / Martian Gravity
             </h3>
             <p>
               Microgravity (~0g) removes buoyancy-driven convection, causing rounded flame fronts, slower ignition, and radiation-dominated extinction. However, the Moon (0.16g) and Mars (0.38g) are partial-gravity regimes where buoyancy is weakened but active.
             </p>
-            <p className="mt-1.5 text-[#F3F5F7] font-medium">
+            <p className="mt-1.5 text-[#f2f1ed] font-medium">
               IGNIS deliberately flags this domain mismatch rather than presenting unvalidated mathematical extrapolations to Martian surface conditions.
             </p>
           </div>
 
           {/* Transparent Relevance Model */}
           <div className="space-y-2">
-            <h3 className="text-xs font-bold text-[#F3F5F7] uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-[#f2f1ed] uppercase tracking-wider">
               Transparent Evidence Relevance Score Formula
             </h3>
             <p>
               The dashboard ranks research relevance using a deterministic model so engineers can verify why each experiment matched their mission query:
             </p>
 
-            <div className="bg-[#0C0F13] p-3 rounded-xl border border-[#303741] font-mono text-[#78A9D8] space-y-1 text-[11px]">
+            <div className="bg-[#0e0f11] p-3 rounded-xl border border-[#2c2d30] font-mono text-[#78A9D8] space-y-1 text-[11px]">
               <div>Score = 0.30 × Material Similarity</div>
               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20 × Atmosphere (O₂ & Pressure) Match</div>
               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20 × Forced Airflow Velocity Match</div>
@@ -65,13 +65,13 @@ export function MethodologyModal({ onClose }: MethodologyModalProps) {
             </div>
 
             <p className="text-[11px]">
-              <strong className="text-[#F3F5F7]">Missing Variable Policy:</strong> If a NASA study does not explicitly report a parameter, it is represented as <code className="text-[#E99847]">null</code> and rendered as &quot;Not reported&quot;. It is never replaced with terrestrial defaults (21% O₂, 101.3 kPa, 0 cm/s).
+              <strong className="text-[#f2f1ed]">Missing Variable Policy:</strong> If a NASA study does not explicitly report a parameter, it is represented as <code className="text-[#d7ab80]">null</code> and rendered as &quot;Not reported&quot;. It is never replaced with terrestrial defaults (21% O₂, 101.3 kPa, 0 cm/s).
             </p>
           </div>
 
           {/* AI Grounding Architecture */}
           <div className="space-y-2">
-            <h3 className="text-xs font-bold text-[#F3F5F7] uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-[#f2f1ed] uppercase tracking-wider">
               AI Grounding Architecture (NVIDIA Nemotron-30B)
             </h3>
             <p>
@@ -91,22 +91,22 @@ export function MethodologyModal({ onClose }: MethodologyModalProps) {
           </div>
 
           {/* Data Sources and Licensing */}
-          <div className="space-y-2 border-t border-[#303741] pt-4">
-            <h3 className="text-xs font-bold text-[#F3F5F7] uppercase tracking-wider">
+          <div className="space-y-2 border-t border-[#2c2d30] pt-4">
+            <h3 className="text-xs font-bold text-[#f2f1ed] uppercase tracking-wider">
               Data Sources & Open Attribution
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-              <div className="p-2.5 bg-[#0C0F13] rounded-lg border border-[#303741]">
-                <span className="font-semibold text-[#F3F5F7] block">NASA Physical Sciences Informatics</span>
-                <span className="text-[#737F8C]">DOIs: 10.60555/0t15-1z43, 10.60555/mbq8-0451</span>
+              <div className="p-2.5 bg-[#0e0f11] rounded-lg border border-[#2c2d30]">
+                <span className="font-semibold text-[#f2f1ed] block">NASA Physical Sciences Informatics</span>
+                <span className="text-[#8c8e91]">DOIs: 10.60555/0t15-1z43, 10.60555/mbq8-0451</span>
               </div>
-              <div className="p-2.5 bg-[#0C0F13] rounded-lg border border-[#303741]">
-                <span className="font-semibold text-[#F3F5F7] block">NASA Technical Reports Server</span>
-                <span className="text-[#737F8C]">Open REST API (citations & technical reports)</span>
+              <div className="p-2.5 bg-[#0e0f11] rounded-lg border border-[#2c2d30]">
+                <span className="font-semibold text-[#f2f1ed] block">NASA Technical Reports Server</span>
+                <span className="text-[#8c8e91]">Open REST API (citations & technical reports)</span>
               </div>
             </div>
-            <p className="text-[11px] text-[#737F8C]">
-              Software is released under the <strong className="text-[#F3F5F7]">Apache-2.0</strong> open source license, adhering to NASA Space Apps Challenge terms.
+            <p className="text-[11px] text-[#8c8e91]">
+              Software is released under the <strong className="text-[#f2f1ed]">Apache-2.0</strong> open source license, adhering to NASA Space Apps Challenge terms.
             </p>
           </div>
         </div>
