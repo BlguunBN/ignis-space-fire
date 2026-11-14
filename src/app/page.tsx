@@ -20,10 +20,11 @@ import { RelationshipGraphModal } from "../components/RelationshipGraphModal";
 import { IngestionReviewModal } from "../components/IngestionReviewModal";
 import { CombustionSimulatorModal } from "../components/CombustionSimulatorModal";
 import { ResearchExplorerGrid } from "../components/ResearchExplorerGrid";
+import { ExecutiveAnalyticsDashboard } from "../components/ExecutiveAnalyticsDashboard";
 import { PaperUploadModal } from "../components/PaperUploadModal";
 import { GuidedResearchStepper, GuidedStep } from "../components/GuidedResearchStepper";
 import { generateDeterministicBrief } from "../lib/synthesis";
-import { LayoutGrid, Columns, Sparkles, Flame, Upload } from "lucide-react";
+import { LayoutGrid, Columns, Sparkles, Flame, Upload, LayoutDashboard, Compass } from "lucide-react";
 
 export default function UnifiedWorkspace() {
   const [corpus, setCorpus] = useState<ExperimentRecord[]>(experimentsData as ExperimentRecord[]);
@@ -33,8 +34,8 @@ export default function UnifiedWorkspace() {
     new Set(corpus.map((r) => r.id))
   );
 
-  // View States
-  const [viewMode, setViewMode] = useState<"split" | "grid">("split");
+  // View States: Executive Dashboard vs Research Explorer vs Split Workspace
+  const [viewMode, setViewMode] = useState<"dashboard" | "explorer" | "split">("dashboard");
   const [guidedStep, setGuidedStep] = useState<GuidedStep>("explore");
 
   // Modal States
@@ -229,7 +230,7 @@ export default function UnifiedWorkspace() {
   const handleSelectGuidedStep = (step: GuidedStep) => {
     setGuidedStep(step);
     if (step === "explore") {
-      setViewMode("grid");
+      setViewMode("explorer");
     } else if (step === "simulate") {
       setIsSimulatorOpen(true);
     } else if (step === "gaps") {
@@ -275,6 +276,8 @@ export default function UnifiedWorkspace() {
         onOpenUpload={() => setIsUploadOpen(true)}
         selectedCount={selectedIds.size}
         activeView="workspace"
+        activeMainView={viewMode}
+        onSelectView={setViewMode}
       />
 
       {/* Guided Researcher Pathway Stepper */}
@@ -289,43 +292,57 @@ export default function UnifiedWorkspace() {
         <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
           <div className="flex items-center gap-2">
             <span>
-              Matching <strong className="text-slate-200">{filteredRecords.length}</strong> of {corpus.length} investigations
+              NASA Flight Corpus: <strong className="text-slate-200">{filteredRecords.length}</strong> of {corpus.length} investigations
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* View Switcher Toggle */}
-            <div className="flex rounded-md bg-white/[0.03] p-0.5 border border-white/[0.06]">
+            {/* View Switcher Toggle: Dashboard vs Explorer vs Split */}
+            <div className="flex rounded-lg bg-white/[0.03] p-0.5 border border-white/[0.06]">
               <button
-                onClick={() => setViewMode("split")}
-                className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${
-                  viewMode === "split"
-                    ? "bg-white/[0.08] text-slate-100 font-medium"
+                onClick={() => setViewMode("dashboard")}
+                className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ${
+                  viewMode === "dashboard"
+                    ? "bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
-                title="Table & Scatter Plot Split View"
+                title="Executive Mission Fire-Safety Analytics Dashboard"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
+                <span>Dashboard</span>
+              </button>
+
+              <button
+                onClick={() => setViewMode("explorer")}
+                className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ${
+                  viewMode === "explorer"
+                    ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+                title="Research Explorer with Filter Sidebar"
+              >
+                <Compass className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Research Explorer</span>
+              </button>
+
+              <button
+                onClick={() => setViewMode("split")}
+                className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors ${
+                  viewMode === "split"
+                    ? "bg-white/[0.08] text-slate-100 font-bold border border-white/[0.12]"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+                title="Table & Scatter Plot Split Workspace"
               >
                 <Columns className="w-3.5 h-3.5" />
                 <span>Split Workspace</span>
-              </button>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${
-                  viewMode === "grid"
-                    ? "bg-cyan-500/20 text-cyan-300 font-medium border border-cyan-500/40"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                title="Visual Card Grid with Flame Banners"
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                <span>Visual Explorer Grid</span>
               </button>
             </div>
 
             {/* Quick Actions */}
             <button
               onClick={() => setIsSimulatorOpen(true)}
-              className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/30 transition-colors"
+              className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/30 transition-colors"
             >
               <Flame className="w-3.5 h-3.5 text-orange-400" />
               <span>Simulate</span>
@@ -333,7 +350,7 @@ export default function UnifiedWorkspace() {
 
             <button
               onClick={() => setIsUploadOpen(true)}
-              className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors"
+              className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Ingest Paper</span>
@@ -341,10 +358,27 @@ export default function UnifiedWorkspace() {
           </div>
         </div>
 
-        {/* Content View: Split Workspace vs Visual Explorer Grid */}
-        {viewMode === "grid" ? (
+        {/* Content View: Dashboard vs Research Explorer vs Split Workspace */}
+        {viewMode === "dashboard" ? (
+          <ExecutiveAnalyticsDashboard
+            records={corpus}
+            onSelectRecord={(id) => {
+              setActiveId(id);
+              setIsSourceModalOpen(true);
+            }}
+            onFilterRegime={(grav) => {
+              setQuery({ ...query, gravity: grav as any });
+              setViewMode("split");
+            }}
+            onOpenExplorer={() => setViewMode("explorer")}
+            onOpenAssistant={(prompt) => {
+              setAssistantInitialPrompt(prompt);
+              setIsAssistantOpen(true);
+            }}
+          />
+        ) : viewMode === "explorer" ? (
           <ResearchExplorerGrid
-            records={filteredRecords}
+            records={corpus}
             selectedIds={selectedIds}
             onToggleSelect={handleToggleSelect}
             onInspect={(rec) => {
@@ -354,6 +388,10 @@ export default function UnifiedWorkspace() {
             onOpenPdf={(rec) => {
               setActiveId(rec.id);
               setIsSourceModalOpen(true);
+            }}
+            onAskAI={(prompt) => {
+              setAssistantInitialPrompt(prompt);
+              setIsAssistantOpen(true);
             }}
           />
         ) : (

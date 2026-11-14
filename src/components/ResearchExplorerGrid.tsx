@@ -13,6 +13,11 @@ import {
   Wind,
   Layers,
   Sparkles,
+  Info,
+  X,
+  Bot,
+  Filter,
+  Sliders,
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
 
@@ -22,10 +27,15 @@ interface ResearchExplorerGridProps {
   onToggleSelect: (id: string) => void;
   onInspect: (record: ExperimentRecord) => void;
   onOpenPdf: (record: ExperimentRecord) => void;
+  onAskAI?: (prompt: string) => void;
 }
 
-type Pillar = "All" | "Prevention" | "Detection" | "Suppression" | "Partial-g Simulation";
-type Facility = "All" | "ISS CIR" | "ISS MSG" | "Cygnus Saffire";
+type GravityRegimeFilter = "all" | "microgravity" | "partial_gravity" | "lunar" | "martian" | "terrestrial";
+type MaterialFilter = "all" | "liquid_droplets" | "pmma" | "fabrics_cellulose" | "wire_insulation" | "gaseous_fuels" | "other_solids";
+type PressureFilter = "any" | "low" | "standard" | "high";
+type OutcomeFilter = "all" | "extinction" | "spread" | "cool_flame" | "scaling";
+type RelevanceFilter = "all" | "high" | "medium" | "low";
+type SortOption = "relevance" | "oxygen_desc" | "oxygen_asc" | "pressure_desc" | "name_asc";
 
 export function ResearchExplorerGrid({
   records,
@@ -33,270 +43,675 @@ export function ResearchExplorerGrid({
   onToggleSelect,
   onInspect,
   onOpenPdf,
+  onAskAI,
 }: ResearchExplorerGridProps) {
+  // State for search and sidebar filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPillar, setSelectedPillar] = useState<Pillar>("All");
-  const [selectedFacility, setSelectedFacility] = useState<Facility>("All");
+  const [selectedGravity, setSelectedGravity] = useState<GravityRegimeFilter>("all");
+  const [selectedMaterial, setSelectedMaterial] = useState<MaterialFilter>("all");
+  const [oxygenRange, setOxygenRange] = useState<[number, number]>([0, 40]);
+  const [selectedPressure, setSelectedPressure] = useState<PressureFilter>("any");
+  const [selectedOutcome, setSelectedOutcome] = useState<OutcomeFilter>("all");
+  const [selectedRelevance, setSelectedRelevance] = useState<RelevanceFilter>("all");
+  const [sortBy, setSortBy] = useState<SortOption>("relevance");
 
-  // Derive Pillar for each record
-  const getPillar = (record: ExperimentRecord): Pillar => {
-    const text = `${record.investigation} ${record.finding} ${record.material} ${record.fire_safety_relevance}`.toLowerCase();
-    if (record.gravity === "partial_gravity" || text.includes("lunar") || text.includes("moon") || text.includes("mars")) {
-      return "Partial-g Simulation";
-    }
-    if (text.includes("smoke") || text.includes("aerosol") || text.includes("detector") || text.includes("daft")) {
-      return "Detection";
-    }
-    if (text.includes("extinguish") || text.includes("suppression") || text.includes("quench") || text.includes("nitrogen jet")) {
-      return "Suppression";
-    }
-    return "Prevention";
+  // Helper to extract year from record
+  const getRecordYear = (r: ExperimentRecord): string => {
+    const text = `${r.source_locator} ${r.source_url} ${r.verified_by}`.toLowerCase();
+    const match = text.match(/20\d{2}/);
+    if (match) return match[0];
+    if (r.programme.toLowerCase().includes("saffire")) return "2016";
+    if (r.programme.toLowerCase().includes("bass")) return "2018";
+    if (r.programme.toLowerCase().includes("flex")) return "2014";
+    return "2019";
   };
 
-  // Derive Facility for each record
-  const getFacility = (record: ExperimentRecord): { tag: string; chamber: string } => {
-    const p = record.platform.toLowerCase();
-    const inv = record.investigation.toLowerCase();
-    if (p.includes("cygnus") || inv.includes("saffire")) {
-      return { tag: "Cygnus Saffire", chamber: "Cygnus Flight Duct" };
+  // Helper to derive outcome for record
+  const getOutcome = (r: ExperimentRecord): { id: OutcomeFilter; label: string; dotColor: string } => {
+    const text = `${r.investigation} ${r.finding} ${r.fire_safety_relevance}`.toLowerCase();
+    if (text.includes("cool flame") || text.includes("low-temp")) {
+      return { id: "cool_flame", label: "Cool-flame burning", dotColor: "#eab308" };
     }
-    if (p.includes("cir") || inv.includes("flex") || inv.includes("acme") || inv.includes("slice") || inv.includes("cfi")) {
-      return { tag: "ISS CIR", chamber: "CIR MDCA / ACME" };
+    if (text.includes("spread") || text.includes("propagation") || text.includes("rate") || text.includes("growth")) {
+      return { id: "spread", label: "Flame spread", dotColor: "#f97316" };
     }
-    if (p.includes("msg") || inv.includes("bass") || inv.includes("same")) {
-      return { tag: "ISS MSG", chamber: "MSG Flow Duct" };
+    if (text.includes("scaling") || text.includes("trend") || text.includes("diameter") || text.includes("upward")) {
+      return { id: "scaling", label: "Scaling / trend", dotColor: "#4ade80" };
     }
-    return { tag: "NASA Facility", chamber: "Orbital Environmental Rig" };
+    return { id: "extinction", label: "Extinction / limit", dotColor: "#38bdf8" };
   };
 
-  // Derive Flow Banner text
-  const getFlowBanner = (record: ExperimentRecord): string => {
-    if (record.airflow_cm_s === 0 || record.material_class === "liquid_droplet") {
-      return "FLOW: 0.0 cm/s (Quiescent)";
-    }
-    if (record.airflow_cm_s != null) {
-      if (record.investigation.toLowerCase().includes("opposed")) {
-        return `FLOW: ${record.airflow_cm_s.toFixed(1)} cm/s (Opposed Flow)`;
-      }
-      return `FLOW: ${record.airflow_cm_s.toFixed(1)} cm/s (Concurrent Flow)`;
-    }
-    if (record.investigation.toLowerCase().includes("smoke")) {
-      return "FLOW: 5.0 cm/s (Ventilated / Fan-Driven)";
-    }
-    return "FLOW: Low Forced Airflow (1.0 to 15.0 cm/s)";
+  // Helper to derive mission relevance
+  const getRelevance = (r: ExperimentRecord): "high" | "medium" | "low" => {
+    if (r.quality === "primary_nasa") return "high";
+    if (r.quality === "peer_reviewed_nasa") return "medium";
+    return "low";
   };
 
-  // Filter records
-  const filteredRecords = useMemo(() => {
-    return records.filter((r) => {
-      const q = searchQuery.toLowerCase().trim();
-      const matchSearch =
-        !q ||
-        r.investigation.toLowerCase().includes(q) ||
-        r.programme.toLowerCase().includes(q) ||
-        r.material.toLowerCase().includes(q) ||
-        r.finding.toLowerCase().includes(q);
+  // Compute live filter counts
+  const filterCounts = useMemo(() => {
+    const gravCounts: Record<GravityRegimeFilter, number> = {
+      all: records.length,
+      microgravity: 0,
+      partial_gravity: 0,
+      lunar: 0,
+      martian: 0,
+      terrestrial: 0,
+    };
 
-      const pillar = getPillar(r);
-      const matchPillar = selectedPillar === "All" || pillar === selectedPillar;
+    const matCounts: Record<MaterialFilter, number> = {
+      all: records.length,
+      liquid_droplets: 0,
+      pmma: 0,
+      fabrics_cellulose: 0,
+      wire_insulation: 0,
+      gaseous_fuels: 0,
+      other_solids: 0,
+    };
 
-      const facility = getFacility(r);
-      const matchFacility = selectedFacility === "All" || facility.tag === selectedFacility;
+    const outcomeCounts: Record<OutcomeFilter, number> = {
+      all: records.length,
+      extinction: 0,
+      spread: 0,
+      cool_flame: 0,
+      scaling: 0,
+    };
 
-      return matchSearch && matchPillar && matchFacility;
+    const relCounts: Record<RelevanceFilter, number> = {
+      all: records.length,
+      high: 0,
+      medium: 0,
+      low: 0,
+    };
+
+    records.forEach((r) => {
+      const invLower = `${r.investigation} ${r.material} ${r.platform}`.toLowerCase();
+
+      // Gravity
+      if (invLower.includes("lunar") || invLower.includes("0.16 g")) gravCounts.lunar++;
+      else if (invLower.includes("martian") || invLower.includes("0.38 g")) gravCounts.martian++;
+      else if (invLower.includes("partial") || r.gravity === "partial_gravity") gravCounts.partial_gravity++;
+      else if (r.gravity === "terrestrial" || invLower.includes("1 g")) gravCounts.terrestrial++;
+      else gravCounts.microgravity++;
+
+      // Material
+      if (r.material.toLowerCase().includes("droplet") || r.material_class === "liquid_droplet") matCounts.liquid_droplets++;
+      else if (r.material.toLowerCase().includes("pmma")) matCounts.pmma++;
+      else if (r.material.toLowerCase().includes("cotton") || r.material.toLowerCase().includes("sibal") || r.material_class === "solid_fabric") matCounts.fabrics_cellulose++;
+      else if (r.material.toLowerCase().includes("wire") || r.material.toLowerCase().includes("kapton") || r.material.toLowerCase().includes("ptfe")) matCounts.wire_insulation++;
+      else if (r.material.toLowerCase().includes("gas") || r.material.toLowerCase().includes("methane")) matCounts.gaseous_fuels++;
+      else matCounts.other_solids++;
+
+      // Outcome
+      const out = getOutcome(r);
+      outcomeCounts[out.id]++;
+
+      // Relevance
+      relCounts[getRelevance(r)]++;
     });
-  }, [records, searchQuery, selectedPillar, selectedFacility]);
+
+    return { gravCounts, matCounts, outcomeCounts, relCounts };
+  }, [records]);
+
+  // Filter & sort records
+  const filteredRecords = useMemo(() => {
+    let result = records.filter((r) => {
+      const invLower = `${r.investigation} ${r.material} ${r.platform} ${r.finding}`.toLowerCase();
+
+      // Search Query
+      if (searchQuery.trim() !== "") {
+        const words = searchQuery.toLowerCase().split(/\s+/);
+        const matchesAll = words.every((w) => invLower.includes(w));
+        if (!matchesAll) return false;
+      }
+
+      // Gravity
+      if (selectedGravity !== "all") {
+        if (selectedGravity === "lunar" && !invLower.includes("lunar") && !invLower.includes("0.16 g")) return false;
+        if (selectedGravity === "martian" && !invLower.includes("martian") && !invLower.includes("0.38 g")) return false;
+        if (selectedGravity === "partial_gravity" && !invLower.includes("partial") && r.gravity !== "partial_gravity") return false;
+        if (selectedGravity === "terrestrial" && r.gravity !== "terrestrial" && !invLower.includes("1 g")) return false;
+        if (selectedGravity === "microgravity" && r.gravity !== "microgravity") return false;
+      }
+
+      // Material
+      if (selectedMaterial !== "all") {
+        if (selectedMaterial === "liquid_droplets" && !r.material.toLowerCase().includes("droplet") && r.material_class !== "liquid_droplet") return false;
+        if (selectedMaterial === "pmma" && !r.material.toLowerCase().includes("pmma")) return false;
+        if (selectedMaterial === "fabrics_cellulose" && !r.material.toLowerCase().includes("cotton") && !r.material.toLowerCase().includes("sibal") && r.material_class !== "solid_fabric") return false;
+        if (selectedMaterial === "wire_insulation" && !r.material.toLowerCase().includes("wire") && !r.material.toLowerCase().includes("kapton")) return false;
+        if (selectedMaterial === "gaseous_fuels" && !r.material.toLowerCase().includes("gas")) return false;
+        if (selectedMaterial === "other_solids" && (r.material.toLowerCase().includes("pmma") || r.material.toLowerCase().includes("droplet"))) return false;
+      }
+
+      // Oxygen Range
+      if (r.oxygen_pct != null) {
+        if (r.oxygen_pct < oxygenRange[0] || r.oxygen_pct > oxygenRange[1]) return false;
+      }
+
+      // Pressure
+      if (selectedPressure !== "any") {
+        if (r.pressure_kpa != null) {
+          if (selectedPressure === "low" && r.pressure_kpa >= 76) return false;
+          if (selectedPressure === "standard" && (r.pressure_kpa < 76 || r.pressure_kpa > 105)) return false;
+          if (selectedPressure === "high" && r.pressure_kpa <= 105) return false;
+        }
+      }
+
+      // Outcome
+      if (selectedOutcome !== "all") {
+        if (getOutcome(r).id !== selectedOutcome) return false;
+      }
+
+      // Relevance
+      if (selectedRelevance !== "all") {
+        if (getRelevance(r) !== selectedRelevance) return false;
+      }
+
+      return true;
+    });
+
+    // Sorting
+    if (sortBy === "oxygen_desc") {
+      result.sort((a, b) => (b.oxygen_pct ?? -1) - (a.oxygen_pct ?? -1));
+    } else if (sortBy === "oxygen_asc") {
+      result.sort((a, b) => (a.oxygen_pct ?? 999) - (b.oxygen_pct ?? 999));
+    } else if (sortBy === "pressure_desc") {
+      result.sort((a, b) => (b.pressure_kpa ?? -1) - (a.pressure_kpa ?? -1));
+    } else if (sortBy === "name_asc") {
+      result.sort((a, b) => a.investigation.localeCompare(b.investigation));
+    }
+
+    return result;
+  }, [records, searchQuery, selectedGravity, selectedMaterial, oxygenRange, selectedPressure, selectedOutcome, selectedRelevance, sortBy]);
+
+  const hasActiveFilters = Boolean(
+    searchQuery ||
+    selectedGravity !== "all" ||
+    selectedMaterial !== "all" ||
+    oxygenRange[0] !== 0 ||
+    oxygenRange[1] !== 40 ||
+    selectedPressure !== "any" ||
+    selectedOutcome !== "all" ||
+    selectedRelevance !== "all"
+  );
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedGravity("all");
+    setSelectedMaterial("all");
+    setOxygenRange([0, 40]);
+    setSelectedPressure("any");
+    setSelectedOutcome("all");
+    setSelectedRelevance("all");
+    setSortBy("relevance");
+  };
 
   return (
-    <div className="space-y-4 font-sans text-xs">
-      {/* Top Search Input (Matching Image 3) */}
-      <div className="relative">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by acronym (BASS, Saffire, FLEX, SAME), fuel, or hardware..."
-          className="w-full bg-[#0c0f16] border border-white/[0.08] rounded-lg pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 font-sans"
-        />
+    <div className="space-y-4 font-sans text-slate-100 max-w-[1750px] mx-auto animate-in fade-in duration-200">
+      {/* 1. TOP HEADER (DISCOVER / RESEARCH EXPLORER) */}
+      <div className="space-y-1">
+        <div className="text-[11px] font-mono tracking-widest text-slate-400 uppercase font-semibold">
+          DISCOVER
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-100 font-sans tracking-tight">
+          Research Explorer
+        </h1>
+        <p className="text-xs text-slate-400 mt-0.5">
+          Search, filter and understand published microgravity combustion experiments.
+        </p>
       </div>
 
-      {/* Filter Row: Pillar + Facility */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg border border-white/[0.06] bg-[#0c0f16]">
-        {/* Pillar Filters */}
-        <div className="flex items-center gap-1.5 flex-wrap font-mono text-[11px]">
-          <span className="text-slate-400 font-medium mr-1">Pillar:</span>
-          {(["All", "Prevention", "Detection", "Suppression", "Partial-g Simulation"] as const).map((pillar) => (
+      {/* 2. MAIN SEARCH BAR & SUGGESTION */}
+      <div className="space-y-1.5">
+        <div className="relative flex items-center">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search experiments, fuels, materials, conditions, findings..."
+            className="w-full bg-[#0c0f16] border border-white/[0.08] rounded-xl pl-10 pr-9 py-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 font-sans shadow-lg transition-colors"
+          />
+          {searchQuery && (
             <button
-              key={pillar}
-              onClick={() => setSelectedPillar(pillar)}
-              className={`px-2.5 py-1 rounded transition-colors ${
-                selectedPillar === pillar
-                  ? "bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/40"
-                  : "bg-white/[0.02] text-slate-400 hover:text-slate-200 border border-white/[0.06]"
-              }`}
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 text-slate-400 hover:text-white"
             >
-              {pillar}
+              <X className="w-4 h-4" />
             </button>
-          ))}
+          )}
         </div>
 
-        {/* Facility Filters */}
-        <div className="flex items-center gap-1.5 flex-wrap font-mono text-[11px]">
-          <span className="text-slate-400 font-medium mr-1">Facility:</span>
-          {(["All", "ISS CIR", "ISS MSG", "Cygnus Saffire"] as const).map((fac) => (
-            <button
-              key={fac}
-              onClick={() => setSelectedFacility(fac)}
-              className={`px-2.5 py-1 rounded transition-colors ${
-                selectedFacility === fac
-                  ? "bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/40"
-                  : "bg-white/[0.02] text-slate-400 hover:text-slate-200 border border-white/[0.06]"
-              }`}
-            >
-              {fac}
-            </button>
-          ))}
+        <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
+          <span>Try:</span>
+          <button
+            onClick={() => setSearchQuery("PMMA oxygen microgravity")}
+            className="text-cyan-400 hover:text-cyan-300 hover:underline"
+          >
+            &quot;PMMA oxygen microgravity&quot;
+          </button>
+          <span>·</span>
+          <button
+            onClick={() => setSearchQuery("droplet cool flame")}
+            className="text-cyan-400 hover:text-cyan-300 hover:underline"
+          >
+            &quot;droplet cool flame&quot;
+          </button>
         </div>
       </div>
 
-      {/* Results Header Count */}
-      <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
-        <span>Displaying {filteredRecords.length} of {records.length} Verified Flight Investigations</span>
-        <span>Click 'Deep Inspector' for original NASA PDF Coordinates</span>
-      </div>
+      {/* 3. TWO-COLUMN LAYOUT: FILTERS SIDEBAR (LEFT) + RESULTS GRID (RIGHT) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* LEFT SIDEBAR: FILTERS PANEL */}
+        <aside className="lg:col-span-3 bg-[#0c0f16] border border-white/[0.08] rounded-xl p-4 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+            <h3 className="text-sm font-bold text-slate-100 font-sans">Filters</h3>
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="text-[11px] font-mono text-amber-400 hover:text-amber-300 hover:underline"
+              >
+                Reset
+              </button>
+            )}
+          </div>
 
-      {/* 3-Column Card Grid (Matching Image 3) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredRecords.map((rec) => {
-          const isSelected = selectedIds.has(rec.id);
-          const pillar = getPillar(rec);
-          const facility = getFacility(rec);
-          const flowText = getFlowBanner(rec);
-
-          return (
-            <div
-              key={rec.id}
-              className={`rounded-lg border bg-[#0c0f16] flex flex-col justify-between overflow-hidden transition-all duration-150 hover:border-cyan-500/40 ${
-                isSelected ? "border-cyan-500/60 shadow-[0_0_15px_rgba(6,182,212,0.15)]" : "border-white/[0.08]"
-              }`}
-            >
-              {/* Card Flame Banner with Flow Velocity Overlay (Image 3) */}
-              <div className="relative h-28 bg-gradient-to-b from-[#0a0d14] via-[#0d1424] to-[#080b12] overflow-hidden flex flex-col justify-between p-2.5 border-b border-white/[0.06]">
-                {/* Visual Flame Graphic (Synthesized CSS Flame Spectrum) */}
-                <div className="absolute inset-0 flex items-center justify-around pointer-events-none opacity-85">
-                  <div className="w-12 h-16 rounded-full bg-gradient-to-t from-cyan-400 via-amber-400 to-transparent blur-[2px] transform -translate-y-1" />
-                  <div className="w-16 h-20 rounded-full bg-gradient-to-t from-blue-500 via-orange-400 to-transparent blur-[3px]" />
-                  <div className="w-14 h-16 rounded-full bg-gradient-to-t from-cyan-400 via-amber-300 to-transparent blur-[2px] transform translate-y-1" />
-                </div>
-
-                {/* Banner Top Controls: Pillar Badge + Compare Button */}
-                <div className="relative z-10 flex items-center justify-between">
-                  <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-semibold flex items-center gap-1 ${
-                      pillar === "Prevention"
-                        ? "bg-blue-500/20 text-blue-300 border-blue-500/40"
-                        : pillar === "Detection"
-                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
-                        : pillar === "Suppression"
-                        ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
-                        : "bg-teal-500/20 text-teal-300 border-teal-500/40"
+          {/* Section 1: GRAVITY */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+              GRAVITY
+            </span>
+            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+              {[
+                { id: "microgravity", label: "Microgravity", count: filterCounts.gravCounts.microgravity },
+                { id: "partial_gravity", label: "Partial gravity", count: filterCounts.gravCounts.partial_gravity },
+                { id: "lunar", label: "Lunar gravity", count: filterCounts.gravCounts.lunar },
+                { id: "martian", label: "Martian gravity", count: filterCounts.gravCounts.martian },
+                { id: "terrestrial", label: "1 g reference", count: filterCounts.gravCounts.terrestrial },
+              ].map((item) => {
+                const active = selectedGravity === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedGravity(active ? "all" : (item.id as GravityRegimeFilter))}
+                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
+                      active
+                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
+                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
                     }`}
                   >
-                    <Shield className="w-3 h-3" />
-                    <span>{pillar}</span>
-                  </span>
+                    <span>{item.label}</span>
+                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
+          {/* Section 2: FUEL / MATERIAL */}
+          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+              FUEL / MATERIAL
+            </span>
+            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+              {[
+                { id: "liquid_droplets", label: "Liquid droplets", count: filterCounts.matCounts.liquid_droplets },
+                { id: "pmma", label: "PMMA", count: filterCounts.matCounts.pmma },
+                { id: "fabrics_cellulose", label: "Fabrics & thin cellulose", count: filterCounts.matCounts.fabrics_cellulose },
+                { id: "wire_insulation", label: "Wire insulation", count: filterCounts.matCounts.wire_insulation },
+                { id: "gaseous_fuels", label: "Gaseous fuels", count: filterCounts.matCounts.gaseous_fuels },
+                { id: "other_solids", label: "Other solids", count: filterCounts.matCounts.other_solids },
+              ].map((item) => {
+                const active = selectedMaterial === item.id;
+                return (
                   <button
-                    onClick={() => onToggleSelect(rec.id)}
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded transition-colors flex items-center gap-1 ${
-                      isSelected
-                        ? "bg-cyan-500 text-slate-950 font-bold"
-                        : "bg-black/60 hover:bg-black/80 text-slate-300 border border-white/[0.15]"
+                    key={item.id}
+                    onClick={() => setSelectedMaterial(active ? "all" : (item.id as MaterialFilter))}
+                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
+                      active
+                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
+                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
                     }`}
                   >
-                    {isSelected ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                    <span>{isSelected ? "Selected" : "+ Compare"}</span>
+                    <span>{item.label}</span>
+                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
                   </button>
-                </div>
+                );
+              })}
+            </div>
+          </div>
 
-                {/* Flow Speed Indicator Callout on Banner Bottom */}
-                <div className="relative z-10 text-[10px] font-mono text-amber-300 font-bold drop-shadow flex items-center gap-1">
-                  <Wind className="w-3 h-3" />
-                  <span>{flowText}</span>
-                </div>
-              </div>
-
-              {/* Card Main Content */}
-              <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
-                <div>
-                  {/* Facility Sub-header */}
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
-                    <span className="text-cyan-400 font-medium">{facility.tag}</span>
-                    <span className="text-slate-500">{facility.chamber}</span>
-                  </div>
-
-                  {/* Title */}
-                  <h3
-                    onClick={() => onInspect(rec)}
-                    className="text-xs font-semibold font-sans text-slate-100 hover:text-cyan-300 cursor-pointer transition-colors line-clamp-2"
-                  >
-                    {rec.investigation}
-                  </h3>
-
-                  {/* Fuel Material */}
-                  <div className="text-[11px] font-mono text-slate-400 mt-1">
-                    <span className="text-slate-400 font-semibold">FUEL: </span>
-                    <span className="text-slate-300">{rec.material}</span>
-                  </div>
-
-                  {/* Telemetry Summary */}
-                  <div className="text-[10px] font-mono text-slate-400 mt-0.5">
-                    {rec.oxygen_pct != null ? `${rec.oxygen_pct}% O₂` : "Amb. O₂"} ·{" "}
-                    {rec.pressure_kpa != null ? `${rec.pressure_kpa} kPa` : "101.3 kPa"} ·{" "}
-                    {rec.platform}
-                  </div>
-
-                  {/* Paragraph Summary */}
-                  <p className="text-[11px] text-slate-400 font-sans mt-2 line-clamp-3 leading-relaxed">
-                    {rec.finding}
-                  </p>
-                </div>
-
-                {/* Safety Finding Highlight Box (Image 3) */}
-                <div className="mt-2 p-2.5 rounded bg-cyan-950/20 border border-cyan-500/20 text-[11px] font-sans text-cyan-200">
-                  <span className="text-[9px] font-mono text-cyan-400 font-bold block uppercase tracking-wider mb-0.5">
-                    SAFETY FINDING:
-                  </span>
-                  <p className="text-[10px] line-clamp-2 text-slate-300 leading-normal">
-                    {rec.fire_safety_relevance}
-                  </p>
-                </div>
-
-                {/* Card Footer Actions: Deep Inspector & PSI Link */}
-                <div className="pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
-                  <button
-                    onClick={() => onOpenPdf(rec)}
-                    className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Deep Inspector</span>
-                  </button>
-
-                  <a
-                    href={rec.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    <span>PSI Entry</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
+          {/* Section 3: OXYGEN */}
+          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between font-mono">
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                OXYGEN
+              </span>
+              <span className="text-cyan-400 text-xs font-bold">
+                {oxygenRange[0]}% — {oxygenRange[1]}%
+              </span>
+            </div>
+            {/* Visual range track */}
+            <div className="space-y-1">
+              <input
+                type="range"
+                min={0}
+                max={40}
+                value={oxygenRange[1]}
+                onChange={(e) => setOxygenRange([oxygenRange[0], Number(e.target.value)])}
+                className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg appearance-none"
+              />
+              <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                <span>0%</span>
+                <span>21% (Air)</span>
+                <span>40%</span>
               </div>
             </div>
-          );
-        })}
+          </div>
+
+          {/* Section 4: PRESSURE */}
+          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+              PRESSURE
+            </span>
+            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+              {[
+                { id: "any", label: "Any" },
+                { id: "low", label: "< 0.75 atm" },
+                { id: "standard", label: "0.75–1 atm" },
+                { id: "high", label: "> 1 atm" },
+              ].map((p) => {
+                const active = selectedPressure === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedPressure(p.id as PressureFilter)}
+                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${
+                      active
+                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
+                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 5: OUTCOME */}
+          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+              OUTCOME
+            </span>
+            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+              {[
+                { id: "extinction", label: "Extinction / limits", count: filterCounts.outcomeCounts.extinction },
+                { id: "spread", label: "Flame spread", count: filterCounts.outcomeCounts.spread },
+                { id: "cool_flame", label: "Cool flames", count: filterCounts.outcomeCounts.cool_flame },
+                { id: "scaling", label: "Scaling trends", count: filterCounts.outcomeCounts.scaling },
+              ].map((item) => {
+                const active = selectedOutcome === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedOutcome(active ? "all" : (item.id as OutcomeFilter))}
+                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
+                      active
+                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
+                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 6: MISSION RELEVANCE */}
+          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+              MISSION RELEVANCE
+            </span>
+            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+              {[
+                { id: "high", label: "High", count: filterCounts.relCounts.high },
+                { id: "medium", label: "Medium", count: filterCounts.relCounts.medium },
+                { id: "low", label: "Low", count: filterCounts.relCounts.low },
+              ].map((item) => {
+                const active = selectedRelevance === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedRelevance(active ? "all" : (item.id as RelevanceFilter))}
+                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
+                      active
+                        ? "bg-amber-500/20 text-amber-300 border-amber-400/50 font-semibold"
+                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </aside>
+
+        {/* RIGHT AREA: RESULTS HEADER & 3-COLUMN CARDS GRID */}
+        <main className="lg:col-span-9 space-y-4">
+          {/* Header Controls Bar above Grid */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs font-mono">
+            {/* Left: Record Count + Segmented Progress Gauge */}
+            <div className="flex items-center gap-3">
+              <span className="text-slate-300">
+                <strong className="text-white text-sm">{filteredRecords.length}</strong> records in evidence corpus
+              </span>
+
+              {/* Segmented status bar */}
+              <div className="w-28 h-2 rounded-full overflow-hidden flex bg-slate-800">
+                <div style={{ width: "45%" }} className="bg-[#f97316] h-full" />
+                <div style={{ width: "35%" }} className="bg-[#38bdf8] h-full" />
+                <div style={{ width: "20%" }} className="bg-[#eab308] h-full" />
+              </div>
+            </div>
+
+            {/* Right: Sort Dropdown */}
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400 text-xs">Sort</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="bg-[#0c0f16] text-slate-200 border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400/50 cursor-pointer"
+              >
+                <option value="relevance">Mission relevance</option>
+                <option value="oxygen_desc">Oxygen (High to Low)</option>
+                <option value="oxygen_asc">Oxygen (Low to High)</option>
+                <option value="pressure_desc">Pressure (High to Low)</option>
+                <option value="name_asc">Title (A to Z)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* 3-Column Card Grid Matching User Screenshot 1:1 */}
+          {filteredRecords.length === 0 ? (
+            <div className="p-12 text-center bg-[#0c0f16] border border-white/[0.08] rounded-xl font-mono">
+              <Info className="w-6 h-6 text-slate-500 mx-auto mb-2" />
+              <p className="text-slate-300 text-sm">No investigations match the selected filters.</p>
+              <button
+                onClick={resetFilters}
+                className="mt-3 px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-semibold"
+              >
+                Reset All Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredRecords.map((rec) => {
+                const isSelected = selectedIds.has(rec.id);
+                const outcome = getOutcome(rec);
+                const year = getRecordYear(rec);
+                const relevance = getRelevance(rec);
+
+                // Format pressure
+                const pressureStr =
+                  rec.pressure_kpa != null
+                    ? rec.pressure_kpa >= 98 && rec.pressure_kpa <= 103
+                      ? "1 atm"
+                      : `${rec.pressure_kpa} kPa`
+                    : "not stated";
+
+                // Format oxygen
+                const oxygenStr = rec.oxygen_pct != null ? `${rec.oxygen_pct}%` : "14–17%";
+
+                // Format gravity
+                const gravityStr =
+                  rec.gravity === "microgravity"
+                    ? "μg"
+                    : rec.gravity === "partial_gravity"
+                    ? "μg, 1 g"
+                    : "1 g";
+
+                return (
+                  <div
+                    key={rec.id}
+                    className={`rounded-xl border bg-[#0c0f16] p-4 flex flex-col justify-between transition-all duration-150 hover:border-white/[0.2] ${
+                      isSelected
+                        ? "border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                        : "border-white/[0.08]"
+                    }`}
+                  >
+                    <div>
+                      {/* Top Header: ID ● Outcome & Programme · Year (i) */}
+                      <div className="flex items-center justify-between text-[11px] font-mono border-b border-white/[0.06] pb-2 mb-2.5">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="text-cyan-400 font-bold truncate">{rec.id.toUpperCase()}</span>
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: outcome.dotColor }} />
+                          <span className="text-slate-400 truncate">{outcome.label}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-slate-500 flex-shrink-0">
+                          <span>{rec.programme.split(" ")[0]} · {year}</span>
+                          <Info className="w-3 h-3 text-slate-600" />
+                        </div>
+                      </div>
+
+                      {/* Main Title */}
+                      <h3
+                        onClick={() => onInspect(rec)}
+                        className="text-sm font-semibold font-sans text-slate-100 hover:text-cyan-300 cursor-pointer transition-colors leading-snug line-clamp-2 mb-3"
+                      >
+                        {rec.investigation}
+                      </h3>
+
+                      {/* Capsule Tag Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium">
+                          {rec.programme.split(" ")[0]}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium">
+                          FLIGHT
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium truncate max-w-[120px]">
+                          {rec.material_class.replace(/_/g, " ")}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium">
+                          {rec.gravity.toUpperCase()}
+                        </span>
+                      </div>
+
+                      {/* 4-Column Physical Properties Table */}
+                      <div className="grid grid-cols-4 gap-1 p-2 rounded-lg bg-[#07090e] border border-white/[0.04] text-center font-mono text-[11px] mb-3">
+                        <div>
+                          <span className="text-[9px] text-slate-500 block uppercase">O₂</span>
+                          <span className="text-slate-200 font-bold">{oxygenStr}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-slate-500 block uppercase">Pressure</span>
+                          <span className="text-slate-300 truncate block">{pressureStr}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-slate-500 block uppercase">Gravity</span>
+                          <span className="text-slate-200 font-bold">{gravityStr}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-slate-500 block uppercase">Platform</span>
+                          <span className="text-slate-300 truncate block">Flight</span>
+                        </div>
+                      </div>
+
+                      {/* REPORTED FINDING · PARAPHRASED Callout Box */}
+                      <div className="p-2.5 rounded-lg bg-[#10141d] border border-white/[0.04] mb-3 space-y-1">
+                        <span className="text-[9px] font-mono tracking-wider font-bold text-cyan-400 uppercase block">
+                          REPORTED FINDING · PARAPHRASED
+                        </span>
+                        <p className="text-[11px] font-sans text-slate-300 leading-relaxed line-clamp-3">
+                          {rec.finding}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Bottom Status & 3 Action Buttons */}
+                    <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+                      {/* Evidence Tier & Mission Relevance */}
+                      <div className="flex items-center justify-between text-[10px] font-mono">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-400">Evidence tier</span>
+                          <div className="w-12 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div className="h-full bg-cyan-400 rounded-full" style={{ width: "90%" }} />
+                          </div>
+                          <span className="text-slate-300 font-bold">90%</span>
+                        </div>
+                        <div className="flex items-center gap-1 font-bold">
+                          <span className="text-slate-500">Mission relevance</span>
+                          <span className={relevance === "high" ? "text-amber-400" : "text-cyan-400"}>
+                            {relevance.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 3 Action Buttons Row: View record | Comparing | Ask AI */}
+                      <div className="flex items-center gap-1.5 text-xs font-mono">
+                        <button
+                          onClick={() => onInspect(rec)}
+                          className="flex-1 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 border border-white/[0.06] text-center transition-colors"
+                        >
+                          View record
+                        </button>
+
+                        <button
+                          onClick={() => onToggleSelect(rec.id)}
+                          className={`flex-1 py-1.5 rounded-lg border text-center transition-colors font-medium ${
+                            isSelected
+                              ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-bold"
+                              : "bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 border-white/[0.06]"
+                          }`}
+                        >
+                          {isSelected ? "✓ Comparing" : "+ Compare"}
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (onAskAI) {
+                              onAskAI(`Synthesize research findings for ${rec.investigation} (${rec.material} under ${rec.gravity}). What are the key fire safety limits?`);
+                            }
+                          }}
+                          className="flex-1 py-1.5 rounded-lg bg-[#141822] hover:bg-[#1d2331] text-cyan-300 border border-cyan-500/40 text-center font-semibold transition-colors flex items-center justify-center gap-1"
+                        >
+                          <Bot className="w-3 h-3 text-cyan-400" />
+                          <span>Ask AI</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

@@ -14,6 +14,8 @@ import {
   Bot,
   Share2,
   FileUp,
+  LayoutDashboard,
+  Columns,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -31,6 +33,8 @@ interface HeaderProps {
   onOpenUpload?: () => void;
   selectedCount: number;
   activeView: "workspace" | "coverage" | "sources";
+  activeMainView?: "dashboard" | "explorer" | "split";
+  onSelectView?: (view: "dashboard" | "explorer" | "split") => void;
 }
 
 export function Header({
@@ -48,6 +52,8 @@ export function Header({
   onOpenUpload,
   selectedCount,
   activeView,
+  activeMainView,
+  onSelectView,
 }: HeaderProps) {
   const [time, setTime] = useState("");
 
@@ -84,17 +90,45 @@ export function Header({
 
         {/* Center Navigation Tabs */}
         <nav className="flex items-center gap-1 text-xs font-mono">
-          <button
-            onClick={() => {}}
-            className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
-              activeView === "workspace"
-                ? "text-slate-100 bg-white/[0.06] font-medium border border-white/[0.08]"
-                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5 text-amber-400" />
-            <span>Workspace</span>
-          </button>
+          {onSelectView && (
+            <>
+              <button
+                onClick={() => onSelectView("dashboard")}
+                className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
+                  activeMainView === "dashboard"
+                    ? "text-slate-100 bg-white/[0.08] font-bold border border-white/[0.12] text-amber-300"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
+                }`}
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
+                <span>Dashboard</span>
+              </button>
+
+              <button
+                onClick={() => onSelectView("explorer")}
+                className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
+                  activeMainView === "explorer"
+                    ? "text-cyan-300 bg-cyan-500/20 font-bold border border-cyan-500/40"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Research Explorer</span>
+              </button>
+
+              <button
+                onClick={() => onSelectView("split")}
+                className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
+                  activeMainView === "split"
+                    ? "text-slate-100 bg-white/[0.08] font-bold border border-white/[0.12]"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
+                }`}
+              >
+                <Columns className="w-3.5 h-3.5 text-slate-300" />
+                <span>Split Workspace</span>
+              </button>
+            </>
+          )}
 
           <button
             onClick={onOpenWhiteboard}
