@@ -69,9 +69,13 @@ export function SearchAndFilters({ query, onChange, onSelectPreset }: SearchAndF
           <button
             key={idx}
             onClick={() => onSelectPreset(p.query)}
-            className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+            className={`text-[11px] font-mono px-2 py-0.5 rounded-full border transition-all ${
+              idx === 0
+                ? "bg-amber-400/10 text-amber-300 border-amber-400/40 hover:bg-amber-400/20 font-bold"
+                : "bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700"
+            }`}
           >
-            {p.label}
+            {idx === 0 ? "★ " : ""}{p.label}
           </button>
         ))}
       </div>

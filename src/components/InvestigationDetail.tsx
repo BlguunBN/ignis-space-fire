@@ -17,9 +17,10 @@ import { assessApplicability } from "../lib/applicability";
 interface InvestigationDetailProps {
   record: ExperimentRecord | null;
   query: SearchQuery;
+  onInspectSource?: () => void;
 }
 
-export function InvestigationDetail({ record, query }: InvestigationDetailProps) {
+export function InvestigationDetail({ record, query, onInspectSource }: InvestigationDetailProps) {
   if (!record) {
     return (
       <div className="h-full flex items-center justify-center p-8 border border-dashed border-slate-800 rounded-xl bg-slate-950/40 text-center">
@@ -162,28 +163,42 @@ export function InvestigationDetail({ record, query }: InvestigationDetailProps)
           {record.source_locator || "NASA PSI Archive Record"}
         </div>
 
-        <div className="flex items-center justify-between pt-1 text-xs font-mono">
-          {record.doi ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs font-mono">
+          <div className="flex items-center gap-3">
+            {record.doi ? (
+              <a
+                href={`https://doi.org/${record.doi}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 underline underline-offset-2"
+              >
+                DOI: {record.doi} <ExternalLink className="w-3 h-3" />
+              </a>
+            ) : (
+              <span className="text-slate-400">No DOI Registered</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {onInspectSource && (
+              <button
+                onClick={onInspectSource}
+                className="flex items-center gap-1.5 px-3 py-1 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 rounded text-xs transition-colors font-bold"
+              >
+                <FileCheck className="w-3 h-3" />
+                <span>Citation & Provenance</span>
+              </button>
+            )}
+
             <a
-              href={`https://doi.org/${record.doi}`}
+              href={record.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 underline underline-offset-2"
+              className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs transition-colors"
             >
-              DOI: {record.doi} <ExternalLink className="w-3 h-3" />
+              Open in NASA PSI <ExternalLink className="w-3 h-3" />
             </a>
-          ) : (
-            <span className="text-slate-400">No DOI Registered</span>
-          )}
-
-          <a
-            href={record.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs transition-colors"
-          >
-            Open in NASA PSI <ExternalLink className="w-3 h-3" />
-          </a>
+          </div>
         </div>
       </div>
     </div>

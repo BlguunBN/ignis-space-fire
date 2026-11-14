@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Fuse from "fuse.js";
+import { ArrowRightLeft, BookOpen, Layers } from "lucide-react";
 import experimentsData from "../data/experiments.json";
 import { ExperimentRecord, SearchQuery } from "../types/evidence";
 import { Header } from "../components/Header";
@@ -10,6 +11,8 @@ import { ComparisonTable } from "../components/ComparisonTable";
 import { InvestigationDetail } from "../components/InvestigationDetail";
 import { TelemetryChart } from "../components/TelemetryChart";
 import { GroundedBriefDrawer } from "../components/GroundedBriefDrawer";
+import { CompareModal } from "../components/CompareModal";
+import { SourceInspectorModal } from "../components/SourceInspectorModal";
 import { generateDeterministicBrief } from "../lib/synthesis";
 
 const allRecords = experimentsData as ExperimentRecord[];
@@ -21,6 +24,8 @@ export default function UnifiedWorkspace() {
     new Set(allRecords.map((r) => r.id))
   );
   const [isBriefOpen, setIsBriefOpen] = useState(false);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
 
   // Configure Fuse.js for fuzzy retrieval
   const fuse = useMemo(() => {
@@ -106,7 +111,7 @@ export default function UnifiedWorkspace() {
     return allRecords.find((r) => r.id === activeId) || null;
   }, [activeId]);
 
-  // Selected records for brief generation
+  // Selected records for brief and compare modal
   const selectedRecords = useMemo(() => {
     return allRecords.filter((r) => selectedIds.has(r.id));
   }, [selectedIds]);
@@ -167,25 +172,41 @@ export default function UnifiedWorkspace() {
             />
 
             {/* Filter Count & Selection Controls */}
-            <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-400 px-1">
               <span>
-                Matching Investigations:{" "}
-                <strong className="text-amber-400">{filteredRecords.length}</strong> of {allRecords.length}
+                Matching: <strong className="text-amber-400">{filteredRecords.length}</strong> of {allRecords.length}
               </span>
+
               <div className="flex items-center gap-2">
                 <button
-                  onClick={handleSelectAll}
-                  className="hover:text-slate-200 underline decoration-slate-600"
+                  onClick={() => setIsCompareOpen(true)}
+                  disabled={selectedRecords.length < 2}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all ${
+                    selectedRecords.length >= 2
+                      ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 cursor-pointer"
+                      : "bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-60"
+                  }`}
+                  title="Compare selected studies side-by-side"
                 >
-                  Select All
+                  <ArrowRightLeft className="w-3.5 h-3.5" />
+                  <span>Compare Selected ({selectedRecords.length})</span>
                 </button>
-                <span>•</span>
-                <button
-                  onClick={handleClearSelection}
-                  className="hover:text-slate-200 underline decoration-slate-600"
-                >
-                  Clear
-                </button>
+
+                <div className="flex items-center gap-1.5 border-l border-slate-800 pl-2">
+                  <button
+                    onClick={handleSelectAll}
+                    className="hover:text-slate-200 underline decoration-slate-600"
+                  >
+                    All
+                  </button>
+                  <span>•</span>
+                  <button
+                    onClick={handleClearSelection}
+                    className="hover:text-slate-200 underline decoration-slate-600"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -212,7 +233,11 @@ export default function UnifiedWorkspace() {
             />
 
             {/* Active Investigation Detail & Provenance Inspector */}
-            <InvestigationDetail record={activeRecord} query={query} />
+            <InvestigationDetail
+              record={activeRecord}
+              query={query}
+              onInspectSource={() => setIsSourceModalOpen(true)}
+            />
           </section>
         </div>
       </main>
@@ -222,6 +247,21 @@ export default function UnifiedWorkspace() {
         isOpen={isBriefOpen}
         onClose={() => setIsBriefOpen(false)}
         brief={brief}
+      />
+
+      {/* Side-by-Side Multi-Study Comparison Modal */}
+      <CompareModal
+        isOpen={isCompareOpen}
+        onClose={() => setIsCompareOpen(false)}
+        selectedRecords={selectedRecords}
+        onOpenBrief={() => setIsBriefOpen(true)}
+      />
+
+      {/* Primary Source Citation & Provenance Inspector Modal */}
+      <SourceInspectorModal
+        isOpen={isSourceModalOpen}
+        onClose={() => setIsSourceModalOpen(false)}
+        record={activeRecord}
       />
     </div>
   );

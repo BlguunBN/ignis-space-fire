@@ -1,5 +1,6 @@
 import { ExperimentRecord, SearchQuery } from "../types/evidence";
 import { assessApplicability } from "./applicability";
+import { compareInvestigations } from "./comparison";
 
 export interface EvidenceBrief {
   title: string;
@@ -96,9 +97,22 @@ export function generateDeterministicBrief(
 
 ## 2. Environmental Applicability & Physical Confounders
 
-When comparing these microgravity experiments, note the following physical constraints:
+`;
+
+  if (records.length >= 2) {
+    const comp = compareInvestigations(records);
+    md += `> [!IMPORTANT]
+> **${comp.aggregationWarning}**
 
 `;
+    if (comp.confounders.length > 0) {
+      md += `### Detected Confounders Between Selected Studies:\n`;
+      for (const c of comp.confounders) {
+        md += `- **${c.title} (${c.severity.toUpperCase()}):** ${c.description}\n`;
+      }
+      md += `\n`;
+    }
+  }
 
   for (const rec of records) {
     const assess = assessApplicability(rec, query);
