@@ -20,7 +20,7 @@ interface InvestigationDetailProps {
 export function InvestigationDetail({ record, query, onInspectSource }: InvestigationDetailProps) {
   if (!record) {
     return (
-      <div className="h-full min-h-[300px] flex items-center justify-center p-8 border border-white/[0.08] rounded-lg bg-[#0c0f14] text-center">
+      <div className="h-full min-h-[300px] flex items-center justify-center p-8 border border-white/[0.08] rounded-lg bg-[#13171e] text-center">
         <div className="max-w-xs space-y-2">
           <Layers className="w-6 h-6 text-slate-500 mx-auto" />
           <p className="text-xs font-mono text-slate-400">
@@ -34,7 +34,7 @@ export function InvestigationDetail({ record, query, onInspectSource }: Investig
   const assess = assessApplicability(record, query);
 
   return (
-    <div className="space-y-3.5 bg-[#0c0f14] border border-white/[0.08] rounded-lg p-4">
+    <div className="space-y-3.5 bg-[#13171e] border border-white/[0.09] rounded-lg p-4">
       {/* Header: Title & Verification Badge */}
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] pb-3">
         <div>
@@ -61,7 +61,7 @@ export function InvestigationDetail({ record, query, onInspectSource }: Investig
       <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] rounded-md border border-white/[0.06] bg-[#13171e] text-xs font-mono">
         {/* Oxygen */}
         <div className="p-2.5">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
+          <div className="text-[11px] text-slate-400 mb-0.5">
             Oxygen
           </div>
           <div className="text-sm font-semibold text-cyan-400 tabular-nums">
@@ -71,27 +71,27 @@ export function InvestigationDetail({ record, query, onInspectSource }: Investig
 
         {/* Pressure */}
         <div className="p-2.5">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
+          <div className="text-[11px] text-slate-400 mb-0.5">
             Pressure
           </div>
           <div className="text-sm font-semibold text-slate-200 tabular-nums">
-            {record.pressure_kpa != null ? `${record.pressure_kpa} kPa` : "101.3 kPa"}
+            {record.pressure_kpa != null ? `${record.pressure_kpa} kPa` : "Not stated"}
           </div>
         </div>
 
         {/* Forced Flow */}
         <div className="p-2.5">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
+          <div className="text-[11px] text-slate-400 mb-0.5">
             Airflow Speed
           </div>
           <div className="text-sm font-semibold text-cyan-400 tabular-nums">
-            {record.airflow_cm_s != null ? `${record.airflow_cm_s} cm/s` : "0 cm/s"}
+            {record.airflow_cm_s != null ? `${record.airflow_cm_s} cm/s` : "Not stated"}
           </div>
         </div>
 
         {/* Fuel Material */}
         <div className="p-2.5">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
+          <div className="text-[11px] text-slate-400 mb-0.5">
             Fuel Material
           </div>
           <div className="text-xs font-medium text-slate-200 truncate" title={record.material}>
@@ -161,7 +161,7 @@ export function InvestigationDetail({ record, query, onInspectSource }: Investig
           <span className="text-slate-400 flex items-center gap-1.5 font-medium">
             <FileCheck className="w-3.5 h-3.5 text-emerald-400" /> Primary NASA Source Locator
           </span>
-          <span className="text-slate-400 uppercase text-[10px]">{record.source_type}</span>
+          <span className="text-slate-400 uppercase text-[11px]">{record.source_type}</span>
         </div>
 
         <div className="text-xs font-mono text-slate-200 bg-[#0c0f14] px-2.5 py-1.5 rounded border border-white/[0.06]">

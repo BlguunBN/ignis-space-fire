@@ -20,6 +20,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
+import { matchesReportedConditions, PressureFilter } from "../lib/explorer-conditions";
 
 interface ResearchExplorerGridProps {
   records: ExperimentRecord[];
@@ -36,8 +37,7 @@ interface ResearchExplorerGridProps {
 
 type GravityRegimeFilter = "all" | "microgravity" | "partial_gravity" | "lunar" | "martian" | "terrestrial";
 type MaterialFilter = "all" | "liquid_droplets" | "pmma" | "fabrics_cellulose" | "wire_insulation" | "gaseous_fuels" | "other_solids";
-type PressureFilter = "any" | "low" | "standard" | "high";
-type OutcomeFilter = "all" | "extinction" | "spread" | "cool_flame" | "scaling";
+type OutcomeFilter = "all" | "extinction" | "spread" | "cool_flame" | "scaling" | "other";
 type RelevanceFilter = "all" | "high" | "medium" | "low";
 type SortOption = "relevance" | "oxygen_desc" | "oxygen_asc" | "pressure_desc" | "name_asc";
 
@@ -53,7 +53,6 @@ export function ResearchExplorerGrid({
   initialMaterial,
   initialOxygenRange,
 }: ResearchExplorerGridProps) {
-  // State for search and sidebar filters
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery || "");
   const [visibleCount, setVisibleCount] = useState(12);
   const [selectedGravity, setSelectedGravity] = useState<GravityRegimeFilter>(initialGravity || "all");
@@ -64,7 +63,6 @@ export function ResearchExplorerGrid({
   const [selectedRelevance, setSelectedRelevance] = useState<RelevanceFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("relevance");
 
-  // Sync external filters from AI Copilot
   React.useEffect(() => {
     if (initialSearchQuery !== undefined) setSearchQuery(initialSearchQuery);
   }, [initialSearchQuery]);
@@ -81,7 +79,6 @@ export function ResearchExplorerGrid({
     if (initialOxygenRange) setOxygenRange(initialOxygenRange);
   }, [initialOxygenRange]);
 
-  // Helper to derive outcome for record
   const getOutcome = (r: ExperimentRecord): { id: OutcomeFilter; label: string; dotColor: string } => {
     const text = `${r.investigation} ${r.finding} ${r.fire_safety_relevance}`.toLowerCase();
     if (text.includes("cool flame") || text.includes("low-temp")) {
@@ -93,17 +90,18 @@ export function ResearchExplorerGrid({
     if (text.includes("scaling") || text.includes("trend") || text.includes("diameter") || text.includes("upward")) {
       return { id: "scaling", label: "Scaling / trend", dotColor: "#4ade80" };
     }
-    return { id: "extinction", label: "Extinction / limit", dotColor: "#38bdf8" };
+    if (text.includes("extinct") || text.includes("limit")) {
+      return { id: "extinction", label: "Extinction / limit", dotColor: "#38bdf8" };
+    }
+    return { id: "other", label: "Other topic", dotColor: "#94a3b8" };
   };
 
-  // Helper to derive mission relevance
   const getRelevance = (r: ExperimentRecord): "high" | "medium" | "low" => {
     if (r.quality === "primary_nasa") return "high";
     if (r.quality === "peer_reviewed_nasa") return "medium";
     return "low";
   };
 
-  // Compute live filter counts
   const filterCounts = useMemo(() => {
     const gravCounts: Record<GravityRegimeFilter, number> = {
       all: records.length,
@@ -130,6 +128,7 @@ export function ResearchExplorerGrid({
       spread: 0,
       cool_flame: 0,
       scaling: 0,
+      other: 0,
     };
 
     const relCounts: Record<RelevanceFilter, number> = {
@@ -142,14 +141,12 @@ export function ResearchExplorerGrid({
     records.forEach((r) => {
       const invLower = `${r.investigation} ${r.material} ${r.platform}`.toLowerCase();
 
-      // Gravity
       if (invLower.includes("lunar") || invLower.includes("0.16 g")) gravCounts.lunar++;
       else if (invLower.includes("martian") || invLower.includes("0.38 g")) gravCounts.martian++;
       else if (invLower.includes("partial") || r.gravity === "partial_gravity") gravCounts.partial_gravity++;
       else if (r.gravity === "terrestrial" || invLower.includes("1 g")) gravCounts.terrestrial++;
       else gravCounts.microgravity++;
 
-      // Material
       if (r.material.toLowerCase().includes("droplet") || r.material_class === "liquid_droplet") matCounts.liquid_droplets++;
       else if (r.material.toLowerCase().includes("pmma")) matCounts.pmma++;
       else if (
@@ -164,30 +161,24 @@ export function ResearchExplorerGrid({
       else if (r.material.toLowerCase().includes("gas") || r.material.toLowerCase().includes("methane")) matCounts.gaseous_fuels++;
       else matCounts.other_solids++;
 
-      // Outcome
       const out = getOutcome(r);
       outcomeCounts[out.id]++;
-
-      // Relevance
       relCounts[getRelevance(r)]++;
     });
 
     return { gravCounts, matCounts, outcomeCounts, relCounts };
   }, [records]);
 
-  // Filter & sort records
   const filteredRecords = useMemo(() => {
     let result = records.filter((r) => {
       const invLower = `${r.investigation} ${r.material} ${r.platform} ${r.finding}`.toLowerCase();
 
-      // Search Query
       if (searchQuery.trim() !== "") {
         const words = searchQuery.toLowerCase().split(/\s+/);
         const matchesAll = words.every((w) => invLower.includes(w));
         if (!matchesAll) return false;
       }
 
-      // Gravity
       if (selectedGravity !== "all") {
         if (selectedGravity === "lunar" && !invLower.includes("lunar") && !invLower.includes("0.16 g")) return false;
         if (selectedGravity === "martian" && !invLower.includes("martian") && !invLower.includes("0.38 g")) return false;
@@ -196,7 +187,6 @@ export function ResearchExplorerGrid({
         if (selectedGravity === "microgravity" && r.gravity !== "microgravity") return false;
       }
 
-      // Material
       if (selectedMaterial !== "all") {
         if (selectedMaterial === "liquid_droplets" && !r.material.toLowerCase().includes("droplet") && r.material_class !== "liquid_droplet") return false;
         if (selectedMaterial === "pmma" && !r.material.toLowerCase().includes("pmma")) return false;
@@ -214,26 +204,12 @@ export function ResearchExplorerGrid({
         if (selectedMaterial === "other_solids" && (r.material.toLowerCase().includes("pmma") || r.material.toLowerCase().includes("droplet"))) return false;
       }
 
-      // Oxygen Range
-      if (r.oxygen_pct != null) {
-        if (r.oxygen_pct < oxygenRange[0] || r.oxygen_pct > oxygenRange[1]) return false;
-      }
+      if (!matchesReportedConditions(r, oxygenRange, selectedPressure)) return false;
 
-      // Pressure
-      if (selectedPressure !== "any") {
-        if (r.pressure_kpa != null) {
-          if (selectedPressure === "low" && r.pressure_kpa >= 76) return false;
-          if (selectedPressure === "standard" && (r.pressure_kpa < 76 || r.pressure_kpa > 105)) return false;
-          if (selectedPressure === "high" && r.pressure_kpa <= 105) return false;
-        }
-      }
-
-      // Outcome
       if (selectedOutcome !== "all") {
         if (getOutcome(r).id !== selectedOutcome) return false;
       }
 
-      // Relevance
       if (selectedRelevance !== "all") {
         if (getRelevance(r) !== selectedRelevance) return false;
       }
@@ -241,7 +217,6 @@ export function ResearchExplorerGrid({
       return true;
     });
 
-    // Sorting
     if (sortBy === "oxygen_desc") {
       result.sort((a, b) => (b.oxygen_pct ?? -1) - (a.oxygen_pct ?? -1));
     } else if (sortBy === "oxygen_asc") {
@@ -279,7 +254,6 @@ export function ResearchExplorerGrid({
 
   return (
     <div className="space-y-4 font-sans text-slate-100 max-w-[1750px] mx-auto animate-in fade-in duration-200">
-      {/* 2. MAIN SEARCH BAR & SUGGESTION */}
       <div className="space-y-1.5">
         <div className="relative flex items-center">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -289,7 +263,7 @@ export function ResearchExplorerGrid({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search experiments, fuels, materials, conditions, findings..."
-            className="w-full bg-[#0c0f16] border border-white/[0.08] rounded-xl pl-10 pr-9 py-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 font-sans shadow-lg transition-colors"
+            className="w-full bg-[#0c0f16] border border-white/[0.08] rounded-md pl-10 pr-9 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 font-sans shadow-lg transition-colors"
           />
           {searchQuery && (
             <button
@@ -320,233 +294,188 @@ export function ResearchExplorerGrid({
         </div>
       </div>
 
-      {/* 3. TWO-COLUMN LAYOUT: FILTERS SIDEBAR (LEFT) + RESULTS GRID (RIGHT) */}
       <div className="space-y-5">
-        {/* LEFT SIDEBAR: FILTERS PANEL */}
-        <details className="rounded-2xl border border-white/[0.08] bg-[#101319]">
-          <summary className="cursor-pointer px-5 py-4 text-sm font-medium text-slate-200 hover:text-white">Filters {hasActiveFilters && <span className="ml-2 text-xs text-amber-400">Active</span>}</summary>
-        <aside className="border-t border-white/[0.08] p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
-            <h3 className="text-sm font-bold text-slate-100 font-sans">Filters</h3>
-            {hasActiveFilters && (
-              <button
-                onClick={resetFilters}
-                className="text-[11px] font-mono text-amber-400 hover:text-amber-300 hover:underline"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-
-          {/* Section 1: GRAVITY */}
-          <div className="space-y-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-              GRAVITY
-            </span>
-            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-              {[
-                { id: "microgravity", label: "Microgravity", count: filterCounts.gravCounts.microgravity },
-                { id: "partial_gravity", label: "Partial gravity", count: filterCounts.gravCounts.partial_gravity },
-                { id: "lunar", label: "Lunar gravity", count: filterCounts.gravCounts.lunar },
-                { id: "martian", label: "Martian gravity", count: filterCounts.gravCounts.martian },
-                { id: "terrestrial", label: "1 g reference", count: filterCounts.gravCounts.terrestrial },
-              ].map((item) => {
-                const active = selectedGravity === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedGravity(active ? "all" : (item.id as GravityRegimeFilter))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
-                      active
-                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
-                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
-                  </button>
-                );
-              })}
+        <details className="rounded-lg border border-white/[0.08] bg-[#13171e]">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-slate-200 hover:text-white">Filters {hasActiveFilters && <span className="ml-2 text-xs text-amber-400">Active</span>}</summary>
+          <aside className="border-t border-white/[0.08] p-4 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+              <h3 className="text-sm font-bold text-slate-100 font-sans">Filters</h3>
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="text-[11px] font-mono text-amber-400 hover:text-amber-300 hover:underline"
+                >
+                  Reset
+                </button>
+              )}
             </div>
-          </div>
 
-          {/* Section 2: FUEL / MATERIAL */}
-          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-              FUEL / MATERIAL
-            </span>
-            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-              {[
-                { id: "liquid_droplets", label: "Liquid droplets", count: filterCounts.matCounts.liquid_droplets },
-                { id: "pmma", label: "PMMA", count: filterCounts.matCounts.pmma },
-                { id: "fabrics_cellulose", label: "Fabrics & thin cellulose", count: filterCounts.matCounts.fabrics_cellulose },
-                { id: "wire_insulation", label: "Wire insulation", count: filterCounts.matCounts.wire_insulation },
-                { id: "gaseous_fuels", label: "Gaseous fuels", count: filterCounts.matCounts.gaseous_fuels },
-                { id: "other_solids", label: "Other solids", count: filterCounts.matCounts.other_solids },
-              ].map((item) => {
-                const active = selectedMaterial === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedMaterial(active ? "all" : (item.id as MaterialFilter))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
-                      active
-                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
-                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Section 3: OXYGEN */}
-          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-            <div className="flex items-center justify-between font-mono">
-              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                OXYGEN
-              </span>
-              <span className="text-cyan-400 text-xs font-bold">
-                {oxygenRange[0]}% — {oxygenRange[1]}%
-              </span>
-            </div>
-            {/* Visual range track */}
-            <div className="space-y-1">
-              <input
-                type="range"
-                min={0}
-                max={40}
-                value={oxygenRange[1]}
-                onChange={(e) => setOxygenRange([oxygenRange[0], Number(e.target.value)])}
-                className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg appearance-none"
-              />
-              <div className="flex justify-between text-[10px] font-mono text-slate-500">
-                <span>0%</span>
-                <span>21% (Air)</span>
-                <span>40%</span>
+            <div className="space-y-2">
+              <h4 className="text-[11px] font-medium text-slate-400">Gravity</h4>
+              <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                {[
+                  { id: "microgravity", label: "Microgravity", count: filterCounts.gravCounts.microgravity },
+                  { id: "partial_gravity", label: "Partial gravity", count: filterCounts.gravCounts.partial_gravity },
+                  { id: "lunar", label: "Lunar gravity", count: filterCounts.gravCounts.lunar },
+                  { id: "martian", label: "Martian gravity", count: filterCounts.gravCounts.martian },
+                  { id: "terrestrial", label: "1 g reference", count: filterCounts.gravCounts.terrestrial },
+                ].map((item) => {
+                  const active = selectedGravity === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setSelectedGravity(active ? "all" : (item.id as GravityRegimeFilter))}
+                      className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${active ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold" : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"}`}
+                    >
+                      <span>{item.label}</span>
+                      <span className="text-[11px] text-slate-500 font-bold">{item.count}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </div>
 
-          {/* Section 4: PRESSURE */}
-          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-              PRESSURE
-            </span>
-            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-              {[
-                { id: "any", label: "Any" },
-                { id: "low", label: "< 0.75 atm" },
-                { id: "standard", label: "0.75–1 atm" },
-                { id: "high", label: "> 1 atm" },
-              ].map((p) => {
-                const active = selectedPressure === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => setSelectedPressure(p.id as PressureFilter)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${
-                      active
-                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
-                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                );
-              })}
+            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+              <h4 className="text-[11px] font-medium text-slate-400">Fuel / material</h4>
+              <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                {[
+                  { id: "liquid_droplets", label: "Liquid droplets", count: filterCounts.matCounts.liquid_droplets },
+                  { id: "pmma", label: "PMMA", count: filterCounts.matCounts.pmma },
+                  { id: "fabrics_cellulose", label: "Fabrics & thin cellulose", count: filterCounts.matCounts.fabrics_cellulose },
+                  { id: "wire_insulation", label: "Wire insulation", count: filterCounts.matCounts.wire_insulation },
+                  { id: "gaseous_fuels", label: "Gaseous fuels", count: filterCounts.matCounts.gaseous_fuels },
+                  { id: "other_solids", label: "Other solids", count: filterCounts.matCounts.other_solids },
+                ].map((item) => {
+                  const active = selectedMaterial === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setSelectedMaterial(active ? "all" : (item.id as MaterialFilter))}
+                      className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${active ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold" : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"}`}
+                    >
+                      <span>{item.label}</span>
+                      <span className="text-[11px] text-slate-500 font-bold">{item.count}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Section 5: OUTCOME */}
-          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-              OUTCOME
-            </span>
-            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-              {[
-                { id: "extinction", label: "Extinction / limits", count: filterCounts.outcomeCounts.extinction },
-                { id: "spread", label: "Flame spread", count: filterCounts.outcomeCounts.spread },
-                { id: "cool_flame", label: "Cool flames", count: filterCounts.outcomeCounts.cool_flame },
-                { id: "scaling", label: "Scaling trends", count: filterCounts.outcomeCounts.scaling },
-              ].map((item) => {
-                const active = selectedOutcome === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedOutcome(active ? "all" : (item.id as OutcomeFilter))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
-                      active
-                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold"
-                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
-                  </button>
-                );
-              })}
+            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+              <div className="flex items-center justify-between font-mono">
+                <h4 className="text-[11px] font-medium text-slate-400">Oxygen</h4>
+                <span className="text-cyan-400 text-xs font-bold">
+                  {oxygenRange[0] === 0 && oxygenRange[1] === 40 ? "Any" : `${oxygenRange[0]}% — ${oxygenRange[1]}%`}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <input
+                  type="range"
+                  aria-label="Maximum oxygen percentage"
+                  min={0}
+                  max={40}
+                  value={oxygenRange[1]}
+                  onChange={(e) => setOxygenRange([oxygenRange[0], Number(e.target.value)])}
+                  className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg appearance-none"
+                />
+                <div className="flex justify-between text-[11px] font-mono text-slate-500">
+                  <span>0%</span>
+                  <span>21% (Air)</span>
+                  <span>40%</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Section 6: MISSION RELEVANCE */}
-          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-              MISSION RELEVANCE
-            </span>
-            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-              {[
-                { id: "high", label: "High", count: filterCounts.relCounts.high },
-                { id: "medium", label: "Medium", count: filterCounts.relCounts.medium },
-                { id: "low", label: "Low", count: filterCounts.relCounts.low },
-              ].map((item) => {
-                const active = selectedRelevance === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedRelevance(active ? "all" : (item.id as RelevanceFilter))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${
-                      active
-                        ? "bg-amber-500/20 text-amber-300 border-amber-400/50 font-semibold"
-                        : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <span className="text-[10px] text-slate-500 font-bold">{item.count}</span>
-                  </button>
-                );
-              })}
+            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+              <h4 className="text-[11px] font-medium text-slate-400">Pressure</h4>
+              <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                {[
+                  { id: "any", label: "Any" },
+                  { id: "low", label: "Below 76 kPa" },
+                  { id: "standard", label: "76–105 kPa" },
+                  { id: "high", label: "Above 105 kPa" },
+                ].map((p) => {
+                  const active = selectedPressure === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedPressure(p.id as PressureFilter)}
+                      className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${active ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold" : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"}`}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </aside>
+
+            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+              <h4 className="text-[11px] font-medium text-slate-400">Topic (keyword match)</h4>
+              <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                {[
+                  { id: "extinction", label: "Extinction / limits", count: filterCounts.outcomeCounts.extinction },
+                  { id: "spread", label: "Flame spread", count: filterCounts.outcomeCounts.spread },
+                  { id: "cool_flame", label: "Cool flames", count: filterCounts.outcomeCounts.cool_flame },
+                  { id: "scaling", label: "Scaling trends", count: filterCounts.outcomeCounts.scaling },
+                  { id: "other", label: "Other topic", count: filterCounts.outcomeCounts.other },
+                ].map((item) => {
+                  const active = selectedOutcome === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setSelectedOutcome(active ? "all" : (item.id as OutcomeFilter))}
+                      className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${active ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-semibold" : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"}`}
+                    >
+                      <span>{item.label}</span>
+                      <span className="text-[11px] text-slate-500 font-bold">{item.count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+              <h4 className="text-[11px] font-medium text-slate-400">Source quality</h4>
+              <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                {[
+                  { id: "high", label: "NASA primary", count: filterCounts.relCounts.high },
+                  { id: "medium", label: "Peer reviewed", count: filterCounts.relCounts.medium },
+                  { id: "low", label: "Supporting", count: filterCounts.relCounts.low },
+                ].map((item) => {
+                  const active = selectedRelevance === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setSelectedRelevance(active ? "all" : (item.id as RelevanceFilter))}
+                      className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1.5 ${active ? "bg-amber-500/20 text-amber-300 border-amber-400/50 font-semibold" : "bg-[#141822] text-slate-300 border-white/[0.06] hover:border-white/[0.15]"}`}
+                    >
+                      <span>{item.label}</span>
+                      <span className="text-[11px] text-slate-500 font-bold">{item.count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
         </details>
 
-        {/* RIGHT AREA: RESULTS HEADER & 3-COLUMN CARDS GRID */}
         <section aria-label="Study results" className="space-y-4">
-          {/* Header Controls Bar above Grid */}
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs font-mono">
-            {/* Left: Record Count + Segmented Progress Gauge */}
             <div className="flex items-center gap-3">
               <span className="text-slate-300">
                 <strong className="text-white text-sm">{filteredRecords.length}</strong> records in evidence corpus
               </span>
-
-
             </div>
 
-            {/* Right: Sort Dropdown */}
             <div className="flex items-center gap-2">
               <label htmlFor="research-sort" className="text-slate-400 text-xs">Sort</label>
               <select
                 id="research-sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-[#0c0f16] text-slate-200 border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400/50 cursor-pointer"
+                className="bg-[#0c0f16] text-slate-200 border border-white/[0.08] rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400/50 cursor-pointer"
               >
-                <option value="relevance">Mission relevance</option>
+                <option value="relevance">Library order</option>
                 <option value="oxygen_desc">Oxygen (High to Low)</option>
                 <option value="oxygen_asc">Oxygen (Low to High)</option>
                 <option value="pressure_desc">Pressure (High to Low)</option>
@@ -555,158 +484,105 @@ export function ResearchExplorerGrid({
             </div>
           </div>
 
-          {/* 3-Column Card Grid Matching User Screenshot 1:1 */}
           {filteredRecords.length === 0 ? (
-            <div className="p-12 text-center bg-[#0c0f16] border border-white/[0.08] rounded-xl font-mono">
+            <div className="p-10 text-center rounded-lg border border-white/[0.08] bg-[#0c0f16]">
               <Info className="w-6 h-6 text-slate-500 mx-auto mb-2" />
               <p className="text-slate-300 text-sm">No investigations match the selected filters.</p>
               <button
                 onClick={resetFilters}
-                className="mt-3 px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-semibold"
+                className="mt-3 px-3 py-1.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-semibold"
               >
-                Reset All Filters
+                Reset all filters
               </button>
             </div>
           ) : (
             <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredRecords.slice(0, visibleCount).map((rec) => {
-                const isSelected = selectedIds.has(rec.id);
-                const outcome = getOutcome(rec);
-                const relevance = getRelevance(rec);
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredRecords.slice(0, visibleCount).map((rec) => {
+                  const isSelected = selectedIds.has(rec.id);
+                  const outcome = getOutcome(rec);
+                  const relevance = getRelevance(rec);
 
-                const pressureStr = rec.pressure_kpa != null ? `${rec.pressure_kpa} kPa` : "Not stated";
-                const oxygenStr = rec.oxygen_pct != null ? `${rec.oxygen_pct}%` : "Not stated";
-                const gravityStr = rec.gravity.replace(/_/g, " ");
+                  const pressureStr = rec.pressure_kpa != null ? `${rec.pressure_kpa} kPa` : "Not stated";
+                  const oxygenStr = rec.oxygen_pct != null ? `${rec.oxygen_pct}%` : "Not stated";
+                  const gravityStr = rec.gravity.replace(/_/g, " ");
 
-                return (
-                  <div
-                    key={rec.id}
-                    className={`rounded-xl border bg-[#0c0f16] p-4 flex flex-col justify-between transition-all duration-150 hover:border-white/[0.2] ${
-                      isSelected
-                        ? "border-amber-400/30"
-                        : "border-white/[0.08]"
-                    }`}
-                  >
-                    <div>
-                      {/* Top Header: ID ● Outcome & Programme · Year (i) */}
-                      <div className="flex items-center justify-between text-[11px] font-mono border-b border-white/[0.06] pb-2 mb-2.5">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className="text-cyan-400 font-bold truncate">{rec.id.toUpperCase()}</span>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: outcome.dotColor }} />
-                          <span className="text-slate-400 truncate">{outcome.label}</span>
+                  return (
+                    <div
+                      key={rec.id}
+                      className={`rounded-lg border bg-[#13171e] p-5 flex flex-col justify-between transition-colors duration-150 hover:border-white/[0.2] ${isSelected ? "border-amber-400/30" : "border-white/[0.09]"}`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] font-mono mb-2.5">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span className="text-cyan-400 font-bold truncate">{rec.id.toUpperCase()}</span>
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: outcome.dotColor }} />
+                            <span className="text-slate-400 truncate">{outcome.label}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-slate-500 flex-shrink-0">
+                            <span>{rec.programme.split(" ")[0]}</span>
+                            <span className="text-white/20">•</span>
+                            <span className="truncate">{rec.platform}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 text-slate-500 flex-shrink-0">
-                          <span>{rec.programme.split(" ")[0]}</span>
-                          <Info className="w-3 h-3 text-slate-600" />
-                        </div>
+
+                        <h3 className="mb-3 text-sm font-semibold leading-snug text-slate-100">
+                          <button type="button" onClick={() => onInspect(rec)} className="text-left hover:text-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400">{rec.investigation}</button>
+                        </h3>
+
+                        <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-3 mb-4">{rec.finding}</p>
                       </div>
 
-                      {/* Main Title */}
-                      <h3 className="mb-3 text-sm font-semibold leading-snug text-slate-100">
-                        <button type="button" onClick={() => onInspect(rec)} className="text-left hover:text-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400">{rec.investigation}</button>
-                      </h3>
-
-                      {/* Capsule Tag Badges */}
-                      <div className="flex flex-wrap items-center gap-1.5 mb-3">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium">
-                          {rec.programme.split(" ")[0]}
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium truncate max-w-[120px]">
-                          {rec.material_class.replace(/_/g, " ")}
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06] uppercase font-medium">
-                          {rec.gravity.toUpperCase()}
-                        </span>
-                      </div>
-
-                      {/* 4-Column Physical Properties Table */}
-                      <div className="grid grid-cols-4 gap-1 p-2 rounded-lg bg-[#07090e] border border-white/[0.04] text-center font-mono text-[11px] mb-3">
-                        <div>
-                          <span className="text-[9px] text-slate-500 block uppercase">O₂</span>
-                          <span className="text-slate-200 font-bold">{oxygenStr}</span>
+                      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                          <span className="text-slate-500">Conditions</span>
+                          <span className="text-slate-300 truncate">{oxygenStr} O₂ · {pressureStr}</span>
                         </div>
-                        <div>
-                          <span className="text-[9px] text-slate-500 block uppercase">Pressure</span>
-                          <span className="text-slate-300 truncate block">{pressureStr}</span>
-                        </div>
-                        <div>
-                          <span className="text-[9px] text-slate-500 block uppercase">Gravity</span>
-                          <span className="text-slate-200 font-bold">{gravityStr}</span>
-                        </div>
-                        <div>
-                          <span className="text-[9px] text-slate-500 block uppercase">Platform</span>
-                          <span className="text-slate-300 truncate block" title={rec.platform}>{rec.platform}</span>
-                        </div>
-                      </div>
-
-                      {/* REPORTED FINDING · PARAPHRASED Callout Box */}
-                      <div className="p-2.5 rounded-lg bg-[#10141d] border border-white/[0.04] mb-3 space-y-1">
-                        <span className="text-[9px] font-mono tracking-wider font-bold text-cyan-400 uppercase block">
-                          REPORTED FINDING · PARAPHRASED
-                        </span>
-                        <p className="text-[11px] font-sans text-slate-300 leading-relaxed line-clamp-3">
-                          {rec.finding}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Bottom Status & 3 Action Buttons */}
-                    <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-                      {/* Evidence Tier & Mission Relevance */}
-                      <div className="flex items-center justify-between text-[10px] font-mono">
-                        <span className="text-slate-400">{rec.quality.replace(/_/g, " ")}</span>
-                        <div className="flex items-center gap-1 font-bold">
-                          <span className="text-slate-500">Mission relevance</span>
+                        <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                          <span className="text-slate-500">Source quality</span>
                           <span className={relevance === "high" ? "text-amber-400" : "text-cyan-400"}>
-                            {relevance.toUpperCase()}
+                            {relevance === "high" ? "NASA primary" : relevance === "medium" ? "Peer reviewed" : "Supporting"}
                           </span>
                         </div>
-                      </div>
 
-                      {/* 3 Action Buttons Row: View record | Comparing | Ask AI */}
-                      <div className="flex items-center gap-1.5 text-xs font-mono">
-                        <button
-                          onClick={() => onInspect(rec)}
-                          className="flex-1 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 border border-white/[0.06] text-center transition-colors"
-                        >
-                          View record
-                        </button>
+                        <div className="flex items-center gap-1.5 text-xs font-mono">
+                          <button
+                            onClick={() => onInspect(rec)}
+                            className="flex-1 py-1.5 rounded-md bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 border border-white/[0.06] text-center transition-colors"
+                          >
+                            View record
+                          </button>
 
-                        <button
-                          onClick={() => onToggleSelect(rec.id)}
-                          aria-pressed={isSelected}
-                          className={`flex-1 py-1.5 rounded-lg border text-center transition-colors font-medium ${
-                            isSelected
-                              ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-bold"
-                              : "bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 border-white/[0.06]"
-                          }`}
-                        >
-                          {isSelected ? "✓ Comparing" : "+ Compare"}
-                        </button>
+                          <button
+                            onClick={() => onToggleSelect(rec.id)}
+                            aria-pressed={isSelected}
+                            className={`flex-1 py-1.5 rounded-md border text-center transition-colors font-medium ${isSelected ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 font-bold" : "bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 border-white/[0.06]"}`}
+                          >
+                            {isSelected ? "✓ Comparing" : "+ Compare"}
+                          </button>
 
-                        <button
-                          onClick={() => {
-                            if (onAskAI) {
-                              onAskAI(`Synthesize research findings for ${rec.investigation} (${rec.material} under ${rec.gravity}). What are the key fire safety limits?`);
-                            }
-                          }}
-                          className="flex-1 py-1.5 rounded-lg bg-[#141822] hover:bg-[#1d2331] text-cyan-300 border border-cyan-500/40 text-center font-semibold transition-colors flex items-center justify-center gap-1"
-                        >
-                          <Bot className="w-3 h-3 text-cyan-400" />
-                          <span>Ask AI</span>
-                        </button>
+                          <button
+                            onClick={() => {
+                              if (onAskAI) {
+                                onAskAI(`Synthesize research findings for ${rec.investigation} (${rec.material} under ${rec.gravity}). What are the key fire safety limits?`);
+                              }
+                            }}
+                            className="flex-1 py-1.5 rounded-md bg-[#141822] hover:bg-[#1d2331] text-cyan-300 border border-cyan-500/40 text-center font-semibold transition-colors flex items-center justify-center gap-1"
+                          >
+                            <Bot className="w-3 h-3 text-cyan-400" />
+                            <span>Ask AI</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-            {visibleCount < filteredRecords.length && (
-              <div className="flex justify-center pt-2">
-                <button type="button" onClick={() => setVisibleCount((count) => count + 12)} className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm text-slate-200 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400">Show more studies</button>
+                  );
+                })}
               </div>
-            )}
+              {visibleCount < filteredRecords.length && (
+                <div className="flex justify-center pt-2">
+                  <button type="button" onClick={() => setVisibleCount((count) => count + 12)} className="rounded-md border border-white/10 bg-white/[0.04] px-5 py-3 text-sm text-slate-200 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400">Show more studies</button>
+                </div>
+              )}
             </>
           )}
         </section>

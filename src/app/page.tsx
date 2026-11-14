@@ -25,6 +25,7 @@ import { PaperUploadModal } from "../components/PaperUploadModal";
 import { GuidedResearchStepper, GuidedStep } from "../components/GuidedResearchStepper";
 import { generateDeterministicBrief } from "../lib/synthesis";
 import { resolveActiveStudy } from "../lib/active-study";
+import { takeNextAction } from "../lib/guided-actions";
 
 import {
   BuildHypothesisTreeArgs,
@@ -44,6 +45,8 @@ export default function UnifiedWorkspace() {
   // View States: Executive Dashboard vs Research Explorer vs Split Workspace
   const [viewMode, setViewMode] = useState<"dashboard" | "explorer" | "split">("dashboard");
   const [guidedStep, setGuidedStep] = useState<GuidedStep>("explore");
+  const [pendingActions, setPendingActions] = useState<Array<() => void>>([]);
+  const [explorerResetKey, setExplorerResetKey] = useState(0);
 
   // Modal States
   const [isBriefOpen, setIsBriefOpen] = useState(false);
@@ -227,9 +230,8 @@ export default function UnifiedWorkspace() {
 
   const handleReset = () => {
     setQuery({});
-    setSelectedIds(new Set(corpus.map((r) => r.id)));
-    setActiveId(corpus[0]?.id || null);
-    setWhiteboardSynthesis(null);
+    setExplorerFilters({});
+    setExplorerResetKey((key) => key + 1);
   };
 
   // Commit new user-uploaded record into active corpus
@@ -294,11 +296,19 @@ export default function UnifiedWorkspace() {
       />
 
       <main className="min-w-0 flex-1 w-full max-w-[1750px] mx-auto px-4 py-7 md:px-8 lg:px-10 md:py-10 space-y-6">
+        {pendingActions.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 text-sm text-slate-200" role="status">
+            <span>{pendingActions.length} suggested {pendingActions.length === 1 ? "step" : "steps"} remaining</span>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => { const { next, remaining } = takeNextAction(pendingActions); setPendingActions(() => remaining); next?.(); }} className="rounded-lg bg-amber-400 px-3 py-2 text-xs font-semibold text-slate-950 hover:bg-amber-300">Open next step</button>
+              <button type="button" onClick={() => setPendingActions([])} className="rounded-lg px-3 py-2 text-xs text-slate-300 hover:bg-white/[0.06]">Dismiss</button>
+            </div>
+          </div>
+        )}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-400/80">Microgravity research</p>
+            <p className="mb-2 text-[11px] font-semibold text-slate-400">Microgravity research</p>
             <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{viewMode === "dashboard" ? "Overview" : viewMode === "explorer" ? "Explore research" : "Analysis"}</h1>
-            <p className="mt-2 text-sm text-slate-400">{viewMode === "dashboard" ? "Your starting point for combustion evidence." : viewMode === "explorer" ? "Find and inspect studies in the flight corpus." : "Compare investigations and examine their evidence."}</p>
           </div>
           <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-slate-400">{viewMode === "split" ? `${filteredRecords.length} of ${corpus.length}` : corpus.length} studies</span>
         </div>
@@ -394,6 +404,7 @@ export default function UnifiedWorkspace() {
         ) : null}
         <div hidden={viewMode !== "explorer"}>
           <ResearchExplorerGrid
+            key={explorerResetKey}
             records={corpus}
             selectedIds={selectedIds}
             onToggleSelect={handleToggleSelect}
@@ -436,6 +447,10 @@ export default function UnifiedWorkspace() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onCommitRecord={handleCommitNewRecord}
+        onOpenStagingQueue={() => {
+          setIsUploadOpen(false);
+          setIsIngestionOpen(true);
+        }}
       />
 
       {/* Grounded Evidence Brief Modal Drawer */}
@@ -509,7 +524,13 @@ export default function UnifiedWorkspace() {
         }}
         corpus={corpus}
         selectedRecordIds={selectedIds}
+        onRunPipeline={(steps) => {
+          const { next, remaining } = takeNextAction(steps);
+          setPendingActions(() => remaining);
+          next?.();
+        }}
         initialPrompt={assistantInitialPrompt}
+        onConsumeInitialPrompt={() => setAssistantInitialPrompt(null)}
         onInspectClaim={(recId) => {
           setActiveId(recId);
           setIsAssistantOpen(false);
@@ -604,6 +625,10 @@ export default function UnifiedWorkspace() {
         onOpenGraph={() => {
           setIsAssistantOpen(false);
           setIsGraphOpen(true);
+        }}
+        onOpenIngestion={() => {
+          setIsAssistantOpen(false);
+          setIsUploadOpen(true);
         }}
       />
 

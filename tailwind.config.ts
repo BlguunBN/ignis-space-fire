@@ -14,6 +14,13 @@ export default {
         card: "var(--surface-card)",
         elevated: "var(--surface-elevated)",
         subtle: "var(--surface-subtle)",
+        "surface-card": "var(--surface-card)",
+        "surface-canvas": "var(--surface-canvas)",
+        "surface-elevated": "var(--surface-elevated)",
+        "surface-subtle": "var(--surface-subtle)",
+        "surface-active": "var(--surface-active)",
+        "border-default": "var(--border-default)",
+        "border-subtle": "var(--border-subtle)",
       },
       fontFamily: {
         mono: [

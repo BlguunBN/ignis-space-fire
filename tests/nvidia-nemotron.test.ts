@@ -13,7 +13,7 @@ describe("NVIDIA Nemotron 3.5 Lightning Agent Integration", () => {
   test("loads valid NVIDIA NIM configuration and endpoint", () => {
     assert.strictEqual(NVIDIA_CONFIG.baseURL, "https://integrate.api.nvidia.com/v1");
     assert.strictEqual(NVIDIA_CONFIG.model, "nvidia/nemotron-3.5-lightning-30b-a3b");
-    assert.ok(NVIDIA_CONFIG.apiKey.startsWith("nvapi-"));
+    assert.strictEqual(NVIDIA_CONFIG.apiKey, process.env.NVIDIA_API_KEY || "");
   });
 
   test("compiles comprehensive NASA PSI system prompt with authentic flight citations", () => {

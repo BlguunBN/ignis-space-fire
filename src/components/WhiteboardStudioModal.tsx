@@ -25,82 +25,33 @@ export function WhiteboardStudioModal({
   initialTree,
 }: WhiteboardStudioModalProps) {
   const [activeTab, setActiveTab] = useState<"tree" | "sketch">("tree");
+  const [opened, setOpened] = useState(false);
+  const [sketchOpened, setSketchOpened] = useState(false);
 
-  if (!isOpen) return null;
+  React.useEffect(() => { if (isOpen) setOpened(true); }, [isOpen]);
+  if (!isOpen && !opened) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="bg-[#0c0f14] border border-white/[0.08] rounded-xl w-full max-w-7xl h-[92vh] flex flex-col shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="px-5 py-3 border-b border-white/[0.08] bg-[#090a0d] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md bg-amber-400/10 text-amber-400 border border-amber-400/20">
-              <Network className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
-                  STAGE 3 RESEARCH WHITEBOARD STUDIO
-                </span>
-                <span className="text-xs font-mono text-slate-400">
-                  Mind Tree & Freehand Ideation
-                </span>
-              </div>
-              <h2 className="text-sm md:text-base font-semibold text-slate-100 font-sans mt-0.5">
-                Microgravity Experiment & Hypothesis Modeler
-              </h2>
-            </div>
+    <div style={{ display: isOpen ? undefined : "none" }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 backdrop-blur-md sm:p-6">
+      <section role="dialog" aria-modal="true" aria-labelledby="whiteboard-title" className="flex h-[94vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#101216] shadow-2xl">
+        <header className="border-b border-white/[0.08] px-4 py-4 sm:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3"><span className="rounded-xl bg-amber-400/10 p-2.5 text-amber-400"><Network className="h-5 w-5" /></span><div><h2 id="whiteboard-title" className="text-lg font-semibold tracking-tight text-white">Whiteboard</h2><p className="mt-0.5 text-xs text-slate-400">Connect evidence, questions and ideas.</p></div></div>
+            <button type="button" onClick={onClose} aria-label="Close whiteboard" className="rounded-lg p-2 text-slate-400 hover:bg-white/[0.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400"><X className="h-5 w-5" /></button>
           </div>
-
-          {/* Center Canvas Mode Tabs */}
-          <div className="flex items-center gap-1 bg-[#13171e] p-1 rounded-lg border border-white/[0.08] text-xs font-mono">
-            <button
-              onClick={() => setActiveTab("tree")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
-                activeTab === "tree"
-                  ? "bg-amber-400 text-slate-950 font-bold"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <Network className="w-3.5 h-3.5" />
-              <span>Evidence Mind Tree (@xyflow)</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("sketch")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
-                activeTab === "sketch"
-                  ? "bg-amber-400 text-slate-950 font-bold"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <PenTool className="w-3.5 h-3.5" />
-              <span>Freehand Sketch (Excalidraw)</span>
-            </button>
+          <div aria-label="Whiteboard mode" className="mt-4 inline-flex max-w-full gap-1 rounded-xl bg-white/[0.04] p-1 text-sm">
+            <button type="button" onClick={() => setActiveTab("tree")} aria-pressed={activeTab === "tree"} className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${activeTab === "tree" ? "bg-white/[0.10] text-white" : "text-slate-400 hover:text-white"}`}><Network className="h-4 w-4" />Evidence tree</button>
+            <button type="button" onClick={() => { setSketchOpened(true); setActiveTab("sketch"); }} aria-pressed={activeTab === "sketch"} className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${activeTab === "sketch" ? "bg-white/[0.10] text-white" : "text-slate-400 hover:text-white"}`}><PenTool className="h-4 w-4" />Freehand sketch</button>
           </div>
+        </header>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/[0.06] transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <div className="min-h-0 flex-1 bg-[#090a0d] p-2 sm:p-3">
+          <div style={{ display: activeTab === "tree" ? "flex" : "none" }} className="h-full flex-col">
+            <StructuredWhiteboard activeRecord={activeRecord} onExportBrief={onExportBrief} initialPrompt={initialPrompt} initialTree={initialTree} />
+          </div>
+          {sketchOpened && <div style={{ display: activeTab === "sketch" ? "block" : "none" }} className="h-full"><ExcalidrawCanvas /></div>}
         </div>
-
-        {/* Studio Viewport */}
-        <div className="flex-1 p-3 bg-[#090a0d] overflow-hidden flex flex-col">
-          {activeTab === "tree" ? (
-            <StructuredWhiteboard
-              activeRecord={activeRecord}
-              onExportBrief={onExportBrief}
-              initialPrompt={initialPrompt}
-              initialTree={initialTree}
-            />
-          ) : (
-            <ExcalidrawCanvas />
-          )}
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

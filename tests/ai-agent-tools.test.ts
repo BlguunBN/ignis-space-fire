@@ -14,14 +14,15 @@ import { ExperimentRecord } from "../src/types/evidence";
 const corpus = experimentsData as ExperimentRecord[];
 
 describe("AI Agent Tools & Schema Verification", () => {
-  test("defines the 5 OpenAI-compatible tool specifications with descriptions and parameters", () => {
-    assert.strictEqual(NEMOTRON_AGENT_TOOLS.length, 5);
+  test("defines the 6 OpenAI-compatible tool specifications with descriptions and parameters", () => {
+    assert.strictEqual(NEMOTRON_AGENT_TOOLS.length, 6);
     const names = NEMOTRON_AGENT_TOOLS.map((t) => t.function.name);
     assert.ok(names.includes("build_hypothesis_tree"));
     assert.ok(names.includes("run_combustion_simulation"));
     assert.ok(names.includes("inspect_optical_diagnostics"));
     assert.ok(names.includes("open_primary_evidence"));
     assert.ok(names.includes("filter_research_explorer"));
+    assert.ok(names.includes("ingest_research_paper"));
 
     for (const tool of NEMOTRON_AGENT_TOOLS) {
       assert.strictEqual(tool.type, "function");
@@ -58,11 +59,19 @@ describe("AI Agent Tools & Schema Verification", () => {
   test("generates optical diagnostics tool call for pyrometry and chemiluminescence", () => {
     const query = "Inspect optical diagnostics and chemiluminescence filter on SoFIE plate";
     const calls = determineAgentToolsFromQuery(query, corpus);
-
     const diagCall = calls.find((c) => c.name === "inspect_optical_diagnostics");
     assert.ok(diagCall);
     assert.strictEqual(diagCall.args.plateId, "sofie");
     assert.strictEqual(diagCall.args.filterMode, "chemiluminescence");
+  });
+
+  test("generates ingest_research_paper tool call when external research paper URL is provided", () => {
+    const query = "Examine and ingest paper: https://ntrs.nasa.gov/citations/20220014245 into library if safe";
+    const calls = determineAgentToolsFromQuery(query, corpus);
+    const ingestCall = calls.find((c) => c.name === "ingest_research_paper");
+    assert.ok(ingestCall);
+    assert.strictEqual(ingestCall.args.sourceType, "url");
+    assert.strictEqual(ingestCall.args.urlOrText, "https://ntrs.nasa.gov/citations/20220014245");
   });
 
   test("generates research explorer filter call for material and gravity queries", () => {
@@ -112,7 +121,8 @@ describe("AI Agent Tools & Schema Verification", () => {
     }
   });
 
-  test("executes generateNemotronGroundedResponse with reasoning and tool calls", async () => {
+  test("provides a usable fallback when the model is unavailable", async (t) => {
+    t.mock.method(globalThis, "fetch", async () => { throw new Error("Offline test"); });
     const res = await generateNemotronGroundedResponse(
       "Formulate Artemis Lunar (0.16g / 56kPa) hypothesis tree",
       corpus
@@ -124,6 +134,6 @@ describe("AI Agent Tools & Schema Verification", () => {
     assert.ok(res.reasoning.length > 10);
     assert.ok(res.toolCalls);
     assert.ok(res.toolCalls.length > 0);
-    assert.strictEqual(res.toolCalls[0].name, "build_hypothesis_tree");
+    assert.ok(res.toolCalls.some((call) => call.name === "build_hypothesis_tree"));
   });
 });

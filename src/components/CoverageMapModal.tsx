@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { X, Sparkles, Bot, ExternalLink, ArrowRight, Layers } from "lucide-react";
 import { ExperimentRecord, SearchQuery } from "../types/evidence";
+import { BklitRingChart } from "./charts/bklit";
 
 interface CoverageMapModalProps {
   isOpen: boolean;
@@ -173,6 +174,18 @@ export function CoverageMapModal({
                 <span className="text-cyan-400 font-bold text-sm tabular-nums">
                   {matrixData.strongCells} / {matrixData.totalCells}
                 </span>
+              </div>
+
+              <div
+                className="ml-1 border-l border-white/[0.08] pl-2"
+                aria-label={`Coverage: ${matrixData.strongCells} of ${matrixData.totalCells} cells strongly evidenced`}
+              >
+                <BklitRingChart
+                  value={(matrixData.strongCells / matrixData.totalCells) * 100}
+                  height={56}
+                  color="#38bdf8"
+                  trackColor="#0f1720"
+                />
               </div>
             </div>
 

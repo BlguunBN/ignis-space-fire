@@ -882,61 +882,17 @@ export function CombustionSimulatorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150">
-      <div className="w-full max-w-6xl max-h-[92vh] bg-[#090b10] border border-white/[0.08] rounded-xl flex flex-col shadow-2xl overflow-hidden">
-        {/* Modal Header */}
-        <div className="p-3.5 border-b border-white/[0.08] bg-[#0c0f16] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-              <Flame className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold font-mono text-slate-100 uppercase tracking-wider">
-                  Microgravity Combustion Physics & Simulation Engine
-                </h2>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-mono">
-                  FLEX / SoFIE Architecture
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 font-sans mt-0.5">
-                Simulate droplet extinction, sphericity dynamics, and chemiluminescent profiles across NASA flight environments.
-              </p>
-            </div>
+      <section role="dialog" aria-modal="true" aria-labelledby="simulator-title" className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#101216] shadow-2xl">
+        <header className="border-b border-white/[0.08] px-4 py-4 sm:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3"><span className="rounded-xl bg-amber-400/10 p-2.5 text-amber-400"><Flame className="h-5 w-5" /></span><div><h2 id="simulator-title" className="text-lg font-semibold tracking-tight text-white">Combustion simulator</h2><p className="mt-0.5 text-xs text-slate-400">Explore droplet behavior and optical diagnostics.</p></div></div>
+            <button type="button" onClick={onClose} aria-label="Close simulator" className="rounded-lg p-2 text-slate-400 hover:bg-white/[0.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400"><X className="h-5 w-5" /></button>
           </div>
-
-          <div className="flex items-center gap-2">
-            {/* Mode Tabs */}
-            <div className="flex rounded-md bg-white/[0.03] p-0.5 border border-white/[0.06] text-xs font-mono">
-              <button
-                onClick={() => setActiveTab("physics")}
-                className={`px-3 py-1 rounded transition-colors ${
-                  activeTab === "physics"
-                    ? "bg-cyan-500/20 text-cyan-300 font-medium"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                Physics Simulation (d² Law)
-              </button>
-              <button
-                onClick={() => setActiveTab("diagnostics")}
-                className={`px-3 py-1 rounded transition-colors ${
-                  activeTab === "diagnostics"
-                    ? "bg-cyan-500/20 text-cyan-300 font-medium"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                Optical Diagnostics & CV Filter
-              </button>
-            </div>
-
-            <button
-              onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-slate-200 rounded-lg hover:bg-white/[0.04] transition-colors ml-2"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div aria-label="Simulator mode" className="mt-4 inline-flex max-w-full gap-1 rounded-xl bg-white/[0.04] p-1 text-sm">
+            <button type="button" onClick={() => setActiveTab("physics")} aria-pressed={activeTab === "physics"} className={`rounded-lg px-3 py-2 transition-colors ${activeTab === "physics" ? "bg-white/[0.10] text-white" : "text-slate-400 hover:text-white"}`}>Physics simulation</button>
+            <button type="button" onClick={() => setActiveTab("diagnostics")} aria-pressed={activeTab === "diagnostics"} className={`rounded-lg px-3 py-2 transition-colors ${activeTab === "diagnostics" ? "bg-white/[0.10] text-white" : "text-slate-400 hover:text-white"}`}>Optical diagnostics</button>
           </div>
-        </div>
+        </header>
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs">
@@ -1647,7 +1603,7 @@ export function CombustionSimulatorModal({
             </div>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

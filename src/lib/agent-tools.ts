@@ -57,12 +57,20 @@ export interface FilterResearchExplorerArgs {
   searchQuery?: string;
 }
 
+export interface IngestResearchPaperArgs {
+  urlOrText: string;
+  sourceTitle?: string;
+  sourceType: "url" | "text" | "file";
+  rationale: string;
+}
+
 export type AgentToolName =
   | "build_hypothesis_tree"
   | "run_combustion_simulation"
   | "inspect_optical_diagnostics"
   | "open_primary_evidence"
-  | "filter_research_explorer";
+  | "filter_research_explorer"
+  | "ingest_research_paper";
 
 export interface AgentToolCall {
   id: string;
@@ -199,6 +207,23 @@ export const NEMOTRON_AGENT_TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "ingest_research_paper",
+      description: "Scrapes and audits an external scientific paper or experimental dataset via URL or raw text, subjecting it to an adversarial prompt-injection scan and the 5 Harsh Scientific Admission Gates before staging in the flight review queue.",
+      parameters: {
+        type: "object",
+        properties: {
+          urlOrText: { type: "string", description: "Paper URL (e.g. NASA NTRS, arXiv, DOI) or raw extracted text" },
+          sourceTitle: { type: "string", description: "Optional title or citation descriptor" },
+          sourceType: { type: "string", enum: ["url", "text", "file"], description: "Origin type of the document" },
+          rationale: { type: "string", description: "Scientific reason for evaluating and ingesting this paper" },
+        },
+        required: ["urlOrText", "sourceType"],
+      },
+    },
+  },
 ];
 
 /**
@@ -215,6 +240,24 @@ export function determineAgentToolsFromQuery(
 
   const p = queryText.toLowerCase();
   const calls: AgentToolCall[] = [];
+
+  // 0. Paper Ingestion and Scraping Intent (URLs or explicit ingestion keywords)
+  const urlMatch = queryText.match(/https?:\/\/[^\s]+/i);
+  const isIngestIntent = /(ingest|scrape|add paper|upload paper|vet paper|audit paper|exam paper|check paper|evaluate paper|candidate data|data library)/i.test(p);
+  if (urlMatch || isIngestIntent) {
+    const targetUrl = urlMatch ? urlMatch[0] : "";
+    calls.push({
+      id: `call-ingest-${Date.now()}`,
+      name: "ingest_research_paper",
+      status: "dispatched",
+      args: {
+        urlOrText: targetUrl || queryText,
+        sourceType: targetUrl ? "url" : "text",
+        sourceTitle: targetUrl ? "External Scientific Paper" : "Candidate Flight Investigation",
+        rationale: "Scrape and evaluate paper through Adversarial Prompt-Injection Firewall and 5-Gate Scientific Gatekeeper for staging approval.",
+      },
+    });
+  }
 
   // 1. Modeler / Hypothesis intent
   const isModeler = /(formulate|build|synthesize|model|tree|hypothesis|experiment proposal|whiteboard|investigate flammability|cool flame|airflow divergence|limits|lunar)/i.test(p);
@@ -450,6 +493,7 @@ export function determineAgentToolsFromQuery(
   // Deduplicate and arrange in scientific pipeline sequence:
   // Step 1: Filter Explorer -> Step 2: Build Hypothesis -> Step 3: Run Simulation -> Step 4: Diagnostics -> Step 5: Primary PDF
   const order: Record<AgentToolName, number> = {
+    ingest_research_paper: 0,
     filter_research_explorer: 1,
     build_hypothesis_tree: 2,
     run_combustion_simulation: 3,

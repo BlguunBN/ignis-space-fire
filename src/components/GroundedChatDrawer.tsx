@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   X,
   Send,
@@ -13,15 +13,14 @@ import {
   Copy,
   Check,
   RefreshCw,
-  Network,
-  Cpu,
-  BrainCircuit,
   ChevronDown,
   ChevronUp,
-  Zap,
+  BrainCircuit,
   ArrowRight,
   Eye,
   Filter,
+  Cpu,
+  Zap,
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
 import {
@@ -36,6 +35,7 @@ import {
   InspectOpticalDiagnosticsArgs,
   FilterResearchExplorerArgs,
   OpenPrimaryEvidenceArgs,
+  IngestResearchPaperArgs,
 } from "../lib/agent-tools";
 
 interface ChatMessage {
@@ -64,7 +64,19 @@ interface GroundedChatDrawerProps {
   onFilterExplorer?: (args: FilterResearchExplorerArgs) => void;
   onOpenCoverageMap?: () => void;
   onOpenGraph?: () => void;
+  onRunPipeline?: (steps: Array<() => void>) => void;
+  onOpenIngestion?: () => void;
+  onConsumeInitialPrompt?: () => void;
 }
+
+const TOOL_LABELS: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  build_hypothesis_tree: { label: "Hypothesis tree", icon: BrainCircuit, color: "amber" },
+  run_combustion_simulation: { label: "Combustion simulation", icon: Sparkles, color: "cyan" },
+  inspect_optical_diagnostics: { label: "Optical diagnostics", icon: Eye, color: "blue" },
+  filter_research_explorer: { label: "Research explorer filter", icon: Filter, color: "purple" },
+  open_primary_evidence: { label: "Primary source inspection", icon: FileCheck, color: "emerald" },
+  ingest_research_paper: { label: "Paper Ingestion & Gatekeeper Audit", icon: ShieldCheck, color: "cyan" },
+};
 
 export function GroundedChatDrawer({
   isOpen,
@@ -80,6 +92,9 @@ export function GroundedChatDrawer({
   onFilterExplorer,
   onOpenCoverageMap,
   onOpenGraph,
+  onRunPipeline,
+  onOpenIngestion,
+  onConsumeInitialPrompt,
 }: GroundedChatDrawerProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -94,15 +109,108 @@ export function GroundedChatDrawer({
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedReasoning, setExpandedReasoning] = useState<Record<string, boolean>>({});
+  const inputRef = useRef<HTMLInputElement>(null);
+  const loadingRef = useRef(false);
+  const sentPromptRef = useRef<string | null>(null);
 
-  // Auto-send initial prompt if passed
+  const handleSend = useCallback(
+    async (queryText: string) => {
+      const trimmed = queryText.trim();
+      if (!trimmed || loadingRef.current) return;
+
+      loadingRef.current = true;
+      setLoading(true);
+
+      const userMsg: ChatMessage = {
+        id: `user-${Date.now()}`,
+        role: "user",
+        content: trimmed,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+
+      setMessages((prev) => [...prev, userMsg]);
+      setInput("");
+
+      try {
+        // 1. Try Live Route Handler (/api/chat with NVIDIA Nemotron 3.5)
+        let grounded: NemotronResponse;
+
+        try {
+          const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [{ role: "user", content: trimmed }],
+              selectedRecordIds: Array.from(selectedRecordIds),
+            }),
+          });
+
+          if (res.ok) {
+            grounded = await res.json();
+          } else {
+            // Fallback to local deterministic generator
+            let targetCorpus = corpus;
+            if (selectedRecordIds.size > 0) {
+              const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
+              if (filtered.length > 0) targetCorpus = filtered;
+            }
+            const localFallback = generateGroundedAssistantResponse(trimmed, targetCorpus);
+            grounded = {
+              ...localFallback,
+              model: "ignis-deterministic-grounded-fallback",
+            };
+          }
+        } catch (e) {
+          let targetCorpus = corpus;
+          if (selectedRecordIds.size > 0) {
+            const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
+            if (filtered.length > 0) targetCorpus = filtered;
+          }
+          const localFallback = generateGroundedAssistantResponse(trimmed, targetCorpus);
+          grounded = {
+            ...localFallback,
+            model: "ignis-deterministic-grounded-fallback",
+          };
+        }
+
+        const assistantMsg: ChatMessage = {
+          id: `asst-${Date.now()}`,
+          role: "assistant",
+          content: grounded.answer,
+          response: grounded,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+
+        setMessages((prev) => [...prev, assistantMsg]);
+      } catch (err) {
+        const errorMsg: ChatMessage = {
+          id: `err-${Date.now()}`,
+          role: "assistant",
+          content: "Error: Unable to verify citations against the NASA PSI corpus.",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      } finally {
+        loadingRef.current = false;
+        setLoading(false);
+      }
+    },
+    [corpus, selectedRecordIds]
+  );
+
+  // Auto-send initial prompt if passed (strictly at most once per prompt)
   useEffect(() => {
     if (isOpen && initialPrompt && initialPrompt.trim()) {
-      handleSend(initialPrompt);
+      const promptToSend = initialPrompt.trim();
+      if (sentPromptRef.current !== promptToSend) {
+        sentPromptRef.current = promptToSend;
+        onConsumeInitialPrompt?.();
+        handleSend(promptToSend);
+      }
+    } else if (!isOpen) {
+      sentPromptRef.current = null;
     }
-  }, [isOpen, initialPrompt]);
-
-  if (!isOpen) return null;
+  }, [isOpen, initialPrompt, handleSend, onConsumeInitialPrompt]);
 
   const quickPrompts = [
     "Formulate Artemis Lunar (0.16g / 56kPa) hypothesis tree",
@@ -119,108 +227,200 @@ export function GroundedChatDrawer({
     }));
   };
 
-  const handleSend = async (queryText: string) => {
-    if (!queryText.trim() || loading) return;
-
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: queryText.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setLoading(true);
-
-    try {
-      // 1. Try Live Route Handler (/api/chat with NVIDIA Nemotron 3.5)
-      let grounded: NemotronResponse;
-
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [{ role: "user", content: queryText.trim() }],
-            selectedRecordIds: Array.from(selectedRecordIds),
-          }),
-        });
-
-        if (res.ok) {
-          grounded = await res.json();
-        } else {
-          // Fallback to local deterministic generator
-          let targetCorpus = corpus;
-          if (selectedRecordIds.size > 0) {
-            const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
-            if (filtered.length > 0) targetCorpus = filtered;
-          }
-          const localFallback = generateGroundedAssistantResponse(queryText, targetCorpus);
-          grounded = {
-            ...localFallback,
-            model: "ignis-deterministic-grounded-fallback",
-          };
-        }
-      } catch (e) {
-        let targetCorpus = corpus;
-        if (selectedRecordIds.size > 0) {
-          const filtered = corpus.filter((r) => selectedRecordIds.has(r.id));
-          if (filtered.length > 0) targetCorpus = filtered;
-        }
-        const localFallback = generateGroundedAssistantResponse(queryText, targetCorpus);
-        grounded = {
-          ...localFallback,
-          model: "ignis-deterministic-grounded-fallback",
-        };
-      }
-
-      const assistantMsg: ChatMessage = {
-        id: `asst-${Date.now()}`,
-        role: "assistant",
-        content: grounded.answer,
-        response: grounded,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-
-      setMessages((prev) => [...prev, assistantMsg]);
-
-    } catch (err) {
-      const errorMsg: ChatMessage = {
-        id: `err-${Date.now()}`,
-        role: "assistant",
-        content: "Error: Unable to verify citations against the NASA PSI corpus.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const buildPipelineSteps = useCallback(
+    (msg: ChatMessage): Array<() => void> => {
+      const steps: Array<() => void> = [];
+      for (const call of msg.response?.toolCalls ?? []) {
+        if (call.name === "filter_research_explorer" && onFilterExplorer) {
+          steps.push(() => onFilterExplorer(call.args as FilterResearchExplorerArgs));
+        } else if (call.name === "build_hypothesis_tree" && onAddToWhiteboard) {
+          steps.push(() =>
+            onAddToWhiteboard((call.args as BuildHypothesisTreeArgs).question?.title || msg.content, msg.response?.citations, call.args as BuildHypothesisTreeArgs)
+          );
+        } else if (call.name === "run_combustion_simulation" && onRunSimulation) {
+          steps.push(() => onRunSimulation(call.args as RunCombustionSimulationArgs));
+        } else if (call.name === "run_combustion_simulation" && onOpenSimulator) {
+          steps.push(() =>
+            onOpenSimulator((call.args as RunCombustionSimulationArgs).gravity === "0.16g" ? "orion-lunar" : "iss")
+          );
+        } else if (call.name === "inspect_optical_diagnostics" && onOpenDiagnostics) {
+          steps.push(() => onOpenDiagnostics((call.args as InspectOpticalDiagnosticsArgs).plateId, (call.args as InspectOpticalDiagnosticsArgs).filterMode));
+        } else if (call.name === "open_primary_evidence" && (call.args as OpenPrimaryEvidenceArgs).recordId) {
+          steps.push(() => onInspectClaim((call.args as OpenPrimaryEvidenceArgs).recordId));
+        } else if (call.name === "ingest_research_paper" && onOpenIngestion) {
+          steps.push(() => onOpenIngestion());
+        }
+      }
+      return steps;
+    },
+    [onFilterExplorer, onAddToWhiteboard, onRunSimulation, onOpenSimulator, onOpenDiagnostics, onInspectClaim, onOpenIngestion]
+  );
+
+  const renderToolCard = useCallback(
+    (tc: AgentToolCall, tcIdx: number, msg: ChatMessage) => {
+      const info = TOOL_LABELS[tc.name] ?? { label: tc.name, icon: Sparkles, color: "slate" };
+      const isMulti = (msg.response?.toolCalls?.length ?? 0) > 1;
+      const label = isMulti ? `Step ${tcIdx + 1}: ${info.label}` : info.label;
+      const color = info.color;
+      const colorMap: Record<string, string> = {
+        amber: "bg-amber-500/10 border border-amber-500/20 text-amber-300",
+        cyan: "bg-cyan-500/10 border border-cyan-500/20 text-cyan-300",
+        blue: "bg-blue-500/10 border border-blue-500/20 text-blue-300",
+        purple: "bg-purple-500/10 border border-purple-500/20 text-purple-300",
+        emerald: "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300",
+        slate: "bg-slate-700/10 border border-slate-700/20 text-slate-300",
+      };
+      const chipColor = `bg-${color === "slate" ? "slate-700" : color}-500/[0.12] border border-${color}-500/[0.25] text-${color === "slate" ? "slate-400" : color}-300`;
+
+      let onRun: (() => void) | undefined;
+      let buttonVariant: "amber" | "cyan" | "blue" | "purple" | "emerald" | "slate" = color as any;
+      let btnLabel: string;
+      let BtnIcon: React.ElementType;
+
+      if (tc.name === "build_hypothesis_tree") {
+        const args = tc.args as BuildHypothesisTreeArgs;
+        onRun = () => {
+          if (onAddToWhiteboard) {
+            onAddToWhiteboard(args.question?.title || msg.content, msg.response!.citations, args);
+          }
+          onClose?.();
+        };
+        btnLabel = "Open & Inspect Modeler";
+        BtnIcon = Sparkles;
+        buttonVariant = "amber";
+      } else if (tc.name === "run_combustion_simulation") {
+        const args = tc.args as RunCombustionSimulationArgs;
+        onRun = () => {
+          if (onRunSimulation) {
+            onRunSimulation(args);
+          } else if (onOpenSimulator) {
+            onOpenSimulator(args.gravity === "0.16g" ? "orion-lunar" : "iss");
+          }
+          onClose?.();
+        };
+        btnLabel = "Launch & View Simulation";
+        BtnIcon = ArrowRight;
+        buttonVariant = "blue";
+      } else if (tc.name === "inspect_optical_diagnostics") {
+        const args = tc.args as InspectOpticalDiagnosticsArgs;
+        onRun = () => {
+          if (onOpenDiagnostics) {
+            onOpenDiagnostics(args.plateId, args.filterMode);
+          }
+          onClose?.();
+        };
+        btnLabel = "Inspect Optical Plate";
+        BtnIcon = Eye;
+        buttonVariant = "blue";
+      } else if (tc.name === "filter_research_explorer") {
+        const args = tc.args as FilterResearchExplorerArgs;
+        onRun = () => {
+          if (onFilterExplorer) {
+            onFilterExplorer(args);
+          }
+          onClose?.();
+        };
+        btnLabel = "View Filtered Records";
+        BtnIcon = Filter;
+        buttonVariant = "purple";
+      } else if (tc.name === "open_primary_evidence") {
+        const args = tc.args as OpenPrimaryEvidenceArgs;
+        onRun = () => {
+          if (onInspectClaim && args.recordId) {
+            onInspectClaim(args.recordId);
+          }
+          onClose?.();
+        };
+        btnLabel = "Inspect Source Details";
+        BtnIcon = FileCheck;
+        buttonVariant = "emerald";
+      } else if (tc.name === "ingest_research_paper") {
+        onRun = () => {
+          if (onOpenIngestion) {
+            onOpenIngestion();
+          }
+          onClose?.();
+        };
+        btnLabel = "Audit & Ingest Paper";
+        BtnIcon = ShieldCheck;
+        buttonVariant = "cyan";
+      } else {
+        return null;
+      }
+
+      const btnColorMap: Record<string, string> = {
+        amber: "bg-amber-400 hover:bg-amber-300 text-slate-950",
+        cyan: "bg-cyan-400 hover:bg-cyan-300 text-slate-950",
+        blue: "bg-blue-400 hover:bg-blue-300 text-slate-950",
+        purple: "bg-purple-400 hover:bg-purple-300 text-slate-950",
+        emerald: "bg-emerald-400 hover:bg-emerald-300 text-slate-950",
+        slate: "bg-slate-400 hover:bg-slate-300 text-slate-950",
+      };
+
+      return (
+        <div key={tcIdx} className="p-3 rounded-lg border hairline flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[11px] font-mono font-bold">
+              <info.icon className={`w-3.5 h-3.5 ${colorMap[color]}`} />
+              <span>{label}</span>
+            </div>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-md font-medium border hairline {chipColor}">
+              Ready to run
+            </span>
+          </div>
+          {onRun && (
+            <button
+              onClick={onRun}
+              className={`w-full py-1.5 px-3 rounded-md font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${btnColorMap[buttonVariant]}`}
+            >
+              <BtnIcon className="w-3.5 h-3.5" />
+              <span>{btnLabel}</span>
+              <ArrowRight className="w-3 h-3 ml-0.5" />
+            </button>
+          )}
+        </div>
+      );
+    },
+    [onAddToWhiteboard, onRunSimulation, onOpenSimulator, onOpenDiagnostics, onFilterExplorer, onInspectClaim, onOpenIngestion, onClose]
+  );
+
+  // Early return is placed AFTER ALL HOOKS to strictly preserve hook ordering
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-2xl bg-[#101216] border-l border-white/[0.08] flex flex-col h-full shadow-2xl animate-in slide-in-from-right duration-200">
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      aria-modal="true"
+      role="dialog"
+      aria-label="Research assistant"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="w-full max-w-2xl bg-[#0a0d14] border-l border-white/[0.1] flex flex-col h-full shadow-2xl relative z-10 animate-in slide-in-from-right duration-200"
+        style={{ outline: "none" }}
+      >
         {/* Drawer Header */}
-        <div className="px-6 py-5 border-b border-white/[0.08] bg-[#101216] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+        <div className="px-6 py-4 border-b border-white/[0.08] bg-[#0d111a] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
               <Bot className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-100">
-                <span>Research assistant</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                <span>Research intelligence assistant</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 font-mono">
                   <Cpu className="w-2.5 h-2.5" /> Nemotron 30B
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400 mt-0.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
                 <span>NVIDIA Nemotron-3.5-Lightning • NASA PSI Grounded</span>
               </div>
@@ -240,15 +440,16 @@ export function GroundedChatDrawer({
                   },
                 ])
               }
-              className="p-1.5 text-slate-400 hover:text-slate-200 rounded hover:bg-white/[0.04] transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-200 rounded-md hover:bg-white/[0.06] transition-colors"
               title="Reset conversation"
+              aria-label="Reset conversation"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onClose}
               aria-label="Close assistant"
-              className="p-1.5 text-slate-400 hover:text-slate-200 rounded hover:bg-white/[0.04] transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-200 rounded-md hover:bg-white/[0.06] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -256,15 +457,13 @@ export function GroundedChatDrawer({
         </div>
 
         {/* Message Thread Viewport */}
-        <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-7 space-y-6 font-sans text-sm">
+        <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-7 space-y-5 font-sans text-sm bg-[#0a0d14]">
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex flex-col space-y-1.5 ${
-                msg.role === "user" ? "items-end" : "items-start"
-              }`}
+              className={`flex flex-col space-y-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}
             >
-              <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500 px-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-500 px-1">
                 {msg.role === "user" ? (
                   <>
                     <span>Researcher</span>
@@ -280,25 +479,27 @@ export function GroundedChatDrawer({
               </div>
 
               <div
-                className={`p-4 rounded-2xl max-w-[95%] leading-relaxed ${
+                className={`p-4 rounded-2xl max-w-[92%] leading-relaxed shadow-lg ${
                   msg.role === "user"
-                    ? "bg-amber-400/10 border border-amber-400/20 text-slate-100"
-                    : "bg-[#13171e] border border-white/[0.06] text-slate-200"
+                    ? "bg-cyan-950/30 border border-cyan-500/30 text-slate-100 rounded-tr-sm"
+                    : "bg-[#11151f] border border-white/[0.08] text-slate-200 rounded-tl-sm space-y-3"
                 }`}
               >
                 {/* Nemotron Thinking / Reasoning Process Dropdown */}
                 {msg.response?.reasoning && (
-                  <div className="mb-2.5 rounded-lg border border-amber-500/20 bg-[#07090e] overflow-hidden text-[11px] font-mono shadow-inner">
+                  <div className="mb-3 rounded-lg border border-white/[0.08] bg-[#0c0f16] overflow-hidden text-[11px] font-mono">
                     <button
                       onClick={() => toggleReasoning(msg.id)}
-                      className="w-full px-3 py-2 flex items-center justify-between bg-amber-500/[0.05] hover:bg-amber-500/[0.08] text-slate-300 transition-colors text-left border-b border-amber-500/10"
+                      className="w-full px-3 py-2 flex items-center justify-between bg-white/[0.03] hover:bg-white/[0.06] text-slate-300 transition-colors text-left border-b border-white/[0.06]"
+                      aria-expanded={expandedReasoning[msg.id]}
+                      aria-label="Toggle response details"
                     >
-                      <span className="flex items-center gap-2 text-[11px] text-amber-300 font-semibold">
-                        <BrainCircuit className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                      <span className="flex items-center gap-2 text-[11px] text-slate-300 font-semibold">
+                        <BrainCircuit className="w-3.5 h-3.5 text-cyan-400" />
                         <span>Response details</span>
                       </span>
                       <span className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                        <span className="px-1.5 py-0.5 rounded-md bg-white/[0.06] text-slate-300 border border-white/[0.1] font-semibold">
                           Model output
                         </span>
                         {expandedReasoning[msg.id] ? (
@@ -309,11 +510,11 @@ export function GroundedChatDrawer({
                       </span>
                     </button>
                     {expandedReasoning[msg.id] && (
-                      <div className="p-3 text-slate-300 text-[10px] leading-relaxed max-h-72 overflow-y-auto font-mono select-text bg-[#05070a] border-t border-white/[0.04] space-y-1">
+                      <div className="p-3 text-slate-300 text-[10px] leading-relaxed max-h-72 overflow-y-auto font-mono space-y-1 bg-black/40">
                         {msg.response.reasoning.split("\n").map((line, idx) => {
                           if (line.startsWith("[")) {
                             return (
-                              <div key={idx} className="text-cyan-300 font-bold mt-2 pt-1 border-t border-white/[0.04] tracking-wide">
+                              <div key={idx} className="text-cyan-400 font-bold mt-2 pt-1 border-t border-white/[0.06]">
                                 {line}
                               </div>
                             );
@@ -337,13 +538,13 @@ export function GroundedChatDrawer({
                 )}
 
                 {/* Synthesis Answer */}
-                <div className="whitespace-pre-wrap">{msg.content}</div>
+                <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
 
                 {/* Citation Pills on Assistant Responses */}
                 {msg.response && msg.response.citations.length > 0 && (
-                  <div className="mt-3 pt-2.5 border-t border-white/[0.06] space-y-1.5">
-                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                      Sources (select to inspect):
+                  <div className="mt-3 pt-2.5 border-t border-white/[0.08] space-y-1.5">
+                    <span className="text-[11px] font-mono text-slate-400 block">
+                      Verified flight sources (select to inspect):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {msg.response.citations.map((c, i) => (
@@ -353,11 +554,13 @@ export function GroundedChatDrawer({
                             onInspectClaim(c.recordId);
                             onClose();
                           }}
-                          className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 transition-colors cursor-pointer"
-                          title={`Click to inspect primary source for ${c.investigation} on page ${c.pageNumber}`}
+                          className="text-[11px] font-mono font-medium px-2 py-1 rounded bg-white/[0.04] hover:bg-cyan-500/10 text-cyan-300 hover:text-cyan-200 border border-white/[0.08] hover:border-cyan-500/30 transition-colors flex items-center gap-1"
+                          title={c.quote}
+                          aria-label={`Inspect source ${c.claimId} page ${c.pageNumber}`}
                         >
                           <FileCheck className="w-3 h-3" />
-                          <span>{c.claimId} (p.{c.pageNumber})</span>
+                          <span>{c.claimId}</span>
+                          <span className="text-slate-500 text-[10px]">(p.{c.pageNumber})</span>
                         </button>
                       ))}
                     </div>
@@ -366,10 +569,10 @@ export function GroundedChatDrawer({
 
                 {/* Boundary Warnings */}
                 {msg.response && msg.response.boundaryWarnings.length > 0 && (
-                  <div className="mt-2.5 p-2 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] font-mono text-amber-300 space-y-1">
+                  <div className="mt-2.5 p-2.5 rounded-lg border border-amber-500/20 bg-amber-500/10 text-[11px] font-mono text-amber-300 space-y-1">
                     <div className="flex items-center gap-1 font-semibold">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Physical Boundary Guard</span>
+                      <span>Physical boundary guard</span>
                     </div>
                     {msg.response.boundaryWarnings.map((w, i) => (
                       <p key={i} className="text-slate-300 text-[10px]">
@@ -379,270 +582,42 @@ export function GroundedChatDrawer({
                   </div>
                 )}
 
-                {/* AI Agent Interactive Execution Cards (Option A: Choose an action) */}
+                {/* AI Agent Tool-Call Execution Cards */}
                 {msg.role === "assistant" && msg.id !== "init" && msg.response && (
-                  <div className="mt-3 pt-2.5 border-t border-white/[0.06] space-y-2.5">
-                    {/* Render Structured Tool Call Execution Cards */}
+                  <div className="mt-3 pt-2.5 border-t border-white/[0.08] space-y-2">
                     {msg.response.toolCalls && msg.response.toolCalls.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-[10px] font-mono">
-                          <span className="text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                            <Zap className="w-3 h-3 fill-current text-emerald-400" />
-                            <span>Autonomous Research Pipeline ({msg.response.toolCalls.length} Steps):</span>
+                      <>
+                        <div className="flex items-center justify-between text-[11px] font-mono">
+                          <span className="text-cyan-400 font-bold flex items-center gap-1.5">
+                            <Zap className="w-3 h-3 fill-current text-cyan-400" />
+                            <span>Suggested research steps ({msg.response.toolCalls.length}):</span>
                           </span>
-                          <span className="text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20 text-[9px]">
-                            {msg.response.toolCalls.length > 1 ? "Multi-Step Sequence" : "Single Action"}
+                          <span className="text-cyan-400/80 bg-cyan-500/10 px-1.5 py-0.5 rounded-md border border-cyan-500/20 text-[9px]">
+                            {msg.response.toolCalls.length > 1 ? "Guided sequence" : "Single action"}
                           </span>
                         </div>
 
-                        {msg.response.toolCalls.length > 1 && (
+                        {msg.response.toolCalls.length > 1 && onRunPipeline && (
                           <button
                             type="button"
                             onClick={() => {
-                              const filterCall = msg.response?.toolCalls?.find((c) => c.name === "filter_research_explorer");
-                              const treeCall = msg.response?.toolCalls?.find((c) => c.name === "build_hypothesis_tree");
-                              const simCall = msg.response?.toolCalls?.find((c) => c.name === "run_combustion_simulation");
-                              const diagCall = msg.response?.toolCalls?.find((c) => c.name === "inspect_optical_diagnostics");
-                              const claimCall = msg.response?.toolCalls?.find((c) => c.name === "open_primary_evidence");
-
-                              if (filterCall && onFilterExplorer) {
-                                onFilterExplorer(filterCall.args as any);
-                              }
-                              if (treeCall && onAddToWhiteboard) {
-                                onAddToWhiteboard((treeCall.args as any).question?.title || msg.content, msg.response!.citations, treeCall.args as any);
-                              }
-                              if (simCall && onRunSimulation) {
-                                onRunSimulation(simCall.args as any);
-                              } else if (simCall && onOpenSimulator) {
-                                onOpenSimulator((simCall.args as any).gravity === "0.16g" ? "orion-lunar" : "iss");
-                              }
-                              if (diagCall && onOpenDiagnostics) {
-                                onOpenDiagnostics((diagCall.args as any).plateId, (diagCall.args as any).filterMode);
-                              }
-                              if (claimCall && onInspectClaim && (claimCall.args as any).recordId) {
-                                onInspectClaim((claimCall.args as any).recordId);
-                              }
-
+                              const steps = buildPipelineSteps(msg);
+                              onRunPipeline(steps);
                               onClose();
                             }}
-                            className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold flex items-center justify-center gap-2 transition-all shadow-md text-xs cursor-pointer active:scale-95 group mb-1.5"
+                            className="w-full py-2 px-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-2 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow"
                           >
-                            <Zap className="w-3.5 h-3.5 fill-current group-hover:scale-110 transition-transform" />
-                            <span>⚡ Run Autonomous Pipeline ({msg.response.toolCalls.length} Steps)</span>
+                            <Zap className="w-3.5 h-3.5 fill-current" />
+                            <span>Start guided sequence</span>
                           </button>
                         )}
 
-                        {msg.response.toolCalls.map((tc, tcIdx) => {
-                          if (tc.name === "build_hypothesis_tree") {
-                            const args = tc.args as BuildHypothesisTreeArgs;
-                            return (
-                              <div
-                                key={tcIdx}
-                                className="p-3 rounded-lg bg-amber-400/[0.08] border border-amber-400/30 flex flex-col gap-2 shadow-sm"
-                              >
-                                <div className="flex items-center justify-between text-[11px] font-mono">
-                                  <div className="flex items-center gap-1.5 text-amber-300 font-bold">
-                                    <Network className="w-3.5 h-3.5 text-amber-400" />
-                                    <span>{msg.response.toolCalls.length > 1 ? `Step ${tcIdx + 1}: Hypothesis tree formulated` : "Hypothesis tree suggested"}</span>
-                                  </div>
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    Ready to open
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-slate-300 space-y-1 font-mono">
-                                  <div>
-                                    <span className="text-slate-500">Hypothesis:</span>{" "}
-                                    <span className="text-slate-100 font-semibold">{args.hypothesis?.title || "Thermodynamic Mechanism"}</span>
-                                  </div>
-                                  <div className="truncate">
-                                    <span className="text-slate-500">Facility:</span>{" "}
-                                    <span className="text-cyan-300">{args.validationExperiment?.facility}</span> •{" "}
-                                    <span className="text-amber-300">{args.validationExperiment?.airflow}</span>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    if (onAddToWhiteboard) {
-                                      onAddToWhiteboard(args.question?.title || msg.content, msg.response!.citations, args);
-                                    }
-                                    onClose();
-                                  }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
-                                >
-                                  <Sparkles className="w-3.5 h-3.5 fill-current" />
-                                  <span>Open & Inspect Modeler (Stage 3)</span>
-                                  <ArrowRight className="w-3 h-3 ml-0.5" />
-                                </button>
-                              </div>
-                            );
-                          }
-
-                          if (tc.name === "run_combustion_simulation") {
-                            const args = tc.args as RunCombustionSimulationArgs;
-                            return (
-                              <div
-                                key={tcIdx}
-                                className="p-3 rounded-lg bg-cyan-500/[0.08] border border-cyan-500/30 flex flex-col gap-2 shadow-sm"
-                              >
-                                <div className="flex items-center justify-between text-[11px] font-mono">
-                                  <div className="flex items-center gap-1.5 text-cyan-300 font-bold">
-                                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                                    <span>{msg.response.toolCalls.length > 1 ? `Step ${tcIdx + 1}: Simulation parameters configured` : "Simulation parameters suggested"}</span>
-                                  </div>
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    Ready to open
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-slate-300 font-mono space-y-0.5">
-                                  <div>
-                                    <span className="text-slate-500">Regime:</span>{" "}
-                                    <span className="text-cyan-300 font-semibold">{args.gravity}</span> •{" "}
-                                    <span className="text-amber-300">{args.oxygenPct}% O₂</span> •{" "}
-                                    <span className="text-slate-200">{args.pressureAtm} atm</span> •{" "}
-                                    <span className="text-emerald-300">{args.fuel}</span>
-                                  </div>
-                                  <div className="text-slate-400 truncate">
-                                    {args.description}
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    if (onRunSimulation) {
-                                      onRunSimulation(args);
-                                    } else if (onOpenSimulator) {
-                                      onOpenSimulator(args.gravity === "0.16g" ? "orion-lunar" : "iss");
-                                    }
-                                    onClose();
-                                  }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
-                                >
-                                  <span>🚀 Launch & View Simulation</span>
-                                  <ArrowRight className="w-3 h-3 ml-0.5" />
-                                </button>
-                              </div>
-                            );
-                          }
-
-                          if (tc.name === "inspect_optical_diagnostics") {
-                            const args = tc.args as InspectOpticalDiagnosticsArgs;
-                            return (
-                              <div
-                                key={tcIdx}
-                                className="p-3 rounded-lg bg-blue-500/[0.08] border border-blue-500/30 flex flex-col gap-2 shadow-sm"
-                              >
-                                <div className="flex items-center justify-between text-[11px] font-mono">
-                                  <div className="flex items-center gap-1.5 text-blue-300 font-bold">
-                                    <Eye className="w-3.5 h-3.5 text-blue-400" />
-                                    <span>{msg.response.toolCalls.length > 1 ? `Step ${tcIdx + 1}: Optical diagnostics calibrated` : "Optical diagnostics suggested"}</span>
-                                  </div>
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    Ready to open
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-slate-300 font-mono">
-                                  <span>Target:</span>{" "}
-                                  <span className="text-blue-300 font-semibold">{args.plateId?.toUpperCase()} Flight Plate</span> •{" "}
-                                  <span className="text-cyan-300 font-semibold">{args.filterMode} Mode</span>
-                                  <div className="text-slate-400 truncate mt-0.5">{args.rationale}</div>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    if (onOpenDiagnostics) {
-                                      onOpenDiagnostics(args.plateId, args.filterMode);
-                                    }
-                                    onClose();
-                                  }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
-                                >
-                                  <span>🔬 Inspect Optical Plate & CV Filter</span>
-                                  <ArrowRight className="w-3 h-3 ml-0.5" />
-                                </button>
-                              </div>
-                            );
-                          }
-
-                          if (tc.name === "filter_research_explorer") {
-                            const args = tc.args as FilterResearchExplorerArgs;
-                            return (
-                              <div
-                                key={tcIdx}
-                                className="p-3 rounded-lg bg-purple-500/[0.08] border border-purple-500/30 flex flex-col gap-2 shadow-sm"
-                              >
-                                <div className="flex items-center justify-between text-[11px] font-mono">
-                                  <div className="flex items-center gap-1.5 text-purple-300 font-bold">
-                                    <Filter className="w-3.5 h-3.5 text-purple-400" />
-                                    <span>{msg.response.toolCalls.length > 1 ? `Step ${tcIdx + 1}: Research explorer filters isolated` : "Research filters suggested"}</span>
-                                  </div>
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    Ready to apply
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-slate-300 font-mono">
-                                  <span>Filters:</span>{" "}
-                                  {args.searchQuery && <span className="text-purple-300 font-semibold">"{args.searchQuery}" </span>}
-                                  {args.gravityRegimes && <span className="text-cyan-300">[{args.gravityRegimes.join(", ")}] </span>}
-                                  {args.materialClasses && <span className="text-amber-300">{args.materialClasses.join(", ")}</span>}
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    if (onFilterExplorer) {
-                                      onFilterExplorer(args);
-                                    }
-                                    onClose();
-                                  }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
-                                >
-                                  <span>📊 View Filtered Records in Explorer</span>
-                                  <ArrowRight className="w-3 h-3 ml-0.5" />
-                                </button>
-                              </div>
-                            );
-                          }
-
-                          if (tc.name === "open_primary_evidence") {
-                            const args = tc.args as OpenPrimaryEvidenceArgs;
-                            return (
-                              <div
-                                key={tcIdx}
-                                className="p-3 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/30 flex flex-col gap-2 shadow-sm"
-                              >
-                                <div className="flex items-center justify-between text-[11px] font-mono">
-                                  <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
-                                    <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                    <span>{msg.response.toolCalls.length > 1 ? `Step ${tcIdx + 1}: Primary evidence source grounded` : "Source inspection suggested"}</span>
-                                  </div>
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    Ready to inspect
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-slate-300 font-mono">
-                                  <span>Claim ID:</span>{" "}
-                                  <span className="text-emerald-300 font-semibold">{args.claimId}</span> •{" "}
-                                  <span className="text-slate-400">Record: {args.recordId}</span>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    if (onInspectClaim && args.recordId) {
-                                      onInspectClaim(args.recordId);
-                                    }
-                                    onClose();
-                                  }}
-                                  className="w-full py-1.5 px-3 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs cursor-pointer active:scale-95"
-                                >
-                                  <span>Inspect source details</span>
-                                  <ArrowRight className="w-3 h-3 ml-0.5" />
-                                </button>
-                              </div>
-                            );
-                          }
-
-                          return null;
-                        })}
-                      </div>
+                        {msg.response.toolCalls.map((tc, tcIdx) => renderToolCard(tc, tcIdx, msg))}
+                      </>
                     ) : (
                       /* Fallback Manual Launch Actions if no specific tool calls were emitted */
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
+                        <span className="text-[11px] font-mono text-cyan-400 block flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-cyan-400" />
                           <span>Research shortcuts:</span>
                         </span>
@@ -650,36 +625,38 @@ export function GroundedChatDrawer({
                           {onAddToWhiteboard && (
                             <button
                               onClick={() => {
-                                const userQuery = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === "user")?.content || msg.content;
+                                const userQuery =
+                                  messages.slice(0, messages.findIndex((m) => m.id === msg.id)).reverse().find((m) => m.role === "user")?.content ||
+                                  msg.content;
                                 onAddToWhiteboard(userQuery, msg.response!.citations);
                               }}
-                              className="px-2 py-1 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 transition-colors"
+                              className="px-2.5 py-1 rounded-md bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 transition-colors text-xs"
                             >
-                              <span>🚀 Open in Modeler</span>
+                              <span>Open in Modeler</span>
                             </button>
                           )}
                           {onOpenSimulator && (
                             <button
                               onClick={() => onOpenSimulator(msg.content.toLowerCase().includes("lunar") ? "orion-lunar" : "iss")}
-                              className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 transition-colors"
+                              className="px-2.5 py-1 rounded-md bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 flex items-center gap-1 transition-colors text-xs"
                             >
-                              <span>🚀 Open Simulation</span>
+                              <span>Open Simulation</span>
                             </button>
                           )}
                           {onOpenDiagnostics && (
                             <button
                               onClick={() => onOpenDiagnostics(msg.content.toLowerCase().includes("pmma") ? "sofie" : "rtdfs")}
-                              className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1 transition-colors"
+                              className="px-2.5 py-1 rounded-md bg-blue-400/10 hover:bg-blue-400/20 text-blue-300 border border-blue-400/30 flex items-center gap-1 transition-colors text-xs"
                             >
-                              <span>🔬 Diagnostics</span>
+                              <span>Diagnostics</span>
                             </button>
                           )}
                           {onOpenCoverageMap && (
                             <button
                               onClick={onOpenCoverageMap}
-                              className="px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors"
+                              className="px-2.5 py-1 rounded-md bg-purple-400/10 hover:bg-purple-400/20 text-purple-300 border border-purple-400/30 flex items-center gap-1 transition-colors text-xs"
                             >
-                              <span>🗺️ Coverage Gaps</span>
+                              <span>Coverage Gaps</span>
                             </button>
                           )}
                         </div>
@@ -688,16 +665,15 @@ export function GroundedChatDrawer({
                   </div>
                 )}
 
-                {/* Actions: Send to Whiteboard + Copy */}
-
-                {/* Actions: Send to Whiteboard + Copy */}
+                {/* Actions: Copy */}
                 {msg.role === "assistant" && msg.id !== "init" && (
-                  <div className="mt-2 pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono">
-                    <span className="text-slate-500 text-[10px]">Review cited sources and limitations</span>
+                  <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-slate-500 text-[11px]">Review cited sources and limitations</span>
 
                     <button
                       onClick={() => handleCopy(msg.id, msg.content)}
                       className="flex items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors"
+                      aria-label={copiedId === msg.id ? "Copied to clipboard" : "Copy message"}
                     >
                       {copiedId === msg.id ? (
                         <>
@@ -716,27 +692,27 @@ export function GroundedChatDrawer({
           ))}
 
           {loading && (
-            <div className="flex items-center gap-2.5 text-xs font-mono text-slate-300 bg-[#13171e] p-3 rounded-lg border border-amber-400/20 w-fit animate-pulse">
-              <Bot className="w-4 h-4 text-amber-400 animate-spin" />
+            <div className="flex items-center gap-3 p-3.5 rounded-xl border border-white/[0.08] bg-[#10141d] w-fit shadow-md">
+              <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
               <div className="flex flex-col">
-                <span className="text-amber-300 font-semibold text-[11px]">Searching and preparing an answer…</span>
-                <span className="text-[10px] text-slate-400">Thinking and grounding against NASA PSI flight records</span>
+                <span className="text-cyan-400 font-semibold text-xs font-mono">Searching and preparing an answer…</span>
+                <span className="text-[11px] text-slate-400 font-sans">Thinking and grounding against NASA PSI flight records</span>
               </div>
             </div>
           )}
         </div>
 
         {/* Quick Prompts */}
-        <div className="p-2 border-t border-white/[0.04] bg-[#090a0d] overflow-x-auto">
+        <div className="px-4 py-2.5 border-t border-white/[0.08] bg-[#0c0f16] overflow-x-auto shrink-0">
           <div className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-mono">
-            <span className="text-slate-400 text-[10px] flex items-center gap-0.5 mr-1">
-              <Sparkles className="w-3 h-3 text-amber-400" /> Prompts:
+            <span className="text-slate-400 text-[10px] flex items-center gap-1 mr-1">
+              <Sparkles className="w-3 h-3 text-cyan-400" /> Prompts:
             </span>
             {quickPrompts.map((qp, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSend(qp)}
-                className="px-2 py-0.5 rounded border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.06] text-slate-300 hover:text-slate-100 transition-colors"
+                className="px-2.5 py-1 rounded-md border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-slate-100 transition-colors text-xs"
               >
                 {qp}
               </button>
@@ -745,7 +721,7 @@ export function GroundedChatDrawer({
         </div>
 
         {/* Input Bar */}
-        <div className="p-3 border-t border-white/[0.08] bg-[#0c0f14]">
+        <div className="p-4 border-t border-white/[0.08] bg-[#0d111a] shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -754,23 +730,25 @@ export function GroundedChatDrawer({
             className="flex items-center gap-2"
           >
             <input
+              ref={inputRef}
               aria-label="Ask a research question"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask combustion questions (e.g. Saffire flame spread rates)..."
-              className="flex-1 bg-[#13171e] border border-white/[0.08] rounded-md px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400/60 font-sans"
+              className="flex-1 bg-[#131722] border border-white/[0.12] rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500 font-sans"
             />
             <button
               type="submit"
               aria-label="Send message"
               disabled={!input.trim() || loading}
-              className="px-3 py-2 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold text-xs flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-4 h-4" />
+              <span>Send</span>
             </button>
           </form>
-          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2 px-1">
+          <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-2 px-1">
             <span>NVIDIA Nemotron 30B • RAG Grounding</span>
             <span>Check sources and limitations</span>
           </div>

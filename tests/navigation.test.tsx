@@ -11,4 +11,5 @@ test("workspace navigation exposes the active view and research tools", () => {
   assert.match(html, /aria-current="page"[^>]*>.*?Explore/);
   assert.match(html, /AI Assistant/);
   assert.match(html, /Evidence brief/);
+  assert.match(html, /aria-label="Collapse navigation"/);
 });

@@ -118,10 +118,10 @@ export function ComparisonTable({
         header: () => (
           <button
             onClick={handleNameSort}
-            className="flex items-center gap-1.5 hover:text-white transition-colors group font-mono text-[10px] uppercase text-slate-400 text-left"
+            className="flex items-center gap-1.5 hover:text-white transition-colors group font-mono text-[11px] text-slate-400 text-left"
             title="Click to sort alphabetically"
           >
-            <span>Investigation & Platform</span>
+            <span>Investigation</span>
             {currentSort === "name_asc" ? (
               <ArrowUp className="w-3 h-3 text-amber-400" />
             ) : currentSort === "name_desc" ? (
@@ -151,9 +151,9 @@ export function ComparisonTable({
       {
         accessorKey: "conditions",
         header: () => (
-          <div className="flex items-center justify-between text-[10px] font-mono uppercase text-slate-400">
-            <span>Physical Conditions</span>
-            <div className="flex items-center gap-1 font-mono text-[9px] lowercase">
+          <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span>Physical conditions</span>
+            <div className="flex items-center gap-1 font-mono text-[11px]">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -227,7 +227,7 @@ export function ComparisonTable({
                   {rec.airflow_cm_s != null ? `${rec.airflow_cm_s} cm/s` : "0 cm/s"}
                 </span>
               </div>
-              <div className="text-[10px] text-slate-400 truncate max-w-[150px]">
+              <div className="text-[11px] text-slate-400 truncate max-w-[150px]">
                 <span>{rec.pressure_kpa != null ? `${rec.pressure_kpa} kPa` : "101.3 kPa"}</span>
                 <span className="text-white/20 mx-1">•</span>
                 <span>{rec.material}</span>
@@ -239,7 +239,7 @@ export function ComparisonTable({
       {
         accessorKey: "applicability",
         header: () => (
-          <div className="text-left font-mono text-[10px] uppercase text-slate-400">
+          <div className="text-left font-mono text-[11px] text-slate-400">
             Applicability
           </div>
         ),
@@ -288,7 +288,7 @@ export function ComparisonTable({
 
   if (records.length === 0) {
     return (
-      <div className="p-8 text-center bg-[#0c0f14] border border-white/[0.08] rounded-xl">
+      <div className="p-8 text-center rounded-lg border border-white/[0.08] bg-[#13171e]">
         <Info className="w-5 h-5 text-slate-500 mx-auto mb-2" />
         <p className="text-xs font-mono text-slate-300">No indexed investigations match this inquiry.</p>
         <p className="text-[11px] text-slate-500 mt-1">Try loosening physical filters or keywords.</p>
@@ -297,10 +297,10 @@ export function ComparisonTable({
   }
 
   return (
-    <div className="border border-white/[0.08] rounded-xl overflow-hidden bg-[#0c0f14] shadow-lg">
+    <div className="border border-white/[0.09] rounded-lg overflow-hidden bg-[#13171e]">
       <div className="max-h-[520px] overflow-y-auto">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-[#13171e] text-slate-400 font-mono text-[10px] uppercase tracking-wider sticky top-0 z-10 border-b border-white/[0.08]">
+          <thead className="bg-[#13171e] text-slate-400 font-mono text-[11px] sticky top-0 z-10 border-b border-white/[0.08]">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
