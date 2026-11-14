@@ -12,6 +12,8 @@ import {
   ArrowRightLeft,
   Network,
   Bot,
+  Share2,
+  FileUp,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -23,6 +25,8 @@ interface HeaderProps {
   onOpenSources: () => void;
   onOpenWhiteboard?: () => void;
   onOpenAssistant?: () => void;
+  onOpenGraph?: () => void;
+  onOpenIngestion?: () => void;
   selectedCount: number;
   activeView: "workspace" | "coverage" | "sources";
 }
@@ -36,6 +40,8 @@ export function Header({
   onOpenSources,
   onOpenWhiteboard,
   onOpenAssistant,
+  onOpenGraph,
+  onOpenIngestion,
   selectedCount,
   activeView,
 }: HeaderProps) {
@@ -76,7 +82,7 @@ export function Header({
         <nav className="flex items-center gap-1 text-xs font-mono">
           <button
             onClick={() => {}}
-            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
+            className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
               activeView === "workspace"
                 ? "text-slate-100 bg-white/[0.06] font-medium border border-white/[0.08]"
                 : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
@@ -88,33 +94,53 @@ export function Header({
 
           <button
             onClick={onOpenWhiteboard}
-            className="px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+            className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
           >
             <Network className="w-3.5 h-3.5 text-purple-400" />
-            <span>Research Studio</span>
+            <span>Studio</span>
           </button>
+
+          {onOpenGraph && (
+            <button
+              onClick={onOpenGraph}
+              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+            >
+              <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Network Graph</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenCoverage}
-            className="px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+            className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
           >
             <Grid3X3 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Coverage Matrix</span>
+            <span>Coverage</span>
           </button>
 
           <button
             onClick={onOpenSources}
-            className="px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+            className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
           >
             <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Sources & Methods</span>
+            <span>Sources</span>
           </button>
+
+          {onOpenIngestion && (
+            <button
+              onClick={onOpenIngestion}
+              className="px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+            >
+              <FileUp className="w-3.5 h-3.5 text-amber-400" />
+              <span>Ingestion Queue</span>
+            </button>
+          )}
         </nav>
 
         {/* Right Telemetry & Actions */}
-        <div className="flex items-center gap-2.5 text-xs font-mono">
+        <div className="flex items-center gap-2 text-xs font-mono">
           {/* Live Status Telemetry */}
-          <div className="hidden lg:flex items-center gap-2 text-slate-400 text-[11px] px-2.5 py-1 rounded border border-white/[0.06] bg-white/[0.02]">
+          <div className="hidden xl:flex items-center gap-2 text-slate-400 text-[11px] px-2 py-1 rounded border border-white/[0.06] bg-white/[0.02]">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-slate-300 font-medium">{corpusCount} Verified Studies</span>
             <span className="text-white/10">•</span>

@@ -16,6 +16,8 @@ import { CoverageMapModal } from "../components/CoverageMapModal";
 import { SourcesModal } from "../components/SourcesModal";
 import { WhiteboardStudioModal } from "../components/WhiteboardStudioModal";
 import { GroundedChatDrawer } from "../components/GroundedChatDrawer";
+import { RelationshipGraphModal } from "../components/RelationshipGraphModal";
+import { IngestionReviewModal } from "../components/IngestionReviewModal";
 import { generateDeterministicBrief } from "../lib/synthesis";
 
 const allRecords = experimentsData as ExperimentRecord[];
@@ -33,6 +35,8 @@ export default function UnifiedWorkspace() {
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [isGraphOpen, setIsGraphOpen] = useState(false);
+  const [isIngestionOpen, setIsIngestionOpen] = useState(false);
   const [whiteboardSynthesis, setWhiteboardSynthesis] = useState<string | null>(null);
 
   // Configure Fuse.js for fuzzy retrieval
@@ -179,6 +183,8 @@ export default function UnifiedWorkspace() {
         onOpenSources={() => setIsSourcesOpen(true)}
         onOpenWhiteboard={() => setIsWhiteboardOpen(true)}
         onOpenAssistant={() => setIsAssistantOpen(true)}
+        onOpenGraph={() => setIsGraphOpen(true)}
+        onOpenIngestion={() => setIsIngestionOpen(true)}
         selectedCount={selectedIds.size}
         activeView="workspace"
       />
@@ -309,6 +315,23 @@ export default function UnifiedWorkspace() {
           setActiveId(recId);
           setIsSourceModalOpen(true);
         }}
+      />
+
+      {/* Stage 4: Global Knowledge Relationship Network Graph */}
+      <RelationshipGraphModal
+        isOpen={isGraphOpen}
+        onClose={() => setIsGraphOpen(false)}
+        corpus={allRecords}
+        onSelectInvestigation={(recId) => {
+          setActiveId(recId);
+          setIsGraphOpen(false);
+        }}
+      />
+
+      {/* Stage 4: Document Ingestion & Verification Staging Queue */}
+      <IngestionReviewModal
+        isOpen={isIngestionOpen}
+        onClose={() => setIsIngestionOpen(false)}
       />
     </div>
   );
