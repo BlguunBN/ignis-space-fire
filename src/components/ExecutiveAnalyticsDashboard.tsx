@@ -49,6 +49,7 @@ export function ExecutiveAnalyticsDashboard({
   onOpenAssistant,
 }: ExecutiveAnalyticsDashboardProps) {
   const [selectedPoint, setSelectedPoint] = useState<PlottedPoint | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<PlottedPoint | null>(null);
 
   // 1. KPI Aggregations
   const stats = useMemo(() => {
@@ -184,8 +185,8 @@ export function ExecutiveAnalyticsDashboard({
     };
   }, [records]);
 
-  // Set default selected tooltip if none
-  const activeTooltip = selectedPoint || (plottedPoints.length > 5 ? plottedPoints[5] : plottedPoints[0]);
+  // Active tooltip only when hovered or selected - never permanently blocking the chart
+  const activeTooltip = hoveredPoint || selectedPoint;
 
   // Safety Signals (AI Interpretations)
   const SAFETY_SIGNALS = [
@@ -364,16 +365,19 @@ export function ExecutiveAnalyticsDashboard({
                           return (
                             <button
                               key={pIdx}
-                              onClick={() => {
-                                setSelectedPoint(pt);
+                              onMouseEnter={() => setHoveredPoint(pt)}
+                              onMouseLeave={() => setHoveredPoint((prev) => (prev?.id === pt.id ? null : prev))}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedPoint((prev) => (prev?.id === pt.id ? null : pt));
                                 if (onSelectRecord) onSelectRecord(pt.record.id);
                               }}
                               style={{ left: `${xPercent}%` }}
                               title={`${pt.name} (${pt.oxygenPct}% O₂)`}
-                              className={`absolute -translate-x-1/2 rounded-full transition-transform cursor-pointer ${
+                              className={`absolute -translate-x-1/2 rounded-full transition-all cursor-pointer ${
                                 isHovered
-                                  ? "w-4 h-4 ring-2 ring-white scale-125 z-30 shadow-[0_0_10px_rgba(56,189,248,0.8)]"
-                                  : "w-3 h-3 hover:scale-125 z-20 ring-1 ring-black/40"
+                                  ? "w-4 h-4 ring-2 ring-cyan-300 scale-125 z-40 shadow-[0_0_12px_rgba(56,189,248,0.95)]"
+                                  : "w-2.5 h-2.5 hover:scale-125 z-20 ring-1 ring-black/40 opacity-90 hover:opacity-100"
                               }`}
                             >
                               <span
@@ -406,22 +410,43 @@ export function ExecutiveAnalyticsDashboard({
                 Oxygen concentration tested (%)
               </div>
 
-              {/* Interactive Inspector Floating Tooltip Card (Matching Image Exactly) */}
+              {/* Interactive Inspector Floating Tooltip Card - Intelligently Positioned */}
               {activeTooltip && (
                 <div
-                  className="absolute z-30 w-72 bg-[#0e131d]/95 backdrop-blur-md border border-white/[0.12] rounded-xl p-3.5 shadow-2xl font-mono text-xs animate-in fade-in duration-150"
+                  onMouseEnter={() => setHoveredPoint(activeTooltip)}
+                  onMouseLeave={() => setHoveredPoint(null)}
+                  className="absolute z-30 w-72 bg-[#0c1018]/95 backdrop-blur-md border border-cyan-500/30 rounded-xl p-3.5 shadow-2xl font-mono text-xs animate-in fade-in duration-150 pointer-events-auto"
                   style={{
-                    right: "24px",
-                    top: "35px",
+                    // If point is on the right side (>24% O2), place tooltip on the left side to avoid covering dots
+                    // If point is on the left/center side (<=24% O2), place tooltip on the right side
+                    ...(activeTooltip.oxygenPct > 24
+                      ? { left: "140px" }
+                      : { right: "20px" }),
+                    ...(activeTooltip.gravityY >= 3
+                      ? { bottom: "45px" }
+                      : { top: "20px" }),
                   }}
                 >
                   <div className="flex items-center justify-between border-b border-white/[0.08] pb-1.5 mb-2">
-                    <span className="font-bold text-cyan-300 truncate max-w-[150px]">
+                    <span className="font-bold text-cyan-300 truncate max-w-[130px]">
                       {activeTooltip.id}
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {activeTooltip.outcomeLabel}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        {activeTooltip.outcomeLabel}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedPoint(null);
+                          setHoveredPoint(null);
+                        }}
+                        className="p-0.5 rounded text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+                        title="Close tooltip"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <h4 className="font-sans font-semibold text-slate-100 text-xs line-clamp-2 mb-2 leading-snug">
@@ -461,9 +486,9 @@ export function ExecutiveAnalyticsDashboard({
                     onClick={() => {
                       if (onSelectRecord) onSelectRecord(activeTooltip.record.id);
                     }}
-                    className="w-full mt-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-center text-xs font-semibold transition-colors"
+                    className="w-full mt-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-center text-xs font-semibold transition-colors flex items-center justify-center gap-1"
                   >
-                    Click to open record →
+                    <span>Click to open record →</span>
                   </button>
                 </div>
               )}
