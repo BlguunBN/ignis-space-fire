@@ -36,6 +36,7 @@ export interface SearchQuery {
   programme?: string;
   missionContext?: string;
   freeText?: string;
+  gravity?: "microgravity" | "partial_gravity" | "terrestrial";
 }
 
 export interface ScoreBreakdown {
