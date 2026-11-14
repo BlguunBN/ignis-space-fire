@@ -21,7 +21,7 @@ export function FlameDynamicsChart() {
       if (record.verification_status === "verified") existing.markedVerified += 1;
       result.set(record.programme, existing);
     }
-    return [...result.values()].sort((a,b)=>b.records-a.records);
+    return Array.from(result.values()).sort((a,b)=>b.records-a.records);
   }, []);
   return (
     <section className="ignis-panel overflow-hidden" aria-label="Evidence record distribution">
