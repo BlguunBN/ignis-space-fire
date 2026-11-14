@@ -6,12 +6,17 @@ import { HelpCircle, FileCheck, Sparkles, Layers, ShieldCheck, X } from "lucide-
 
 export const QuestionNode = memo(({ id, data }: { id: string; data: any }) => {
   return (
-    <div className="bg-[#13171e] border-2 border-amber-400/80 rounded-xl p-3 shadow-xl w-72 font-sans text-xs text-slate-200">
+    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-amber-400 ring-2 ring-amber-400/30" : "border-amber-400/80"} rounded-xl p-3 shadow-xl w-72 font-sans text-xs text-slate-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Top} className="!bg-amber-400 !w-2.5 !h-2.5" />
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5 font-mono text-[10px] text-amber-400 uppercase tracking-wider font-bold">
           <HelpCircle className="w-3.5 h-3.5" />
           <span>Research Question</span>
+          {data.aiGenerated && (
+            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 flex items-center gap-0.5 lowercase tracking-normal">
+              <Sparkles className="w-2.5 h-2.5" /> ai
+            </span>
+          )}
         </div>
         {data.onDelete && (
           <button
@@ -106,12 +111,17 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
   };
 
   return (
-    <div className="bg-[#13171e] border-2 border-cyan-400/80 rounded-xl p-3 shadow-xl w-80 font-sans text-xs text-slate-200">
+    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-cyan-400 ring-2 ring-cyan-400/30" : "border-cyan-400/80"} rounded-xl p-3 shadow-xl w-80 font-sans text-xs text-slate-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Top} className="!bg-cyan-400 !w-2.5 !h-2.5" />
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5 font-mono text-[10px] text-cyan-400 uppercase tracking-wider font-bold">
           <FileCheck className="w-3.5 h-3.5" />
           <span>Verified Evidence</span>
+          {data.aiGenerated && (
+            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/40 flex items-center gap-0.5 lowercase tracking-normal">
+              <Sparkles className="w-2.5 h-2.5" /> ai
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-400/10 text-cyan-300 border border-cyan-400/30">
@@ -165,13 +175,21 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
 EvidenceNode.displayName = "EvidenceNode";
 
 export const HypothesisNode = memo(({ id, data }: { id: string; data: any }) => {
+  const isCounter = data.isCounter;
+  const borderColor = isCounter ? "border-amber-500 ring-2 ring-amber-500/30" : data.aiGenerated ? "border-emerald-400 ring-2 ring-emerald-400/30" : "border-emerald-400/80";
+
   return (
-    <div className="bg-[#13171e] border-2 border-emerald-400/80 rounded-xl p-3 shadow-xl w-72 font-sans text-xs text-slate-200">
-      <Handle type="target" position={Position.Top} className="!bg-emerald-400 !w-2.5 !h-2.5" />
+    <div className={`bg-[#13171e] border-2 ${borderColor} rounded-xl p-3 shadow-xl w-72 font-sans text-xs text-slate-200 transition-all duration-300`}>
+      <Handle type="target" position={Position.Top} className={`!w-2.5 !h-2.5 ${isCounter ? "!bg-amber-500" : "!bg-emerald-400"}`} />
       <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400 uppercase tracking-wider font-bold">
+        <div className={`flex items-center gap-1.5 font-mono text-[10px] ${isCounter ? "text-amber-400" : "text-emerald-400"} uppercase tracking-wider font-bold`}>
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Physical Hypothesis</span>
+          <span>{isCounter ? "Counter-Hypothesis" : "Physical Hypothesis"}</span>
+          {data.aiGenerated && (
+            <span className={`text-[9px] font-mono px-1 py-0.2 rounded ${isCounter ? "bg-amber-400/20 text-amber-300 border border-amber-400/40" : "bg-emerald-400/20 text-emerald-300 border border-emerald-400/40"} flex items-center gap-0.5 lowercase tracking-normal`}>
+              <Sparkles className="w-2.5 h-2.5" /> ai
+            </span>
+          )}
         </div>
         {data.onDelete && (
           <button
@@ -189,7 +207,7 @@ export const HypothesisNode = memo(({ id, data }: { id: string; data: any }) => 
         value={data.title || ""}
         onChange={(e) => data.onChange?.(id, { ...data, title: e.target.value })}
         placeholder="Hypothesis Title..."
-        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none focus:border-emerald-400 mb-1.5"
+        className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"} mb-1.5`}
       />
 
       <textarea
@@ -197,7 +215,7 @@ export const HypothesisNode = memo(({ id, data }: { id: string; data: any }) => 
         onChange={(e) => data.onChange?.(id, { ...data, prediction: e.target.value })}
         placeholder="Enter physical prediction (e.g. extinction threshold shift)..."
         rows={2}
-        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[11px] text-slate-300 focus:outline-none focus:border-emerald-400 resize-none leading-relaxed mb-1.5"
+        className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[11px] text-slate-300 focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"} resize-none leading-relaxed mb-1.5`}
       />
 
       <input
@@ -205,9 +223,9 @@ export const HypothesisNode = memo(({ id, data }: { id: string; data: any }) => 
         value={data.rationale || ""}
         onChange={(e) => data.onChange?.(id, { ...data, rationale: e.target.value })}
         placeholder="Governing physical mechanism / rationale..."
-        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[10px] font-mono text-slate-400 focus:outline-none focus:border-emerald-400"
+        className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[10px] font-mono text-slate-400 focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"}`}
       />
-      <Handle type="source" position={Position.Bottom} className="!bg-emerald-400 !w-2.5 !h-2.5" />
+      <Handle type="source" position={Position.Bottom} className={`!w-2.5 !h-2.5 ${isCounter ? "!bg-amber-500" : "!bg-emerald-400"}`} />
     </div>
   );
 });
@@ -215,12 +233,17 @@ HypothesisNode.displayName = "HypothesisNode";
 
 export const ExperimentNode = memo(({ id, data }: { id: string; data: any }) => {
   return (
-    <div className="bg-[#13171e] border-2 border-purple-400/80 rounded-xl p-3 shadow-xl w-80 font-sans text-xs text-slate-200">
+    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-purple-400 ring-2 ring-purple-400/30" : "border-purple-400/80"} rounded-xl p-3 shadow-xl w-80 font-sans text-xs text-slate-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Top} className="!bg-purple-400 !w-2.5 !h-2.5" />
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5 font-mono text-[10px] text-purple-400 uppercase tracking-wider font-bold">
           <Layers className="w-3.5 h-3.5" />
           <span>Experiment Proposal</span>
+          {data.aiGenerated && (
+            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-purple-400/20 text-purple-300 border border-purple-400/40 flex items-center gap-0.5 lowercase tracking-normal">
+              <Sparkles className="w-2.5 h-2.5" /> ai
+            </span>
+          )}
         </div>
         {data.onDelete && (
           <button

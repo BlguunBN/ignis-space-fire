@@ -85,9 +85,10 @@ export function GroundedChatDrawer({
   if (!isOpen) return null;
 
   const quickPrompts = [
+    "Formulate Artemis Lunar (0.16g / 56kPa) hypothesis tree",
+    "Model droplet cool-flame extinction in microgravity",
     "Compare Saffire vs BASS forced airflow flame spread",
-    "Exploration atmospheres (26% O2 / 56 kPa) flammability",
-    "Thick fuel extinction limits (SoFIE GEL)",
+    "Thick fuel conduction heat sink (SoFIE GEL)",
     "Can we predict Martian 0.38g combustion from this data?",
   ];
 
@@ -328,47 +329,68 @@ export function GroundedChatDrawer({
                   </div>
                 )}
 
-                {/* AI Agent Interactive Dispatch Buttons (AI controls app tools) */}
+                {/* AI Agent Interactive Dispatch & Modeler Sync */}
                 {msg.role === "assistant" && msg.id !== "init" && (
-                  <div className="mt-2.5 pt-2 border-t border-white/[0.06] space-y-1.5">
-                    <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-cyan-400" />
-                      <span>AI Agent Actions (Execute in App):</span>
-                    </span>
-                    <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
-                      {onOpenSimulator && (
+                  <div className="mt-2.5 pt-2 border-t border-white/[0.06] space-y-2">
+                    {/* Dedicated Stage 3 Modeler Card */}
+                    {onAddToWhiteboard && msg.response && (
+                      <div className="p-2.5 rounded-lg bg-amber-400/[0.08] border border-amber-400/30 flex flex-col gap-2">
+                        <div className="flex items-center justify-between text-[11px] font-mono">
+                          <div className="flex items-center gap-1.5 text-amber-300 font-bold">
+                            <Network className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Microgravity Hypothesis Modeler</span>
+                          </div>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                            Stage 3 Studio
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-300 font-sans leading-tight">
+                          AI Agent synthesizes a 4-tier causal mind tree (Question → Flight Evidence → Physical Hypothesis → Validation Experiment) directly on the graph canvas.
+                        </p>
                         <button
-                          onClick={() => onOpenSimulator(msg.content.toLowerCase().includes("lunar") ? "orion-lunar" : "iss")}
-                          className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 transition-colors"
+                          onClick={() => {
+                            const userQuery = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === "user")?.content || msg.content;
+                            onAddToWhiteboard(userQuery, msg.response!.citations);
+                          }}
+                          className="w-full py-1.5 px-3 rounded-md bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs"
                         >
-                          <span>🚀 Open Physics Simulation</span>
+                          <Sparkles className="w-3.5 h-3.5 fill-current" />
+                          <span>🚀 Open & Build in Modeler (Stage 3)</span>
                         </button>
-                      )}
-                      {onOpenDiagnostics && (
-                        <button
-                          onClick={() => onOpenDiagnostics(msg.content.toLowerCase().includes("pmma") ? "sofie" : "rtdfs")}
-                          className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1 transition-colors"
-                        >
-                          <span>🔬 Open Flame Diagnostics</span>
-                        </button>
-                      )}
-                      {onAddToWhiteboard && msg.response && (
-                        <button
-                          onClick={() => onAddToWhiteboard(msg.content, msg.response!.citations)}
-                          className="px-2 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 transition-colors"
-                        >
-                          <Network className="w-3 h-3" />
-                          <span>Build Mind Tree</span>
-                        </button>
-                      )}
-                      {onOpenCoverageMap && (
-                        <button
-                          onClick={onOpenCoverageMap}
-                          className="px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors"
-                        >
-                          <span>🗺️ Coverage Gaps</span>
-                        </button>
-                      )}
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-cyan-400" />
+                        <span>AI Agent Tool Actions:</span>
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
+                        {onOpenSimulator && (
+                          <button
+                            onClick={() => onOpenSimulator(msg.content.toLowerCase().includes("lunar") ? "orion-lunar" : "iss")}
+                            className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 transition-colors"
+                          >
+                            <span>🚀 Open Physics Simulation</span>
+                          </button>
+                        )}
+                        {onOpenDiagnostics && (
+                          <button
+                            onClick={() => onOpenDiagnostics(msg.content.toLowerCase().includes("pmma") ? "sofie" : "rtdfs")}
+                            className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1 transition-colors"
+                          >
+                            <span>🔬 Open Flame Diagnostics</span>
+                          </button>
+                        )}
+                        {onOpenCoverageMap && (
+                          <button
+                            onClick={onOpenCoverageMap}
+                            className="px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors"
+                          >
+                            <span>🗺️ Coverage Gaps</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

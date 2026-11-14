@@ -255,36 +255,61 @@ export function CombustionSimulatorModal({
       // Droplet visual radius in pixels
       const dropletRadiusPx = Math.max(3, (currentDiameterMm / initialDropletMm) * 24);
 
-      // Forced Airflow Vector / Streamlines from cursor
+      // Forced Airflow Vector / Streamlines from cursor (Air blows FROM cursor -> flame deflects DOWNWIND away from cursor)
       let driftX = 0;
       let driftY = 0;
       let airflowSpeed = 0;
 
       if (airCursorActive) {
-        const dx = cursorPos.x - cx;
-        const dy = cursorPos.y - cy;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        // Vector from cursor nozzle to droplet center
+        const fromCursorX = cx - cursorPos.x;
+        const fromCursorY = cy - cursorPos.y;
+        const dist = Math.sqrt(fromCursorX * fromCursorX + fromCursorY * fromCursorY) || 1;
         airflowSpeed = Math.min(30, Math.round((dist / 10) * 10) / 10);
-        driftX = (dx / dist) * Math.min(35, airflowSpeed * 1.5);
-        driftY = (dy / dist) * Math.min(35, airflowSpeed * 1.5);
 
-        // Draw animated wind streamlines
-        ctx.strokeStyle = "rgba(56, 189, 248, 0.25)";
+        // Direction of forced airflow: away from cursor, past droplet downwind
+        const unitDirX = fromCursorX / dist;
+        const unitDirY = fromCursorY / dist;
+
+        // Flame deflects DOWNWIND (pushed away from cursor nozzle)
+        driftX = unitDirX * Math.min(45, airflowSpeed * 1.6);
+        driftY = unitDirY * Math.min(45, airflowSpeed * 1.6);
+
+        // Draw animated wind streamlines rushing from cursor nozzle past the droplet
+        const perpX = -unitDirY;
+        const perpY = unitDirX;
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
         ctx.lineWidth = 1.5;
+        ctx.setLineDash([8, 6]);
+        ctx.lineDashOffset = -frame * 2.5;
+
         for (let i = -2; i <= 2; i++) {
-          const offset = i * 20;
-          const streamStartX = cursorPos.x + offset;
-          const streamStartY = cursorPos.y;
+          const lateralOffset = i * 14;
+          const startX = cursorPos.x + perpX * lateralOffset;
+          const startY = cursorPos.y + perpY * lateralOffset;
+          const endX = cx + unitDirX * 70 + perpX * (lateralOffset * 1.4);
+          const endY = cy + unitDirY * 70 + perpY * (lateralOffset * 1.4);
+
           ctx.beginPath();
-          ctx.moveTo(streamStartX, streamStartY);
-          ctx.lineTo(cx + offset * 0.6, cy);
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
           ctx.stroke();
         }
+        ctx.restore();
 
-        // Draw Wind speed badge
-        ctx.fillStyle = "rgba(56, 189, 248, 0.9)";
-        ctx.font = "10px monospace";
-        ctx.fillText(`u∞ = ${airflowSpeed} cm/s`, cursorPos.x + 10, cursorPos.y - 10);
+        // Draw Wind speed badge & nozzle reticle at cursor position
+        ctx.fillStyle = "rgba(56, 189, 248, 0.95)";
+        ctx.font = "bold 10px monospace";
+        ctx.fillText(`💨 Air Nozzle u∞ = ${airflowSpeed} cm/s`, cursorPos.x + 12, cursorPos.y - 12);
+
+        // Nozzle ring marker
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.7)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cursorPos.x, cursorPos.y, 6, 0, Math.PI * 2);
+        ctx.stroke();
       }
 
       // If burning, render authentic physics flame

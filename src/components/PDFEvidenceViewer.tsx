@@ -273,7 +273,7 @@ export function PDFEvidenceViewer({
                 <div>Section: <span className="text-cyan-300 font-bold">{locator?.section || "Original Investigation Report"}</span></div>
                 <div>Anchor: <span className="text-amber-400 font-bold">{locator?.tableOrFigure || "Table 1 / Section Finding"}</span></div>
                 <div className="text-slate-400 text-[11px]">
-                  Page Number: {pageNum} | Coordinates: [x:6.0%, y:48.5%, w:88.0%, h:38.2%] · Verified Claim Bounding
+                  Page Number: {pageNum} | Coordinates: [x:{box.x.toFixed(1)}%, y:{box.y.toFixed(1)}%, w:{box.width.toFixed(1)}%, h:{box.height.toFixed(1)}%] · Verified Claim Bounding
                 </div>
               </div>
             </div>

@@ -51,6 +51,7 @@ export default function UnifiedWorkspace() {
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [assistantInitialPrompt, setAssistantInitialPrompt] = useState<string | null>(null);
+  const [whiteboardInitialPrompt, setWhiteboardInitialPrompt] = useState<string | null>(null);
   const [whiteboardSynthesis, setWhiteboardSynthesis] = useState<string | null>(null);
 
   // Configure Fuse.js for fuzzy retrieval
@@ -529,8 +530,12 @@ export default function UnifiedWorkspace() {
       {/* Stage 3: Research Whiteboard Studio (React Flow + Excalidraw) */}
       <WhiteboardStudioModal
         isOpen={isWhiteboardOpen}
-        onClose={() => setIsWhiteboardOpen(false)}
+        onClose={() => {
+          setIsWhiteboardOpen(false);
+          setWhiteboardInitialPrompt(null);
+        }}
         activeRecord={activeRecord}
+        initialPrompt={whiteboardInitialPrompt}
         onExportBrief={(md) => {
           setWhiteboardSynthesis(md);
           setIsWhiteboardOpen(false);
@@ -552,7 +557,8 @@ export default function UnifiedWorkspace() {
           setActiveId(recId);
           setIsSourceModalOpen(true);
         }}
-        onAddToWhiteboard={() => {
+        onAddToWhiteboard={(text) => {
+          setWhiteboardInitialPrompt(text);
           setIsAssistantOpen(false);
           setIsWhiteboardOpen(true);
         }}

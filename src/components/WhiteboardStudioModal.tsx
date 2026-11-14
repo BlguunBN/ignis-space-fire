@@ -11,6 +11,7 @@ interface WhiteboardStudioModalProps {
   onClose: () => void;
   activeRecord: ExperimentRecord | null;
   onExportBrief?: (markdown: string) => void;
+  initialPrompt?: string | null;
 }
 
 export function WhiteboardStudioModal({
@@ -18,6 +19,7 @@ export function WhiteboardStudioModal({
   onClose,
   activeRecord,
   onExportBrief,
+  initialPrompt,
 }: WhiteboardStudioModalProps) {
   const [activeTab, setActiveTab] = useState<"tree" | "sketch">("tree");
 
@@ -88,6 +90,7 @@ export function WhiteboardStudioModal({
             <StructuredWhiteboard
               activeRecord={activeRecord}
               onExportBrief={onExportBrief}
+              initialPrompt={initialPrompt}
             />
           ) : (
             <ExcalidrawCanvas />

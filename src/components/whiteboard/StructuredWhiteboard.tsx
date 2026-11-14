@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
   MiniMap,
@@ -230,11 +230,13 @@ const TEMPLATES: Record<string, { label: string; nodes: Node[]; edges: Edge[] }>
 interface StructuredWhiteboardProps {
   activeRecord: ExperimentRecord | null;
   onExportBrief?: (markdown: string) => void;
+  initialPrompt?: string | null;
 }
 
 export function StructuredWhiteboard({
   activeRecord,
   onExportBrief,
+  initialPrompt,
 }: StructuredWhiteboardProps) {
   const [activeTemplate, setActiveTemplate] = useState("ventilation");
   const [nodes, setNodes, onNodesChange] = useNodesState(TEMPLATES.ventilation.nodes);
@@ -242,6 +244,24 @@ export function StructuredWhiteboard({
   const [savedFeedback, setSavedFeedback] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [aiStatusFeedback, setAiStatusFeedback] = useState<string | null>(null);
+  const [rfInstance, setRfInstance] = useState<any>(null);
+  const rfInstanceRef = useRef<any>(null);
+  const pendingFitViewRef = useRef<boolean>(false);
+
+  // Smooth Viewport Auto-Centering
+  const centerGraph = useCallback(() => {
+    if (rfInstanceRef.current) {
+      try {
+        rfInstanceRef.current.fitView({ duration: 800, padding: 0.2 });
+        pendingFitViewRef.current = false;
+      } catch (err) {
+        // Fallback if not ready
+      }
+    } else {
+      pendingFitViewRef.current = true;
+    }
+  }, []);
 
   // Wire onChange and onDelete callbacks into each node's data
   const handleUpdateNodeData = useCallback(
@@ -301,17 +321,224 @@ export function StructuredWhiteboard({
     [setEdges]
   );
 
+  // Dynamic Multi-Factor AI Tree Synthesizer
+  const synthesizeDynamicTree = (rawInput: string) => {
+    const p = rawInput.toLowerCase();
+
+    const isArtemis = p.includes("lunar") || p.includes("artemis") || p.includes("56") || p.includes("sibal") || p.includes("0.16");
+    const isVentilation = p.includes("ventilation") || p.includes("saffire") || p.includes("bass") || p.includes("airflow") || p.includes("scale divergence");
+    const isDroplet = p.includes("cool") || p.includes("droplet") || p.includes("flex") || p.includes("alkane") || p.includes("heptane") || p.includes("methanol");
+    const isThickSolid = p.includes("thick") || p.includes("sofie") || p.includes("gel") || p.includes("solid pmma") || p.includes("nca");
+    const isSmoke = p.includes("smoke") || p.includes("sensor") || p.includes("detector") || p.includes("same") || p.includes("spice") || p.includes("aerosol");
+
+    if (isArtemis) {
+      return {
+        qTitle: "Artemis Exploration Flammability: PMMA & SIBAL (26% O₂ / 56 kPa at 0.16g)",
+        qDetails: "Why do reduced atmospheric pressure (56 kPa) and elevated oxygen (26%–34% O₂) accelerate opposed and concurrent flame propagation over solid PMMA and SIBAL fabric in 0.16g Lunar gravity?",
+        ev1: {
+          claimId: "CLM-SAFFIRE-004",
+          investigation: "Saffire-IV Exploration Atmosphere Fire Test",
+          conditions: "26% O₂ • 20 cm/s Flow • 57 kPa",
+          quote: "Elevated oxygen concentration significantly accelerates thick PMMA and composite flame propagation even under reduced pressure.",
+        },
+        ev2: {
+          claimId: "CLM-REG-008",
+          investigation: "Flammability of Materials on the Moon (FM2)",
+          conditions: "21–30% O₂ • 0.16g Lunar drop tower • 101.3 kPa",
+          quote: "NASA describes a lunar flame-spread investigation and illustrates SIBAL burning in simulated lunar gravity; the page does not report a numerical flame-spread outcome.",
+        },
+        hypTitle: "Thermal Gas Capacitance (ρCp) Suppression & Radiative Balance",
+        hypPred: "Lower total pressure reduces gas thermal capacity (ρCp), elevating adiabatic flame temperature by ~180 K while 0.16g eliminates buoyant convective heat loss.",
+        hypRat: "Buoyant suppression at 0.16g eliminates natural convective cooling while low-velocity ventilation maintains steady pyrolyzate flux to the reaction zone.",
+        expObj: "Lunar 0.16g Exploration Atmosphere Flammability Validation",
+        expFac: "ISS CIR / Saffire Flow Duct",
+        expFlow: "5 – 25 cm/s forced convective duct flow",
+        expO2: "26% – 34% O₂ Exploration Range",
+        expPress: "56 kPa (0.56 atm baseline)",
+        expGeom: "0.2m x 0.5m PMMA slab & SIBAL fabric coupon",
+      };
+    }
+
+    if (isVentilation) {
+      return {
+        qTitle: "Forced Convective Flow & Flame Spread Scale Invariant (Saffire vs BASS)",
+        qDetails: "Why do large-scale fuel slabs (Saffire 0.4m x 1.0m) sustain continuous flame spread at 20 cm/s airflow where glovebox specimens (BASS 1-2 cm) undergo radiative extinction?",
+        ev1: {
+          claimId: "CLM-SAFFIRE-001",
+          investigation: "Saffire-I Large-Scale Flight Experiment",
+          conditions: "21% O₂ • 20 cm/s Flow • 101.3 kPa",
+          quote: "Large-scale flame spread in microgravity without buoyancy proceeds steadily under forced airflow. 0.4 m x 1.0 m solid burns continuously.",
+        },
+        ev2: {
+          claimId: "CLM-BASS-002",
+          investigation: "BASS-II Opposed Flow PMMA Rods",
+          conditions: "21% O₂ • 3.5 cm/s Flow • 101.3 kPa",
+          quote: "Narrow glovebox flow duct causes accelerated radiative extinction near low-speed boundary for 1-2 cm thick PMMA slabs.",
+        },
+        hypTitle: "Cumulative Downstream Radiative Preheating Scale Invariant",
+        hypPred: "Large fuel specimens absorb upstream flame radiative flux that sustains pyrolysis at higher convective velocities, whereas small glovebox samples lose heat to cold duct boundaries.",
+        hypRat: "Downstream surface view factor captures emitted radiation that is lost to enclosure walls in small-scale glovebox hardware.",
+        expObj: "Intermediate-Scale Radiative Feedback Duct Verification",
+        expFac: "ISS CIR Duct Apparatus",
+        expFlow: "10 – 25 cm/s controlled flow",
+        expO2: "21% – 26% O₂",
+        expPress: "56 – 101.3 kPa",
+        expGeom: "0.2m x 0.5m slab instrumented with heat flux radiometer array",
+      };
+    }
+
+    if (isDroplet) {
+      return {
+        qTitle: "Liquid Droplet Extinction & Low-Temperature Cool Flames (FLEX)",
+        qDetails: "Under what physical and chemical kinetic conditions do isolated hydrocarbon droplets sustain low-temperature cool flame burning (<800 K) after visible radiative extinction in microgravity?",
+        ev1: {
+          claimId: "CLM-FLEX-001",
+          investigation: "FLEX Flame Extinction and Cool Flames",
+          conditions: "18% O₂ • 0 cm/s Flow • 101.3 kPa",
+          quote: "Large isolated droplets exhibit self-sustaining cool flames at temperatures below 800 K after radiative extinction.",
+        },
+        ev2: {
+          claimId: "CLM-PSI-002",
+          investigation: "FLEX-2 Heptane Second-Stage Quenching",
+          conditions: "21% O₂ • 0 cm/s Flow • 101.3 kPa",
+          quote: "The droplet burned for 5 s and the visible flame went out at a droplet diameter of 0.94 mm, transitioning into a cool-flame regime.",
+        },
+        hypTitle: "Peroxy Radical Low-Temperature Kinetic Diffusion Equilibrium",
+        hypPred: "Cool-flame duration is governed non-linearly by initial droplet diameter due to spherical radical accumulation and absence of buoyant convective drift.",
+        hypRat: "Quiescent spherical symmetry confines intermediate peroxy and hydroperoxy radicals in high local concentrations without buoyant convective dispersion.",
+        expObj: "Free-Floating Multi-Component Alkane Droplet Combustion",
+        expFac: "ISS CIR MDCA Chamber",
+        expFlow: "0 cm/s (pure quiescent diffusion)",
+        expO2: "15% – 21% O₂",
+        expPress: "101.3 kPa (1.0 atm)",
+        expGeom: "2.0 – 5.0 mm heptane / decane droplets on tether fibers",
+      };
+    }
+
+    if (isThickSolid) {
+      return {
+        qTitle: "Thick Fuel Conduction Heat Sink & Extinction Boundaries (SoFIE)",
+        qDetails: "How does solid-phase conductive heat transfer into thick PMMA fuel slabs govern opposed-flow extinction limits in microgravity forced airflow?",
+        ev1: {
+          claimId: "CLM-SOFIE-001",
+          investigation: "SoFIE — Growth and Extinction Limit (GEL)",
+          conditions: "34% O₂ • 4 cm/s Flow • 101.3 kPa",
+          quote: "Internal conduction heat sink in thick fuels shifts extinction boundary to 34% O₂ in quiescent microgravity.",
+        },
+        ev2: {
+          claimId: "CLM-REG-010",
+          investigation: "SoFIE — Narrow Channel Apparatus (NCA)",
+          conditions: "85% O₂ • 2 cm/s Flow • 101.3 kPa",
+          quote: "NASA outlines tests designed to measure flame spread and extinction limits over PMMA under narrow duct confinement.",
+        },
+        hypTitle: "Internal Sub-Surface Thermal Inertia vs Convective Pyrolysis",
+        hypPred: "Thick fuels act as a thermal heat sink, elevating the limiting oxygen index by >12% compared to thermally thin fabrics unless forced flow exceeds 10 cm/s.",
+        hypRat: "Absence of buoyant flame attachment prevents upstream boundary layer thinning, trapping heat within the solid substrate.",
+        expObj: "Thick Fuel Sub-Surface Pyrolysis & Flame Standoff Matrix",
+        expFac: "ISS CIR / SoFIE Insert",
+        expFlow: "2 – 15 cm/s opposed flow",
+        expO2: "21% – 35% O₂",
+        expPress: "56 – 101.3 kPa",
+        expGeom: "10 mm thick PMMA casting with embedded thermocouple rake",
+      };
+    }
+
+    if (isSmoke) {
+      return {
+        qTitle: "Spacecraft Smoke Particle Agglomeration & Low-Flow Detection",
+        qDetails: "How does microgravity buoyancy suppression alter soot particle morphology, aggregate size, and early ionization detector response in spacecraft cabin ventilation?",
+        ev1: {
+          claimId: "CLM-SAME-001",
+          investigation: "Smoke and Aerosol Measurement Experiment (SAME)",
+          conditions: "21% O₂ • 5 cm/s Flow • 101.3 kPa",
+          quote: "Microgravity produces larger soot agglomerates due to longer residence times and absence of buoyant sorting.",
+        },
+        ev2: {
+          claimId: "CLM-SPICE-001",
+          investigation: "Smoke Point in Co-flow Experiment (SPICE)",
+          conditions: "21% O₂ • 8 cm/s Flow • 101.3 kPa",
+          quote: "Laminar soot generation in microgravity exhibits higher primary particle size distribution before radiative quenching.",
+        },
+        hypTitle: "Residence-Time-Driven Soot Coagulation Kinetics",
+        hypPred: "Without buoyant acceleration, smoke particulate primary diameter increases by 2.4x, triggering optical obscuration detectors 40% faster than terrestrial reference.",
+        hypRat: "Suppressed convective sweep-away allows continuous Brownian and thermophoretic agglomeration in the pre-filter duct flow.",
+        expObj: "Multi-Sensor Spacecraft Smoke Detection Threshold Matrix",
+        expFac: "ISS MSG (Microgravity Science Glovebox)",
+        expFlow: "2 – 10 cm/s ventilation duct velocity",
+        expO2: "21% O₂ Standard Cabin",
+        expPress: "101.3 kPa (1.0 atm)",
+        expGeom: "Overheated wire insulation & Kapton film pyrolysate",
+      };
+    }
+
+    // Dynamic Generic Matcher: query experimentsData for closest records
+    const scored = (experimentsData as ExperimentRecord[]).map((r) => {
+      let score = 0;
+      const invL = r.investigation.toLowerCase();
+      const matL = (r.material || "").toLowerCase();
+      const findL = (r.finding || "").toLowerCase();
+      const words = p.split(/\s+/).filter((w) => w.length > 3);
+      for (const w of words) {
+        if (invL.includes(w)) score += 5;
+        if (matL.includes(w)) score += 4;
+        if (findL.includes(w)) score += 3;
+      }
+      return { r, score };
+    }).sort((a, b) => b.score - a.score);
+
+    const rec1 = scored[0]?.r || (experimentsData as ExperimentRecord[])[0];
+    const rec2 = scored[1]?.r || (experimentsData as ExperimentRecord[])[1];
+
+    const cleanPrompt = rawInput.trim();
+    const promptTitle = cleanPrompt.length > 55 ? cleanPrompt.slice(0, 52) + "..." : cleanPrompt;
+
+    return {
+      qTitle: `Investigation: ${promptTitle}`,
+      qDetails: `What governing mechanisms control combustion behavior, flame spread, and extinction limits under these queried physical conditions: "${cleanPrompt}"?`,
+      ev1: {
+        claimId: rec1.claim_locator_details?.claimId || `CLM-${rec1.id.toUpperCase()}`,
+        investigation: rec1.investigation,
+        conditions: `${rec1.oxygen_pct != null ? `${rec1.oxygen_pct}% O₂` : "21% O₂"} • ${rec1.airflow_cm_s != null ? `${rec1.airflow_cm_s} cm/s` : "quiescent"} • ${rec1.pressure_kpa != null ? `${rec1.pressure_kpa} kPa` : "1 atm"}`,
+        quote: rec1.finding,
+      },
+      ev2: {
+        claimId: rec2.claim_locator_details?.claimId || `CLM-${rec2.id.toUpperCase()}`,
+        investigation: rec2.investigation,
+        conditions: `${rec2.oxygen_pct != null ? `${rec2.oxygen_pct}% O₂` : "21% O₂"} • ${rec2.airflow_cm_s != null ? `${rec2.airflow_cm_s} cm/s` : "quiescent"} • ${rec2.pressure_kpa != null ? `${rec2.pressure_kpa} kPa` : "1 atm"}`,
+        quote: rec2.finding,
+      },
+      hypTitle: `Physical Boundary Transport & Reaction Balance`,
+      hypPred: `Combustion limits and propagation rates diverge from 1g terrestrial benchmarks due to complete suppression of buoyant natural convection.`,
+      hypRat: `Transport is governed purely by forced convection and molecular diffusion, altering local Damköhler and Lewis numbers at the flame front.`,
+      expObj: `Microgravity Parameter Verification Test`,
+      expFac: rec1.platform || "ISS CIR Combustion Chamber",
+      expFlow: `${rec1.airflow_cm_s != null ? rec1.airflow_cm_s : 10} cm/s forced flow`,
+      expO2: `${rec1.oxygen_pct != null ? rec1.oxygen_pct : 21}% O₂`,
+      expPress: `${rec1.pressure_kpa != null ? rec1.pressure_kpa : 101.3} kPa`,
+      expGeom: `${rec1.material} specimen configuration`,
+    };
+  };
+
+  // Auto-run AI tree generation if initialPrompt is passed from parent or chat
+  useEffect(() => {
+    if (initialPrompt && initialPrompt.trim()) {
+      handleAiGenerateTree(initialPrompt.trim());
+    }
+  }, [initialPrompt]);
+
   // AI Agent: Auto-Generate complete grounded tree based on user prompt or active record
   const handleAiGenerateTree = (customTopic?: string) => {
     setIsAiGenerating(true);
-    const topic = customTopic || aiPrompt || (activeRecord ? `${activeRecord.material} combustion in ${activeRecord.gravity}` : "Exploration Atmosphere Flammability Boundaries");
-    
-    const records = experimentsData as any[];
-    const matchingRecords = records.filter(r => 
-      topic.toLowerCase().split(" ").some((w: string) => w.length > 3 && (r.investigation.toLowerCase().includes(w) || r.material.toLowerCase().includes(w)))
-    );
-    const rec1 = matchingRecords[0] || records[0];
-    const rec2 = matchingRecords[1] || records[1] || records[0];
+    const rawInput = customTopic || aiPrompt || (activeRecord ? `${activeRecord.material} combustion in ${activeRecord.gravity}` : "Exploration Atmosphere Flammability Boundaries");
+    const pLower = rawInput.toLowerCase();
+
+    if (pLower.includes("counter") || pLower.includes("wall") || pLower.includes("conductive")) {
+      handleAiAddCounterHypothesis();
+      setIsAiGenerating(false);
+      return;
+    }
+
+    const synth = synthesizeDynamicTree(rawInput);
 
     const qId = `q-${Date.now()}`;
     const ev1Id = `ev1-${Date.now()}`;
@@ -323,10 +550,11 @@ export function StructuredWhiteboard({
       {
         id: qId,
         type: "question",
-        position: { x: 420, y: 30 },
+        position: { x: 380, y: 20 },
         data: {
-          label: `${topic} Inquiry`,
-          details: `How do oxygen enrichment and convective velocity variations alter steady flame spread and radiative extinction thresholds?`,
+          label: synth.qTitle,
+          details: synth.qDetails,
+          aiGenerated: true,
           onChange: handleUpdateNodeData,
           onDelete: handleDeleteNode,
         },
@@ -334,12 +562,13 @@ export function StructuredWhiteboard({
       {
         id: ev1Id,
         type: "evidence",
-        position: { x: 140, y: 190 },
+        position: { x: 80, y: 190 },
         data: {
-          claimId: rec1?.claim_locator_details?.claimId || "CLM-NASA-01",
-          investigation: rec1?.investigation || "NASA Flight Dataset",
-          conditions: `${rec1?.oxygen_pct ?? 21}% O₂ • ${rec1?.airflow_cm_s ?? 0} cm/s Flow • ${rec1?.pressure_kpa ?? 101.3} kPa`,
-          quote: rec1?.finding || "Empirical boundary measurement from flight archive.",
+          claimId: synth.ev1.claimId,
+          investigation: synth.ev1.investigation,
+          conditions: synth.ev1.conditions,
+          quote: synth.ev1.quote,
+          aiGenerated: true,
           onChange: handleUpdateNodeData,
           onDelete: handleDeleteNode,
         },
@@ -347,12 +576,13 @@ export function StructuredWhiteboard({
       {
         id: ev2Id,
         type: "evidence",
-        position: { x: 700, y: 190 },
+        position: { x: 620, y: 190 },
         data: {
-          claimId: rec2?.claim_locator_details?.claimId || "CLM-NASA-02",
-          investigation: rec2?.investigation || "Comparative Flight Investigation",
-          conditions: `${rec2?.oxygen_pct ?? 28}% O₂ • ${rec2?.airflow_cm_s ?? 15} cm/s Flow • ${rec2?.pressure_kpa ?? 56} kPa`,
-          quote: rec2?.finding || "Comparative empirical flight observation.",
+          claimId: synth.ev2.claimId,
+          investigation: synth.ev2.investigation,
+          conditions: synth.ev2.conditions,
+          quote: synth.ev2.quote,
+          aiGenerated: true,
           onChange: handleUpdateNodeData,
           onDelete: handleDeleteNode,
         },
@@ -360,11 +590,12 @@ export function StructuredWhiteboard({
       {
         id: hypId,
         type: "hypothesis",
-        position: { x: 420, y: 380 },
+        position: { x: 350, y: 390 },
         data: {
-          title: "Thermal Preheating vs Convective Strain Equilibrium",
-          prediction: "Low-velocity convective airflow expands flammability limits by sustaining residence time while suppressing upstream heat leakage.",
-          rationale: "Buoyant suppression stabilizes a thicker diffusive boundary layer, concentrating radical intermediate species.",
+          title: synth.hypTitle,
+          prediction: synth.hypPred,
+          rationale: synth.hypRat,
+          aiGenerated: true,
           onChange: handleUpdateNodeData,
           onDelete: handleDeleteNode,
         },
@@ -372,14 +603,15 @@ export function StructuredWhiteboard({
       {
         id: expId,
         type: "experiment",
-        position: { x: 420, y: 560 },
+        position: { x: 350, y: 580 },
         data: {
-          facility: "ISS CIR / Saffire Duct",
-          objective: "High-O₂ Low-Speed Depressurization Extinction Validation",
-          airflow: "0 – 25 cm/s controlled convective flow",
-          oxygen: "16% – 34% O₂ exploration envelope",
-          pressure: "56 – 101.3 kPa (0.56 – 1.0 atm)",
-          geometry: "0.2m x 0.5m sample with dual-wavelength radiometer array",
+          facility: synth.expFac,
+          objective: synth.expObj,
+          airflow: synth.expFlow,
+          oxygen: synth.expO2,
+          pressure: synth.expPress,
+          geometry: synth.expGeom,
+          aiGenerated: true,
           onChange: handleUpdateNodeData,
           onDelete: handleDeleteNode,
         },
@@ -397,7 +629,20 @@ export function StructuredWhiteboard({
     setNodes(newNodes);
     setEdges(newEdges);
     setAiPrompt("");
-    setTimeout(() => setIsAiGenerating(false), 400);
+    setAiStatusFeedback(`✨ AI Agent synthesized 5 grounded nodes & 5 causal links: ${synth.qTitle}`);
+
+    // Schedule viewport auto-centering across layout frames
+    setTimeout(() => centerGraph(), 60);
+    setTimeout(() => centerGraph(), 200);
+    setTimeout(() => centerGraph(), 500);
+
+    setTimeout(() => {
+      setIsAiGenerating(false);
+    }, 400);
+
+    setTimeout(() => {
+      setAiStatusFeedback(null);
+    }, 5000);
   };
 
   // AI Agent: Add Counter-Hypothesis Node
@@ -406,11 +651,13 @@ export function StructuredWhiteboard({
     const hypNode: Node = {
       id: `hyp-counter-${Date.now()}`,
       type: "hypothesis",
-      position: { x: 740, y: 380 + (hypCount - 1) * 60 },
+      position: { x: 740, y: 390 + (hypCount - 1) * 60 },
       data: {
-        title: "Counter-Hypothesis: Radiative Wall Cooling Dominance",
-        prediction: "Sample extinction is primarily governed by conductive/radiative heat loss to cold chamber boundaries rather than chemical kinetic quenching.",
-        rationale: "Small-scale glovebox hardware geometry accelerates wall quenching at low velocities (<5 cm/s).",
+        title: "Counter-Hypothesis: Conductive Wall Heat Dissipation",
+        prediction: "Extinction is predominantly driven by non-buoyant thermal conduction losses to cold flow duct walls rather than chemical kinetic radical quenching.",
+        rationale: "Small aspect-ratio glovebox hardware accelerates boundary quenching below 5 cm/s forced convective velocity.",
+        isCounter: true,
+        aiGenerated: true,
         onChange: handleUpdateNodeData,
         onDelete: handleDeleteNode,
       },
@@ -419,18 +666,92 @@ export function StructuredWhiteboard({
     setNodes((nds) => [...nds, hypNode]);
 
     const qNode = nodes.find((n) => n.type === "question");
+    const expNode = nodes.find((n) => n.type === "experiment");
+
+    const newCounterEdges: Edge[] = [];
     if (qNode) {
-      setEdges((eds) => [
-        ...eds,
-        {
-          id: `e-${qNode.id}-${hypNode.id}`,
-          source: qNode.id,
-          target: hypNode.id,
-          animated: true,
-          style: { stroke: "#f59e0b", strokeWidth: 2, strokeDasharray: "4 4" },
-        },
-      ]);
+      newCounterEdges.push({
+        id: `e-${qNode.id}-${hypNode.id}`,
+        source: qNode.id,
+        target: hypNode.id,
+        animated: true,
+        style: { stroke: "#f59e0b", strokeWidth: 2, strokeDasharray: "4 4" },
+      });
     }
+    if (expNode) {
+      newCounterEdges.push({
+        id: `e-${hypNode.id}-${expNode.id}`,
+        source: hypNode.id,
+        target: expNode.id,
+        animated: true,
+        style: { stroke: "#f59e0b", strokeWidth: 2, strokeDasharray: "4 4" },
+      });
+    }
+
+    if (newCounterEdges.length > 0) {
+      setEdges((eds) => [...eds, ...newCounterEdges]);
+    }
+
+    setAiStatusFeedback("✨ AI Agent added Counter-Hypothesis: Conductive Wall Dissipation");
+    setTimeout(() => centerGraph(), 80);
+    setTimeout(() => centerGraph(), 300);
+    setTimeout(() => setAiStatusFeedback(null), 4000);
+  };
+
+  // AI Agent: Add Evidence Node from authentic flight corpus
+  const handleAiAddEvidence = () => {
+    const evCount = nodes.filter((n) => n.type === "evidence").length;
+    const unusedRecord = (experimentsData as ExperimentRecord[]).find(
+      (r) => !nodes.some((n) => n.data?.claimId === r.claim_locator_details?.claimId)
+    ) || (experimentsData as ExperimentRecord[])[2];
+
+    const evNode: Node = {
+      id: `ev-extra-${Date.now()}`,
+      type: "evidence",
+      position: { x: 80 + evCount * 280, y: 190 },
+      data: {
+        claimId: unusedRecord.claim_locator_details?.claimId || `CLM-${unusedRecord.id.toUpperCase()}`,
+        investigation: unusedRecord.investigation,
+        conditions: `${unusedRecord.oxygen_pct != null ? `${unusedRecord.oxygen_pct}% O₂` : "21% O₂"} • ${unusedRecord.airflow_cm_s != null ? `${unusedRecord.airflow_cm_s} cm/s` : "quiescent"}`,
+        quote: unusedRecord.finding,
+        aiGenerated: true,
+        onChange: handleUpdateNodeData,
+        onDelete: handleDeleteNode,
+      },
+    };
+
+    setNodes((nds) => [...nds, evNode]);
+
+    const qNode = nodes.find((n) => n.type === "question");
+    const hypNode = nodes.find((n) => n.type === "hypothesis");
+
+    const newEvidenceEdges: Edge[] = [];
+    if (qNode) {
+      newEvidenceEdges.push({
+        id: `e-${qNode.id}-${evNode.id}`,
+        source: qNode.id,
+        target: evNode.id,
+        animated: true,
+        style: { stroke: "#38bdf8", strokeWidth: 2 },
+      });
+    }
+    if (hypNode) {
+      newEvidenceEdges.push({
+        id: `e-${evNode.id}-${hypNode.id}`,
+        source: evNode.id,
+        target: hypNode.id,
+        style: { stroke: "#10b981", strokeWidth: 2 },
+      });
+    }
+
+    if (newEvidenceEdges.length > 0) {
+      setEdges((eds) => [...eds, ...newEvidenceEdges]);
+    }
+
+    setAiStatusFeedback(`✨ AI Agent linked flight evidence: ${unusedRecord.investigation}`);
+    setTimeout(() => centerGraph(), 80);
+    setTimeout(() => centerGraph(), 300);
+    setTimeout(() => setAiStatusFeedback(null), 4000);
   };
 
   // Auto-Layout: Evenly distributes nodes into balanced hierarchy across the full width
@@ -718,6 +1039,14 @@ export function StructuredWhiteboard({
 
       {/* Canvas Viewport - EXPANDED TO FULL AVAILABLE MODAL HEIGHT */}
       <div className="flex-1 w-full h-full min-h-[500px] relative">
+        {/* Dynamic AI Status Banner */}
+        {aiStatusFeedback && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 px-4 py-2 bg-amber-400 text-slate-950 font-mono text-xs font-bold rounded-lg shadow-2xl flex items-center gap-2 border border-amber-300 animate-in fade-in slide-in-from-top duration-200">
+            <Sparkles className="w-4 h-4 fill-current" />
+            <span>{aiStatusFeedback}</span>
+          </div>
+        )}
+
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -725,8 +1054,15 @@ export function StructuredWhiteboard({
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          onInit={(inst) => {
+            setRfInstance(inst);
+            rfInstanceRef.current = inst;
+            setTimeout(() => {
+              inst.fitView({ duration: 800, padding: 0.2 });
+            }, 100);
+          }}
           fitView
-          fitViewOptions={{ padding: 0.15 }}
+          fitViewOptions={{ padding: 0.2 }}
         >
           <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#334155" />
           <Controls className="!bg-[#13171e] !border-white/10 !text-slate-200" />
@@ -772,26 +1108,46 @@ export function StructuredWhiteboard({
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={handleAiAddCounterHypothesis}
-              className="px-2.5 py-1.5 bg-[#171b26] hover:bg-[#202534] text-amber-300 border border-amber-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+              className="px-2 py-1 bg-[#171b26] hover:bg-[#202534] text-amber-300 border border-amber-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
               title="AI adds an opposing physical mechanism node"
             >
               <BrainCircuit className="w-3 h-3 text-amber-400" />
               <span>+ Counter-Hypothesis</span>
             </button>
             <button
-              onClick={() => handleAiGenerateTree("Droplet Cool-Flame Extinction Boundaries")}
-              className="px-2.5 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+              onClick={handleAiAddEvidence}
+              className="px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+              title="AI adds an additional authentic NASA flight evidence node"
             >
-              <span>+ Droplet Tree</span>
+              <Plus className="w-3 h-3" />
+              <span>+ Evidence</span>
             </button>
             <button
-              onClick={() => handleAiGenerateTree("Exploration High-O2 56kPa Flammability")}
-              className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+              onClick={() => handleAiGenerateTree("Artemis Lunar Flammability PMMA SIBAL 26% O2 56kPa")}
+              className="px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
             >
-              <span>+ Exploration Tree</span>
+              <span>🚀 Artemis</span>
+            </button>
+            <button
+              onClick={() => handleAiGenerateTree("Forced Airflow Flame Spread Divergence Saffire vs BASS 20 cm/s")}
+              className="px-2 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+            >
+              <span>💨 Ventilation</span>
+            </button>
+            <button
+              onClick={() => handleAiGenerateTree("Droplet Cool-Flame Extinction Boundaries FLEX")}
+              className="px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+            >
+              <span>💧 Droplet</span>
+            </button>
+            <button
+              onClick={() => handleAiGenerateTree("Thick Fuel Conduction Heat Sink SoFIE GEL PMMA")}
+              className="px-2 py-1 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-lg flex items-center gap-1 text-[11px] transition-colors"
+            >
+              <span>🔥 SoFIE</span>
             </button>
           </div>
         </div>

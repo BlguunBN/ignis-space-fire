@@ -63,6 +63,27 @@ describe('Physics Droplet d² Burning Law & Simulation Verification', () => {
       'Buoyancy at 1g increases convective oxidizer transport, yielding higher apparent burning rate than pure diffusion in 0g'
     );
   });
+
+  test('cursor forced airflow pushes flame downwind away from cursor nozzle', () => {
+    // Droplet at center (cx: 280, cy: 175)
+    const cx = 280;
+    const cy = 175;
+    // Cursor nozzle placed at bottom-left (100, 250)
+    const cursorPos = { x: 100, y: 250 };
+
+    const fromCursorX = cx - cursorPos.x; // +180
+    const fromCursorY = cy - cursorPos.y; // -75
+    const dist = Math.sqrt(fromCursorX * fromCursorX + fromCursorY * fromCursorY);
+    const unitDirX = fromCursorX / dist;
+    const unitDirY = fromCursorY / dist;
+
+    const driftX = unitDirX * 25;
+    const driftY = unitDirY * 25;
+
+    // Wind blows from bottom-left towards top-right -> flame must deflect to the right (driftX > 0) and up (driftY < 0)
+    assert.ok(driftX > 0, 'Flame must deflect rightwards, away from cursor at the left');
+    assert.ok(driftY < 0, 'Flame must deflect upwards, away from cursor at the bottom');
+  });
 });
 
 describe('Optical Flame Diagnostics & Computer Vision Morphology', () => {
