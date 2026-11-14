@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, ShieldAlert, Award, FileText, CheckCircle2 } from "lucide-react";
+import { X, ShieldAlert, Award, ExternalLink } from "lucide-react";
 
 interface MethodologyModalProps {
   onClose: () => void;
@@ -10,103 +10,103 @@ interface MethodologyModalProps {
 export function MethodologyModal({ onClose }: MethodologyModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-[#1B2027] border border-[#303741] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+        <div className="p-4 sm:p-5 border-b border-[#303741] flex items-center justify-between bg-[#15191F]">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-400" />
-              Scientific Methodology & Provenance
+            <h2 className="text-base font-bold text-[#F3F5F7] flex items-center gap-2">
+              <Award className="w-4 h-4 text-[#E99847]" />
+              Scientific Methodology, Provenance & Boundaries
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              NASA Space Apps Ulaanbaatar 2026 — Flame in Freefall
+            <p className="text-xs text-[#A1AAB5] mt-0.5">
+              NASA Space Apps Ulaanbaatar 2026 — Team Twinkle Twinkle
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition"
+            className="p-1.5 rounded-lg bg-[#1B2027] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-300 leading-relaxed">
+        <div className="p-5 overflow-y-auto space-y-5 text-xs text-[#A1AAB5] leading-relaxed">
           {/* Scientific Caution */}
-          <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-900/50">
-            <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2 mb-2">
+          <div className="p-3.5 rounded-xl bg-[#0C0F13] border border-[#E99847]/40">
+            <h3 className="text-xs font-bold text-[#E99847] flex items-center gap-1.5 mb-1.5">
               <ShieldAlert className="w-4 h-4" />
-              The Microgravity Boundary vs. Lunar/Martian Gravity
+              Microgravity Boundary vs. Lunar / Martian Gravity
             </h3>
             <p>
-              A foundational principle of IGNIS is scientific validity. Microgravity (~0g) removes buoyancy-driven convection, yielding spherical flames and low-momentum transport. However, the Moon (0.16g) and Mars (0.38g) are partial-gravity regimes where buoyancy is weakened but active.
+              Microgravity (~0g) removes buoyancy-driven convection, causing rounded flame fronts, slower ignition, and radiation-dominated extinction. However, the Moon (0.16g) and Mars (0.38g) are partial-gravity regimes where buoyancy is weakened but active.
             </p>
-            <p className="mt-2 text-amber-200/90 font-medium">
-              IGNIS deliberately flags domain mismatches rather than presenting unvalidated mathematical extrapolations to Martian surface conditions.
+            <p className="mt-1.5 text-[#F3F5F7] font-medium">
+              IGNIS deliberately flags this domain mismatch rather than presenting unvalidated mathematical extrapolations to Martian surface conditions.
             </p>
           </div>
 
           {/* Transparent Relevance Model */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-[#F3F5F7] uppercase tracking-wider">
               Transparent Evidence Relevance Score Formula
             </h3>
-            <p className="text-slate-400">
+            <p>
               The dashboard ranks research relevance using a deterministic model so engineers can verify why each experiment matched their mission query:
             </p>
 
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-cyan-300 space-y-1 text-[11px]">
+            <div className="bg-[#0C0F13] p-3 rounded-xl border border-[#303741] font-mono text-[#78A9D8] space-y-1 text-[11px]">
               <div>Score = 0.30 × Material Similarity</div>
-              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20 × Atmosphere (O₂ & Pressure) Similarity</div>
-              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20 × Forced Airflow Velocity Similarity</div>
-              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.15 × Phenomenon & Measurement Match</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20 × Atmosphere (O₂ & Pressure) Match</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20 × Forced Airflow Velocity Match</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.15 × Phenomenon & Target Measurement Match</div>
               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.10 × Scale & Platform Relevance (Cygnus / ISS MSG / CIR)</div>
               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.05 × Metadata Completeness</div>
             </div>
 
-            <p className="text-slate-400 text-[11px]">
-              <strong>Missing Variable Degradation:</strong> If a NASA study does not explicitly report a parameter (e.g. ambient pressure), it is never guessed or replaced with standard terrestrial values (101.3 kPa). The score degrades confidence and explicitly surfaces the omission.
+            <p className="text-[11px]">
+              <strong className="text-[#F3F5F7]">Missing Variable Policy:</strong> If a NASA study does not explicitly report a parameter, it is represented as <code className="text-[#E99847]">null</code> and rendered as &quot;Not reported&quot;. It is never replaced with terrestrial defaults (21% O₂, 101.3 kPa, 0 cm/s).
             </p>
           </div>
 
           {/* AI Grounding Architecture */}
           <div className="space-y-2">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              AI Grounding Architecture (Baseline-First)
+            <h3 className="text-xs font-bold text-[#F3F5F7] uppercase tracking-wider">
+              AI Grounding Architecture (NVIDIA Nemotron-30B)
             </h3>
-            <p className="text-slate-400">
-              IGNIS follows a resilient architecture where the core ranking and filtering are 100% deterministic. When AI interpretation is triggered:
+            <p>
+              When AI interpretation is requested, the client sends the query and trusted record IDs to the server (<code className="text-[#78A9D8]">POST /api/interpret</code>). The server loads the authentic records directly from verified JSON and prompts the model with strict grounding rules:
             </p>
-            <ul className="list-disc pl-5 space-y-1 text-slate-300">
+            <ul className="list-disc pl-5 space-y-1 text-[11px]">
               <li>
                 <strong>Strict Context:</strong> The model is supplied only with the top 3-5 ranked NASA investigation records.
               </li>
               <li>
-                <strong>Hallucination Defense:</strong> The prompt forbids estimating fire probabilities or inventing chamber parameters.
+                <strong>Reasoning Chain:</strong> The model generates internal scientific reasoning steps before finalizing output.
               </li>
               <li>
-                <strong>Offline Fallback:</strong> If no external API key is present or connectivity drops during live hackathon demos, IGNIS executes structured synthesis deterministically.
+                <strong>Offline Fallback:</strong> If no API key is present or connectivity drops during live hackathon demos, IGNIS executes structured synthesis deterministically.
               </li>
             </ul>
           </div>
 
           {/* Data Sources and Licensing */}
-          <div className="space-y-2 border-t border-slate-800 pt-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+          <div className="space-y-2 border-t border-[#303741] pt-4">
+            <h3 className="text-xs font-bold text-[#F3F5F7] uppercase tracking-wider">
               Data Sources & Open Attribution
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                <span className="font-semibold text-white block">NASA Physical Sciences Informatics</span>
-                <span className="text-slate-400">DOIs: 10.60555/0t15-1z43, 10.60555/mbq8-0451, CC0-1.0</span>
+              <div className="p-2.5 bg-[#0C0F13] rounded-lg border border-[#303741]">
+                <span className="font-semibold text-[#F3F5F7] block">NASA Physical Sciences Informatics</span>
+                <span className="text-[#737F8C]">DOIs: 10.60555/0t15-1z43, 10.60555/mbq8-0451</span>
               </div>
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                <span className="font-semibold text-white block">NASA Technical Reports Server</span>
-                <span className="text-slate-400">Public REST API (citations & technical reports)</span>
+              <div className="p-2.5 bg-[#0C0F13] rounded-lg border border-[#303741]">
+                <span className="font-semibold text-[#F3F5F7] block">NASA Technical Reports Server</span>
+                <span className="text-[#737F8C]">Open REST API (citations & technical reports)</span>
               </div>
             </div>
-            <p className="text-[11px] text-slate-400">
-              Software is released under the <strong>Apache-2.0</strong> open source license, adhering to NASA Space Apps Challenge terms.
+            <p className="text-[11px] text-[#737F8C]">
+              Software is released under the <strong className="text-[#F3F5F7]">Apache-2.0</strong> open source license, adhering to NASA Space Apps Challenge terms.
             </p>
           </div>
         </div>

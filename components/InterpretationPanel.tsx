@@ -18,16 +18,16 @@ export function InterpretationPanel({
   const [showReasoning, setShowReasoning] = useState(false);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+    <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-5 shadow-sm space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#303741]">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-400" />
-            <h3 className="text-lg font-bold text-white">
-              Grounded AI Interpretation
+            <Sparkles className="w-4 h-4 text-[#E99847]" />
+            <h3 className="text-sm font-bold text-[#F3F5F7]">
+              Grounded Scientific Interpretation
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#A1AAB5] mt-0.5">
             Powered by NVIDIA Nemotron-30B Reasoning Model under strict NASA evidence guardrails.
           </p>
         </div>
@@ -35,56 +35,56 @@ export function InterpretationPanel({
         <button
           onClick={onGenerate}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-medium text-xs shadow-md shadow-purple-900/30 transition cursor-pointer"
+          className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#E99847] hover:bg-[#d68536] disabled:opacity-50 text-[#0C0F13] font-bold text-xs shadow-sm transition cursor-pointer"
         >
-          <Sparkles className="w-4 h-4" />
-          {loading ? "Reasoning & Synthesising..." : "Generate AI Interpretation"}
+          <Sparkles className="w-3.5 h-3.5 fill-current" />
+          {loading ? "Reasoning & Synthesising..." : "Synthesize Evidence (NVIDIA)"}
         </button>
       </div>
 
       {!synthesis && !loading && (
-        <div className="py-8 text-center text-slate-500 text-xs">
-          <Cpu className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-          Click <strong className="text-slate-300">"Generate AI Interpretation"</strong> to synthesise research findings, engineering implications, and documented boundaries for the current query.
+        <div className="py-6 text-center text-[#737F8C] text-xs">
+          <Cpu className="w-6 h-6 mx-auto text-[#303741] mb-1.5" />
+          Click <strong className="text-[#A1AAB5]">&quot;Synthesize Evidence&quot;</strong> to generate a source-grounded scientific synthesis for the active query.
         </div>
       )}
 
       {loading && (
-        <div className="py-10 text-center text-slate-400 text-xs animate-pulse space-y-2">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <div className="py-8 text-center text-[#A1AAB5] text-xs space-y-2">
+          <div className="w-6 h-6 border-2 border-[#E99847] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
           <div>Querying NVIDIA Nemotron-30B Reasoning Model...</div>
-          <div className="text-[11px] text-slate-500">
-            Applying physics grounding constraints and verifying non-extrapolation boundary.
+          <div className="text-[10px] text-[#737F8C] font-mono">
+            Grounding claims to NASA PSI DOIs and verifying microgravity boundary.
           </div>
         </div>
       )}
 
       {synthesis && !loading && (
-        <div className="mt-5 space-y-5 text-xs animate-fade-in">
-          {/* Engine & Model Badge */}
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-[11px]">
-            <span className="text-slate-400">Synthesis Engine:</span>
-            <span className="font-semibold text-purple-300 flex items-center gap-1.5">
-              <Cpu className="w-3.5 h-3.5 text-purple-400" />
-              {synthesis.modelUsed || "NVIDIA Nemotron-30B"}
+        <div className="space-y-4 text-xs animate-fade-in">
+          {/* Model Badge */}
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#0C0F13] p-2 rounded-lg border border-[#303741] text-[11px]">
+            <span className="text-[#737F8C]">Inference Engine:</span>
+            <span className="font-semibold text-[#E99847] flex items-center gap-1.5 font-mono">
+              <Cpu className="w-3 h-3 text-[#E99847]" />
+              {synthesis.modelUsed || "NVIDIA Nemotron-30B Reasoning (NIM)"}
             </span>
           </div>
 
-          {/* Optional: NVIDIA Reasoning Trace */}
+          {/* NVIDIA Reasoning Trace (Expandable) */}
           {synthesis.reasoningSteps && (
-            <div className="bg-slate-950/80 rounded-xl border border-purple-900/40 p-3">
+            <div className="bg-[#0C0F13] rounded-lg border border-[#303741] p-3">
               <button
                 onClick={() => setShowReasoning(!showReasoning)}
-                className="w-full flex items-center justify-between text-purple-400 hover:text-purple-300 font-semibold text-xs transition"
+                className="w-full flex items-center justify-between text-[#78A9D8] hover:text-[#F3F5F7] font-semibold text-xs transition cursor-pointer"
               >
-                <span className="flex items-center gap-1.5">
-                  <Brain className="w-4 h-4 text-purple-400" />
-                  NVIDIA Model Reasoning Trace
+                <span className="flex items-center gap-1.5 font-mono text-[11px]">
+                  <Brain className="w-3.5 h-3.5 text-[#78A9D8]" />
+                  Internal Reasoning Trace ({synthesis.reasoningSteps.length} chars)
                 </span>
-                {showReasoning ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {showReasoning ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
               {showReasoning && (
-                <div className="mt-2.5 pt-2 border-t border-purple-950 text-slate-400 leading-relaxed font-mono text-[11px] whitespace-pre-wrap max-h-48 overflow-y-auto">
+                <div className="mt-2 pt-2 border-t border-[#303741] text-[#A1AAB5] leading-relaxed font-mono text-[10px] whitespace-pre-wrap max-h-48 overflow-y-auto">
                   {synthesis.reasoningSteps}
                 </div>
               )}
@@ -92,24 +92,24 @@ export function InterpretationPanel({
           )}
 
           {/* Core Summary */}
-          <div className="bg-purple-950/20 p-4 rounded-xl border border-purple-900/30">
-            <h4 className="font-bold text-purple-300 text-xs uppercase tracking-wider mb-2">
+          <div className="bg-[#15191F] p-3.5 rounded-lg border border-[#303741]">
+            <span className="font-bold text-[#E99847] text-[10px] uppercase tracking-wider block mb-1 font-mono">
               Cross-Experiment Synthesis
-            </h4>
-            <p className="text-slate-200 text-sm leading-relaxed">{synthesis.summary}</p>
+            </span>
+            <p className="text-[#F3F5F7] text-xs leading-relaxed">{synthesis.summary}</p>
           </div>
 
           {/* Key Findings */}
-          <div className="space-y-2">
-            <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <div className="space-y-1.5">
+            <span className="font-bold text-[#F3F5F7] uppercase tracking-wider text-[10px] flex items-center gap-1.5 font-mono">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#5CB59B]" />
               Observed Scientific Findings
-            </h4>
-            <ul className="space-y-2 pl-2">
+            </span>
+            <ul className="space-y-1.5 pl-1">
               {synthesis.keyFindings.map((finding, idx) => (
                 <li
                   key={idx}
-                  className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-slate-300 leading-relaxed"
+                  className="bg-[#0C0F13] p-2.5 rounded-lg border border-[#303741] text-[#A1AAB5] leading-relaxed text-[11px]"
                 >
                   {finding}
                 </li>
@@ -118,15 +118,15 @@ export function InterpretationPanel({
           </div>
 
           {/* Fire Safety Implications */}
-          <div className="space-y-2">
-            <h4 className="font-bold text-amber-300 uppercase tracking-wider text-[11px]">
+          <div className="space-y-1.5">
+            <span className="font-bold text-[#E99847] uppercase tracking-wider text-[10px] font-mono">
               Spacecraft Fire Safety Implications
-            </h4>
-            <ul className="space-y-2 pl-2">
+            </span>
+            <ul className="space-y-1.5 pl-1">
               {synthesis.fireSafetyImplications.map((imp, idx) => (
                 <li
                   key={idx}
-                  className="bg-amber-950/20 p-2.5 rounded-lg border border-amber-900/30 text-slate-300 leading-relaxed"
+                  className="bg-[#0C0F13] p-2.5 rounded-lg border border-[#303741] text-[#F3F5F7] leading-relaxed text-[11px]"
                 >
                   {imp}
                 </li>
@@ -135,12 +135,12 @@ export function InterpretationPanel({
           </div>
 
           {/* Scientific Limitations */}
-          <div className="space-y-2">
-            <h4 className="font-bold text-rose-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4" />
+          <div className="space-y-1.5">
+            <span className="font-bold text-[#D97777] uppercase tracking-wider text-[10px] flex items-center gap-1 font-mono">
+              <AlertTriangle className="w-3 h-3" />
               Scientific Boundaries & Limitations
-            </h4>
-            <ul className="space-y-1.5 list-disc pl-5 text-slate-400">
+            </span>
+            <ul className="space-y-1 list-disc pl-4 text-[#A1AAB5] text-[11px]">
               {synthesis.scientificLimitations.map((lim, idx) => (
                 <li key={idx}>{lim}</li>
               ))}
@@ -148,22 +148,22 @@ export function InterpretationPanel({
           </div>
 
           {/* Cited Sources */}
-          <div className="pt-3 border-t border-slate-800/80">
-            <h4 className="font-bold text-slate-400 uppercase tracking-wider text-[11px] mb-2">
-              Cited NASA Experimental Investigations
-            </h4>
-            <div className="flex flex-wrap gap-2">
+          <div className="pt-2.5 border-t border-[#303741]">
+            <span className="font-bold text-[#737F8C] uppercase tracking-wider text-[10px] block mb-1.5 font-mono">
+              Verified NASA Citations
+            </span>
+            <div className="flex flex-wrap gap-1.5">
               {synthesis.citedSources.map((src, idx) => (
                 <a
                   key={idx}
                   href={src.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-950 text-blue-400 hover:text-blue-300 border border-slate-800 transition"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#0C0F13] text-[#78A9D8] hover:text-[#F3F5F7] border border-[#303741] transition text-[11px]"
                 >
                   <span>{src.title}</span>
-                  <span className="text-slate-500 font-mono text-[10px]">[{src.doi}]</span>
-                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                  <span className="text-[#737F8C] font-mono text-[9px]">[{src.doi}]</span>
+                  <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
                 </a>
               ))}
             </div>

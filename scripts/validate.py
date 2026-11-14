@@ -11,12 +11,13 @@ REQUIRED_FIELDS = [
     "id",
     "programme",
     "investigation",
+    "record_type",
+    "verification_status",
     "source_type",
     "gravity",
     "platform",
     "material",
-    "oxygen_pct",
-    "airflow_cm_s",
+    "material_class",
     "measurements",
     "finding",
     "fire_safety_relevance",
@@ -24,6 +25,9 @@ REQUIRED_FIELDS = [
     "source_url",
     "quality"
 ]
+
+VALID_RECORD_TYPES = {"experiment_run", "investigation_summary", "paper_finding"}
+VALID_VERIFICATION_STATUSES = {"verified", "needs_review", "unsupported"}
 
 def validate_dataset(filepath: Path) -> bool:
     print(f"Validating NASA evidence dataset: {filepath}")
@@ -58,8 +62,34 @@ def validate_dataset(filepath: Path) -> bool:
             if field not in rec:
                 print(f"  [FAIL] Record '{rec_id}' missing required field: '{field}'")
                 all_valid = False
-            elif rec[field] is None and field not in ["pressure_kpa", "psi_id"]:
-                print(f"  [WARN] Record '{rec_id}' has None for non-optional field: '{field}'")
+
+        # Validate record_type and verification_status
+        rec_type = rec.get("record_type")
+        if rec_type not in VALID_RECORD_TYPES:
+            print(f"  [FAIL] Record '{rec_id}' invalid record_type: '{rec_type}'")
+            all_valid = False
+
+        status = rec.get("verification_status")
+        if status not in VALID_VERIFICATION_STATUSES:
+            print(f"  [FAIL] Record '{rec_id}' invalid verification_status: '{status}'")
+            all_valid = False
+
+        # If verified, require source_locator
+        if status == "verified" and not rec.get("source_locator"):
+            print(f"  [WARN] Record '{rec_id}' is marked 'verified' but lacks 'source_locator'")
+
+        # Range checks for physical values (if reported)
+        o2 = rec.get("oxygen_pct")
+        if o2 is not None:
+            if not isinstance(o2, (int, float)) or not (10.0 <= o2 <= 100.0):
+                print(f"  [FAIL] Record '{rec_id}' oxygen_pct outside plausible bounds: {o2}")
+                all_valid = False
+
+        flow = rec.get("airflow_cm_s")
+        if flow is not None:
+            if not isinstance(flow, (int, float)) or flow < 0:
+                print(f"  [FAIL] Record '{rec_id}' airflow_cm_s cannot be negative: {flow}")
+                all_valid = False
 
         # Validate scientific integrity rules
         if rec.get("gravity") != "microgravity":

@@ -13,14 +13,14 @@ import { ExperimentRecord, SearchQuery, RankedEvidence, ScoreBreakdown } from "@
  *         + 0.10 * scale_platform_relevance
  *         + 0.05 * metadata_completeness
  * 
- * If freeText is provided, a fuzzy query boost is applied to reflect natural language inquiries.
+ * Missing parameters (null) degrade confidence instead of defaulting to terrestrial values.
  */
 
 export function rankEvidence(
   experiments: ExperimentRecord[],
   query: SearchQuery
 ): RankedEvidence[] {
-  // Pre-calculate fuzzy matching scores if freeText or material is supplied
+  // Pre-calculate fuzzy matching scores if freeText is supplied
   const fuzzyScores = new Map<string, number>();
 
   if (query.freeText && query.freeText.trim().length > 0) {
@@ -40,7 +40,6 @@ export function rankEvidence(
     const searchResults = fuse.search(query.freeText.trim());
     for (const res of searchResults) {
       if (res.score != null) {
-        // Fuse score: 0 = exact match, 1 = mismatch
         const similarity = Math.round((1 - res.score) * 100);
         fuzzyScores.set(res.item.id, similarity);
       }
@@ -135,17 +134,22 @@ function calculateScoreBreakdown(
   // 2. Atmosphere / Oxygen Similarity (0 - 100)
   let atmosphereScore = 70;
   if (query.oxygenPct != null) {
-    const diff = Math.abs(exp.oxygen_pct - query.oxygenPct);
-    if (diff < 1.0) {
-      atmosphereScore = 100;
-      reasons.push(`Close oxygen concentration match (${exp.oxygen_pct}%)`);
-    } else if (diff < 5.0) {
-      atmosphereScore = 80;
-      reasons.push(`Comparable oxygen regime (${exp.oxygen_pct}%)`);
-    } else if (diff < 10.0) {
-      atmosphereScore = 55;
+    if (exp.oxygen_pct == null) {
+      missingParams.push("oxygen concentration (O2 %)");
+      atmosphereScore = 20;
     } else {
-      atmosphereScore = 25;
+      const diff = Math.abs(exp.oxygen_pct - query.oxygenPct);
+      if (diff < 1.0) {
+        atmosphereScore = 100;
+        reasons.push(`Close oxygen concentration match (${exp.oxygen_pct}%)`);
+      } else if (diff < 5.0) {
+        atmosphereScore = 80;
+        reasons.push(`Comparable oxygen regime (${exp.oxygen_pct}%)`);
+      } else if (diff < 10.0) {
+        atmosphereScore = 55;
+      } else {
+        atmosphereScore = 25;
+      }
     }
   }
 
@@ -165,20 +169,25 @@ function calculateScoreBreakdown(
   // 3. Airflow Similarity (0 - 100)
   let airflowScore = 70;
   if (query.airflowCmS != null) {
-    const diff = Math.abs(exp.airflow_cm_s - query.airflowCmS);
-    if (diff <= 2.0) {
-      airflowScore = 100;
-      reasons.push(`Direct ventilation airflow match (${exp.airflow_cm_s} cm/s)`);
-    } else if (diff <= 8.0) {
-      airflowScore = 80;
-      reasons.push(`Comparable low forced-convection velocity`);
-    } else if (diff <= 15.0) {
-      airflowScore = 50;
+    if (exp.airflow_cm_s == null) {
+      missingParams.push("ventilation airflow velocity");
+      airflowScore = 20;
     } else {
-      airflowScore = 25;
+      const diff = Math.abs(exp.airflow_cm_s - query.airflowCmS);
+      if (diff <= 2.0) {
+        airflowScore = 100;
+        reasons.push(`Direct ventilation airflow match (${exp.airflow_cm_s} cm/s)`);
+      } else if (diff <= 8.0) {
+        airflowScore = 80;
+        reasons.push(`Comparable low forced-convection velocity`);
+      } else if (diff <= 15.0) {
+        airflowScore = 50;
+      } else {
+        airflowScore = 25;
+      }
     }
   } else if (query.freeText && query.freeText.toLowerCase().includes("low airflow")) {
-    if (exp.airflow_cm_s <= 5.0) {
+    if (exp.airflow_cm_s != null && exp.airflow_cm_s <= 5.0) {
       airflowScore = 95;
       reasons.push("Low-airflow quiescent regime match (< 5 cm/s)");
     }
@@ -221,11 +230,19 @@ function calculateScoreBreakdown(
   // 6. Metadata Completeness (0 - 100)
   let completenessScore = 100;
   if (exp.pressure_kpa == null) {
-    completenessScore -= 20;
+    completenessScore -= 15;
     if (!missingParams.includes("pressure_kpa")) missingParams.push("pressure_kpa");
   }
+  if (exp.oxygen_pct == null) {
+    completenessScore -= 20;
+    if (!missingParams.includes("oxygen_pct")) missingParams.push("oxygen_pct");
+  }
+  if (exp.airflow_cm_s == null) {
+    completenessScore -= 20;
+    if (!missingParams.includes("airflow_cm_s")) missingParams.push("airflow_cm_s");
+  }
   if (!exp.psi_id && !exp.doi) {
-    completenessScore -= 30;
+    completenessScore -= 25;
     missingParams.push("persistent identifier / DOI");
   }
 

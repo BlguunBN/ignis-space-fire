@@ -12,6 +12,7 @@ export interface SynthesisResponse {
     doi?: string;
     sourceUrl: string;
     platform: string;
+    sourceLocator?: string;
   }>;
   aiMode: "live_llm" | "deterministic_fallback";
   modelUsed?: string;
@@ -47,10 +48,27 @@ function buildDeterministicSynthesis(
 ): SynthesisResponse {
   const topExps = topRanked.slice(0, 3).map((r) => r.experiment);
 
-  const materials = Array.from(new Set(topExps.map((e) => e.material))).join(", ");
-  const programmes = Array.from(new Set(topExps.map((e) => e.programme))).join(", ");
+  if (topExps.length === 0) {
+    return {
+      summary: "No verified NASA microgravity evidence records matched the specified inquiry criteria.",
+      keyFindings: [],
+      fireSafetyImplications: [],
+      scientificLimitations: [
+        "Absence of evidence in the indexed corpus does not imply absence of NASA testing. Expand search filters to inspect related flight investigations."
+      ],
+      citedSources: [],
+      aiMode: "deterministic_fallback",
+      modelUsed: "IGNIS Grounded Science Engine (Deterministic)",
+    };
+  }
 
-  const summary = `Based on ${topExps.length} top-ranked NASA microgravity investigations across the ${programmes} programme(s), combustion dynamics for ${materials} demonstrate that the absence of buoyant updraft fundamentally alters flame stabilization, extinction thresholds, and smoke generation. Under low forced ventilation, flames exhibit rounded fronts with heightened radiative sensitivity and non-monotonic spread rates.`;
+  const summariesByStudy = topExps.map((e) => {
+    const o2Text = e.oxygen_pct != null ? `${e.oxygen_pct}% O₂` : "unreported O₂";
+    const flowText = e.airflow_cm_s != null ? `${e.airflow_cm_s} cm/s airflow` : "unreported airflow";
+    return `${e.investigation} (${e.programme}, ${e.platform}) evaluated ${e.material} under ${o2Text} and ${flowText}: ${e.finding}`;
+  });
+
+  const summary = `Evidence synthesis of ${topExps.length} top-ranked NASA flight records: ${summariesByStudy.join(" ")}`;
 
   const keyFindings = topExps.map((e) => `[${e.investigation}]: ${e.finding}`);
 
@@ -58,10 +76,12 @@ function buildDeterministicSynthesis(
     `[${e.programme}]: ${e.fire_safety_relevance}`
   );
 
+  // Collect specific limitations from each cited experiment
+  const studyLimitations = topExps.flatMap((e) => e.limitations.map((lim) => `[${e.investigation}] ${lim}`));
+
   const scientificLimitations = [
-    "Domain Restriction: All indexed data derived from orbital microgravity (~0g). Findings cannot be quantitatively extrapolated to Lunar (0.16g) or Martian (0.38g) partial-gravity environments without dedicated reduced-gravity testing (e.g. FLARE).",
-    "Measurement Boundaries: Several investigations lack explicit ambient cabin pressure or rely on quiescent airflow tunnels; actual crew compartment HVAC ventilation may induce local vortices.",
-    "Material Geometry: Small-scale samples (e.g. BASS-II 2 cm strips) underestimate propagation velocities observed in full-scale vehicle ducts (Saffire 1.0 m panels)."
+    "Domain Boundary: All indexed empirical data represents sustained orbital microgravity (~0g). These findings cannot be quantitatively extrapolated to Lunar (0.16g) or Martian (0.38g) partial-gravity environments without dedicated reduced-gravity flammability verification (e.g. FLARE).",
+    ...studyLimitations,
   ];
 
   const citedSources = topExps.map((e) => ({
@@ -70,6 +90,7 @@ function buildDeterministicSynthesis(
     doi: e.doi || e.psi_id || "NASA Technical Publication",
     sourceUrl: e.source_url,
     platform: e.platform,
+    sourceLocator: e.source_locator,
   }));
 
   return {
@@ -79,7 +100,7 @@ function buildDeterministicSynthesis(
     scientificLimitations,
     citedSources,
     aiMode: "deterministic_fallback",
-    modelUsed: "IGNIS Deterministic Science Engine",
+    modelUsed: "IGNIS Grounded Science Engine (Deterministic)",
   };
 }
 
@@ -94,11 +115,11 @@ async function callNvidiaNemotronLLM(
   const systemPrompt = `You are IGNIS, an expert research synthesis engine for NASA microgravity combustion data (NASA Space Apps 2026).
 STRICT EVIDENCE GROUNDING RULES:
 1. Base all synthesis STRICTLY on the supplied NASA flight experiment evidence.
-2. If any parameter is missing, explicitly state "not reported in the indexed evidence".
+2. If any parameter is missing or null, explicitly state "not reported in the indexed evidence". Never assume terrestrial defaults (21% O2, 101.3 kPa, 0 cm/s).
 3. NEVER extrapolate microgravity (~0g) results quantitatively to Lunar (0.16g) or Martian (0.38g) gravity. Explicitly cite this scientific boundary.
 4. Return a clean JSON object ONLY, with no markdown code blocks outside, matching this exact JSON schema:
 {
-  "summary": "Concise paragraph synthesizing cross-study insights",
+  "summary": "Concise paragraph synthesizing cross-study insights grounded only in the provided experiments",
   "keyFindings": ["Point 1 with study cite", "Point 2 with study cite"],
   "fireSafetyImplications": ["Implication 1", "Implication 2"],
   "scientificLimitations": ["Limitation 1 regarding microgravity boundary"]
@@ -153,7 +174,6 @@ Respond with the requested JSON object.`;
   const rawContent = choice.content || "";
   const reasoningContent = choice.reasoning_content || undefined;
 
-  // Clean json fences if present
   let cleanJson = rawContent.trim();
   if (cleanJson.startsWith("```json")) {
     cleanJson = cleanJson.replace(/^```json\s*/, "").replace(/```$/, "").trim();
@@ -175,6 +195,7 @@ Respond with the requested JSON object.`;
         doi: e.doi || e.psi_id || "NASA Publication",
         sourceUrl: e.source_url,
         platform: e.platform,
+        sourceLocator: e.source_locator,
       })),
       aiMode: "live_llm",
       modelUsed: "NVIDIA Nemotron-30B Reasoning (NIM)",
@@ -195,6 +216,7 @@ Respond with the requested JSON object.`;
         doi: e.doi || e.psi_id || "NASA Publication",
         sourceUrl: e.source_url,
         platform: e.platform,
+        sourceLocator: e.source_locator,
       })),
       aiMode: "live_llm",
       modelUsed: "NVIDIA Nemotron-30B Reasoning (NIM)",

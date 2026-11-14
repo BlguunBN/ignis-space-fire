@@ -12,25 +12,21 @@ import { MethodologyModal } from "@/components/MethodologyModal";
 import { InterpretationPanel } from "@/components/InterpretationPanel";
 import { FlameDynamicsChart } from "@/components/FlameDynamicsChart";
 import { MasterComparisonTable } from "@/components/MasterComparisonTable";
+import { AppSidebar, NavTab } from "@/components/layout/AppSidebar";
 import {
-  Flame,
   Search,
   SlidersHorizontal,
-  Scale,
-  Sparkles,
-  FileQuestion,
   RotateCcw,
-  BookOpen,
   ShieldAlert,
-  Grid3X3,
-  ListFilter,
-  Activity,
-  Table as TableIcon,
-  Sparkle,
+  FileQuestion,
+  Sparkles,
 } from "lucide-react";
 
 export default function Home() {
   const allExperiments = experimentsData as ExperimentRecord[];
+
+  // Navigation State
+  const [activeTab, setActiveTab] = useState<NavTab>("explore");
 
   // Query State
   const [material, setMaterial] = useState("");
@@ -40,15 +36,10 @@ export default function Home() {
   const [programme, setProgramme] = useState("ALL");
   const [freeText, setFreeText] = useState("");
 
-  // Compare State
+  // Compare Basket State
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
-
-  // Active View Tab: 'evidence' | 'chart' | 'table' | 'gap-matrix'
-  const [activeTab, setActiveTab] = useState<"evidence" | "chart" | "table" | "gap-matrix">("evidence");
-
-  // Modals
-  const [isMethodologyOpen, setIsMethodologyOpen] = useState(false);
+  const [isMethodologyModalOpen, setIsMethodologyModalOpen] = useState(false);
 
   // Interpretation State
   const [synthesis, setSynthesis] = useState<SynthesisResponse | null>(null);
@@ -115,6 +106,7 @@ export default function Home() {
       setPhenomenon("flammability");
       setProgramme("ALL");
     }
+    setActiveTab("explore");
   };
 
   const resetFilters = () => {
@@ -140,24 +132,23 @@ export default function Home() {
     });
   };
 
-  // Trigger Grounded AI Interpretation via API Route (NVIDIA Nemotron 30B + Fallback)
+  // Secure Server Interpretation: Sends Query and IDs, Server loads trusted JSON
   const handleGenerateInterpretation = async () => {
     setSynthesisLoading(true);
     try {
-      const top3 = rankedResults.slice(0, 3);
+      const top3Ids = rankedResults.slice(0, 3).map((r) => r.experiment.id);
       const res = await fetch("/api/interpret", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, topRanked: top3 }),
+        body: JSON.stringify({ query, experimentIds: top3Ids }),
       });
 
       if (res.ok) {
         const data = await res.json();
         setSynthesis(data);
       } else {
-        // Direct local synthesis fallback if server returned error
         const { generateGroundedInterpretation } = await import("@/lib/synthesis");
-        const fallback = await generateGroundedInterpretation(query, top3);
+        const fallback = await generateGroundedInterpretation(query, rankedResults.slice(0, 3));
         setSynthesis(fallback);
       }
     } catch (e) {
@@ -174,386 +165,306 @@ export default function Home() {
   const exp2 = selectedForCompare[1] ? allExperiments.find((e) => e.id === selectedForCompare[1]) : null;
 
   return (
-    <main className="min-h-screen bg-[#070b12] text-slate-100 flex flex-col">
-      {/* Top Navigation / Brand */}
-      <header className="border-b border-slate-800 bg-[#0a0f1d]/90 backdrop-blur sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <div className="min-h-screen bg-[#0C0F13] text-[#F3F5F7] flex flex-col lg:flex-row">
+      {/* Sidebar Navigation */}
+      <AppSidebar
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        selectedCompareCount={selectedForCompare.length}
+        onOpenCompare={() => setIsCompareOpen(true)}
+      />
+
+      {/* Main Content Workspace */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header Bar */}
+        <header className="border-b border-[#303741] bg-[#15191F]/80 backdrop-blur px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-rose-900/40">
-              <Flame className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold tracking-tight text-white">IGNIS</h1>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase tracking-wider">
-                  NASA Space Apps 2026
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                  ✨ Team Twinkle Twinkle
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">
-                NASA Microgravity Combustion Evidence & Fire Safety Intelligence
-              </p>
-            </div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#E99847]">
+              NASA Flame in Freefall
+            </span>
+            <span className="text-[#303741]">/</span>
+            <span className="text-xs text-[#A1AAB5]">SI-Powered Fire Safety Intelligence</span>
           </div>
 
-          <div className="flex items-center gap-3">
-            {selectedForCompare.length === 2 && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] px-2 py-0.5 rounded bg-[#1B2027] text-[#5CB59B] border border-[#303741] font-mono">
+              10 Verified Investigations
+            </span>
+            <span className="text-[11px] px-2 py-0.5 rounded bg-[#1B2027] text-[#78A9D8] border border-[#303741] font-mono">
+              NVIDIA Nemotron NIM
+            </span>
+          </div>
+        </header>
+
+        {/* Scientific Boundary Banner */}
+        <div className="bg-[#15191F] border-b border-[#303741] px-4 sm:px-6 py-2">
+          <div className="flex items-center gap-2 text-xs text-[#A1AAB5]">
+            <ShieldAlert className="w-3.5 h-3.5 text-[#E99847] shrink-0" />
+            <p className="text-[11px]">
+              <strong className="text-[#F3F5F7]">Scientific Boundary:</strong> Microgravity (~0g) alters buoyancy; these findings are empirical spacecraft intelligence and do not predict Lunar (0.16g) or Martian (0.38g) partial-gravity fires without dedicated testing.
+            </p>
+          </div>
+        </div>
+
+        {/* Main Body */}
+        <main className="p-4 sm:p-6 space-y-6 max-w-7xl w-full mx-auto">
+          {/* Preset Inquiry Chips */}
+          <div className="bg-[#1B2027] p-3.5 rounded-xl border border-[#303741] space-y-2">
+            <span className="text-[10px] font-bold text-[#737F8C] uppercase tracking-wider block">
+              One-Click Demonstration Queries:
+            </span>
+            <div className="flex flex-wrap gap-2 text-xs">
               <button
-                onClick={() => setIsCompareOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition"
+                onClick={() => applyPreset("pmma")}
+                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
               >
-                <Scale className="w-4 h-4" />
-                Compare (2 Selected)
+                PMMA Low Airflow (BASS-II)
               </button>
-            )}
-
-            <button
-              onClick={() => setIsMethodologyOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              Methodology & Provenance
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Scientific Boundary Banner (Mandatory Validity Rule) */}
-      <div className="bg-amber-950/40 border-b border-amber-900/40 px-4 py-2.5">
-        <div className="max-w-7xl mx-auto flex items-center gap-3 text-xs text-amber-200">
-          <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
-          <p>
-            <strong>NASA Scientific Boundary:</strong> Indexed empirical records represent sustained microgravity (0g). Microgravity alters buoyancy and transport; these findings are not a quantitative predictive model for Lunar (0.16g) or Martian (0.38g) partial gravity flammability.
-          </p>
-        </div>
-      </div>
-
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1 space-y-6">
-        {/* Preset Inquiry Chips */}
-        <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-2">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
-            One-Click Demonstrations for Judges:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => applyPreset("pmma")}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition"
-            >
-              🔹 PMMA in Low Airflow (BASS-II)
-            </button>
-            <button
-              onClick={() => applyPreset("saffire-fabric")}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition"
-            >
-              🔹 Vehicle-Scale Fabric Fire (Saffire-I)
-            </button>
-            <button
-              onClick={() => applyPreset("smoke-detection")}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition"
-            >
-              🔹 Spacecraft Smoke Particle Sizing (SAME-R)
-            </button>
-            <button
-              onClick={() => applyPreset("cool-flame")}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition"
-            >
-              🔹 Cool Flame Discovery & Extinction (FLEX)
-            </button>
-            <button
-              onClick={() => applyPreset("exploration-atm")}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition"
-            >
-              🔹 Exploration Atmospheres (26-34% O₂)
-            </button>
-          </div>
-        </div>
-
-        {/* View Switcher: 4 Views */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setActiveTab("evidence")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-                activeTab === "evidence"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-              }`}
-            >
-              <ListFilter className="w-4 h-4" />
-              Evidence Ranking ({rankedResults.length})
-            </button>
-
-            <button
-              onClick={() => setActiveTab("chart")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-                activeTab === "chart"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-              }`}
-            >
-              <Activity className="w-4 h-4" />
-              Empirical Flame Dynamics (Recharts)
-            </button>
-
-            <button
-              onClick={() => setActiveTab("table")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-                activeTab === "table"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-              }`}
-            >
-              <TableIcon className="w-4 h-4" />
-              Master Comparison Table (TanStack)
-            </button>
-
-            <button
-              onClick={() => setActiveTab("gap-matrix")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-                activeTab === "gap-matrix"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
-                  : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-              }`}
-            >
-              <Grid3X3 className="w-4 h-4" />
-              Evidence Gap Matrix
-            </button>
-          </div>
-
-          <span className="text-xs text-slate-500 hidden sm:inline font-mono">
-            Fuse.js Fuzzy Search · NVIDIA Nemotron 30B
-          </span>
-        </div>
-
-        {/* View Routing */}
-        {activeTab === "chart" && <FlameDynamicsChart />}
-        {activeTab === "table" && (
-          <MasterComparisonTable
-            data={allExperiments}
-            selectedForCompare={selectedForCompare}
-            onToggleCompare={toggleCompare}
-          />
-        )}
-        {activeTab === "gap-matrix" && <GapMatrix />}
-
-        {activeTab === "evidence" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Filter Column (4 cols) */}
-            <div className="lg:col-span-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-blue-400" />
-                  Evidence Query & Filters
-                </h3>
-                <button
-                  onClick={resetFilters}
-                  className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition"
-                >
-                  <RotateCcw className="w-3 h-3" /> Reset
-                </button>
-              </div>
-
-              {/* Natural Language Question (with Fuse.js) */}
-              <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block mb-1">
-                  Fuzzy Search (Fuse.js Powered)
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={freeText}
-                    onChange={(e) => setFreeText(e.target.value)}
-                    placeholder="e.g. acrylic, low airflow, soot particle"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition pl-8"
-                  />
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-3" />
-                </div>
-              </div>
-
-              {/* Material Filter */}
-              <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block mb-1">
-                  Material
-                </label>
-                <select
-                  value={material}
-                  onChange={(e) => setMaterial(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition"
-                >
-                  <option value="">All Materials</option>
-                  <option value="PMMA">PMMA / Acrylic Polymer</option>
-                  <option value="cotton-fiberglass">Cotton-Fiberglass (SIBAL)</option>
-                  <option value="Nomex">Nomex / Flame Resistant Fabric</option>
-                  <option value="wire">Overheated Wire Insulation (PTFE/Kapton)</option>
-                  <option value="droplet">Liquid Fuel Droplets (Heptane/Methanol)</option>
-                  <option value="gas">Gaseous Fuel (Ethylene/Methane)</option>
-                </select>
-              </div>
-
-              {/* Atmosphere: Oxygen Concentration */}
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                  <span className="uppercase tracking-wider font-semibold">Oxygen Concentration</span>
-                  <span className="font-mono text-cyan-400">{oxygenPct ? `${oxygenPct}%` : "Any"}</span>
-                </div>
-                <div className="flex gap-1.5">
-                  {[null, 18, 21, 26, 34].map((pct, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setOxygenPct(pct)}
-                      className={`flex-1 py-1 text-[11px] rounded border transition ${
-                        oxygenPct === pct
-                          ? "bg-blue-600 text-white border-blue-500 font-bold"
-                          : "bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800"
-                      }`}
-                    >
-                      {pct ? `${pct}%` : "All"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Airflow Velocity */}
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                  <span className="uppercase tracking-wider font-semibold">Ventilation Airflow</span>
-                  <span className="font-mono text-cyan-400">{airflowCmS !== null ? `${airflowCmS} cm/s` : "Any"}</span>
-                </div>
-                <div className="flex gap-1.5">
-                  {[
-                    { label: "All", val: null },
-                    { label: "0 cm/s", val: 0 },
-                    { label: "2-5", val: 3.5 },
-                    { label: "15-20", val: 20 },
-                  ].map((flow, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setAirflowCmS(flow.val)}
-                      className={`flex-1 py-1 text-[11px] rounded border transition ${
-                        airflowCmS === flow.val
-                          ? "bg-blue-600 text-white border-blue-500 font-bold"
-                          : "bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800"
-                      }`}
-                    >
-                      {flow.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Phenomenon */}
-              <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block mb-1">
-                  Phenomenon / Measurement
-                </label>
-                <select
-                  value={phenomenon}
-                  onChange={(e) => setPhenomenon(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition"
-                >
-                  <option value="">All Phenomena</option>
-                  <option value="flame_spread">Flame Spread Velocity</option>
-                  <option value="extinction">Extinction & Quenching Limits</option>
-                  <option value="smoke">Smoke & Aerosol Generation</option>
-                  <option value="cool_flame">Cool Flame Behavior</option>
-                  <option value="radiation">Radiation & Soot Emission</option>
-                </select>
-              </div>
-
-              {/* Programme Selector */}
-              <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block mb-1">
-                  NASA Flight Programme
-                </label>
-                <select
-                  value={programme}
-                  onChange={(e) => setProgramme(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition"
-                >
-                  <option value="ALL">All Flight Programmes</option>
-                  <option value="Saffire">Saffire (Cygnus Large Scale)</option>
-                  <option value="BASS">BASS / BASS-II (ISS Glovebox)</option>
-                  <option value="FLEX">FLEX (Droplet CIR)</option>
-                  <option value="SAME">SAME-R (Smoke Aerosol)</option>
-                  <option value="SPICE">SPICE (Laminar Burner)</option>
-                  <option value="SoFIE">SoFIE (Exploration Atmosphere)</option>
-                </select>
-              </div>
-
-              {/* Active Filters Summary */}
-              <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                <span>Displaying:</span>
-                <span className="font-semibold text-white">
-                  {rankedResults.length} NASA Investigations
-                </span>
-              </div>
+              <button
+                onClick={() => applyPreset("saffire-fabric")}
+                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
+              >
+                Large Fabric Fire in Cygnus (Saffire-I)
+              </button>
+              <button
+                onClick={() => applyPreset("smoke-detection")}
+                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
+              >
+                Smoke Particle Sizing for Detectors (SAME-R)
+              </button>
+              <button
+                onClick={() => applyPreset("cool-flame")}
+                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
+              >
+                Cool Flame Extinction & CO₂ (FLEX)
+              </button>
+              <button
+                onClick={() => applyPreset("exploration-atm")}
+                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
+              >
+                Exploration Atmosphere (26-34% O₂)
+              </button>
             </div>
+          </div>
 
-            {/* Right Content Area (8 cols) */}
-            <div className="lg:col-span-8 space-y-6">
-              {/* Grounded AI Interpretation Panel */}
-              <InterpretationPanel
-                synthesis={synthesis}
-                loading={synthesisLoading}
-                onGenerate={handleGenerateInterpretation}
-              />
+          {/* Active Tab View */}
+          {activeTab === "chart" && <FlameDynamicsChart />}
+          {activeTab === "table" && (
+            <MasterComparisonTable
+              data={allExperiments}
+              selectedForCompare={selectedForCompare}
+              onToggleCompare={toggleCompare}
+            />
+          )}
+          {activeTab === "coverage" && <GapMatrix experiments={allExperiments} />}
+          {activeTab === "methodology" && (
+            <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-6">
+              <MethodologyModal onClose={() => setActiveTab("explore")} />
+            </div>
+          )}
 
-              {/* Evidence Cards List */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="uppercase tracking-wider font-bold">
-                    Ranked NASA Microgravity Investigations
-                  </span>
-                  <span>Deterministic Physics Score + Fuzzy Relevance</span>
+          {activeTab === "explore" && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Filter Panel (4 cols) */}
+              <div className="lg:col-span-4 bg-[#1B2027] border border-[#303741] rounded-xl p-4 shadow-sm space-y-4 text-xs">
+                <div className="flex items-center justify-between border-b border-[#303741] pb-2.5">
+                  <h3 className="font-bold text-[#F3F5F7] flex items-center gap-2">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-[#E99847]" />
+                    Inquiry Filters & Controls
+                  </h3>
+                  <button
+                    onClick={resetFilters}
+                    className="text-[11px] text-[#A1AAB5] hover:text-[#F3F5F7] flex items-center gap-1 transition cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Reset
+                  </button>
                 </div>
 
-                {rankedResults.length === 0 ? (
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                    <FileQuestion className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-                    No NASA investigations match the selected filters.
-                  </div>
-                ) : (
-                  rankedResults.map((evidence, idx) => (
-                    <EvidenceCard
-                      key={evidence.experiment.id}
-                      evidence={evidence}
-                      rank={idx + 1}
-                      isSelectedForCompare={selectedForCompare.includes(evidence.experiment.id)}
-                      onToggleCompare={toggleCompare}
+                {/* Fuse.js Search */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                    Fuzzy Literature Query (Fuse.js)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={freeText}
+                      onChange={(e) => setFreeText(e.target.value)}
+                      placeholder="e.g. acrylic, soot particle, quiescent"
+                      className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-3 py-1.5 text-xs text-[#F3F5F7] placeholder-[#737F8C] focus:outline-none focus:border-[#E99847] transition pl-8"
                     />
-                  ))
-                )}
+                    <Search className="w-3.5 h-3.5 text-[#737F8C] absolute left-2.5 top-2.5" />
+                  </div>
+                </div>
+
+                {/* Material Select */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                    Material / Fuel Class
+                  </label>
+                  <select
+                    value={material}
+                    onChange={(e) => setMaterial(e.target.value)}
+                    className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F5F7] focus:outline-none focus:border-[#E99847] transition"
+                  >
+                    <option value="">All Materials</option>
+                    <option value="PMMA">PMMA / Acrylic Polymer</option>
+                    <option value="cotton-fiberglass">Cotton-Fiberglass (SIBAL)</option>
+                    <option value="Nomex">Nomex / Flame Resistant Fabric</option>
+                    <option value="wire">Overheated Wire Insulation (PTFE/Kapton)</option>
+                    <option value="droplet">Liquid Fuel Droplets (Heptane/Methanol)</option>
+                    <option value="gas">Gaseous Fuel (Ethylene/Methane)</option>
+                  </select>
+                </div>
+
+                {/* Oxygen Level */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-[#737F8C] mb-1">
+                    <span className="uppercase tracking-wider font-semibold">Oxygen Concentration</span>
+                    <span className="font-mono text-[#78A9D8]">
+                      {oxygenPct ? `${oxygenPct}%` : "Any"}
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    {[null, 18, 21, 26, 34].map((pct, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setOxygenPct(pct)}
+                        className={`flex-1 py-1 text-[11px] rounded border transition cursor-pointer ${
+                          oxygenPct === pct
+                            ? "bg-[#E99847] text-[#0C0F13] border-[#E99847] font-bold"
+                            : "bg-[#0C0F13] text-[#A1AAB5] border-[#303741] hover:bg-[#15191F]"
+                        }`}
+                      >
+                        {pct ? `${pct}%` : "All"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Airflow Velocity */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-[#737F8C] mb-1">
+                    <span className="uppercase tracking-wider font-semibold">Ventilation Velocity</span>
+                    <span className="font-mono text-[#78A9D8]">
+                      {airflowCmS !== null ? `${airflowCmS} cm/s` : "Any"}
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    {[
+                      { label: "All", val: null },
+                      { label: "0 cm/s", val: 0 },
+                      { label: "2-5", val: 3.5 },
+                      { label: "15-20", val: 20 },
+                    ].map((flow, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setAirflowCmS(flow.val)}
+                        className={`flex-1 py-1 text-[11px] rounded border transition cursor-pointer ${
+                          airflowCmS === flow.val
+                            ? "bg-[#E99847] text-[#0C0F13] border-[#E99847] font-bold"
+                            : "bg-[#0C0F13] text-[#A1AAB5] border-[#303741] hover:bg-[#15191F]"
+                        }`}
+                      >
+                        {flow.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Phenomenon Select */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                    Target Measurement / Phenomenon
+                  </label>
+                  <select
+                    value={phenomenon}
+                    onChange={(e) => setPhenomenon(e.target.value)}
+                    className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F5F7] focus:outline-none focus:border-[#E99847] transition"
+                  >
+                    <option value="">All Phenomena</option>
+                    <option value="flame_spread">Flame Spread Velocity</option>
+                    <option value="extinction">Extinction & Quenching Limits</option>
+                    <option value="smoke">Smoke & Aerosol Generation</option>
+                    <option value="cool_flame">Cool Flame Behavior</option>
+                    <option value="radiation">Radiation & Soot Emission</option>
+                  </select>
+                </div>
+
+                {/* Programme Select */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1">
+                    NASA Flight Programme
+                  </label>
+                  <select
+                    value={programme}
+                    onChange={(e) => setProgramme(e.target.value)}
+                    className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F5F7] focus:outline-none focus:border-[#E99847] transition"
+                  >
+                    <option value="ALL">All Flight Programmes</option>
+                    <option value="Saffire">Saffire (Cygnus Vehicle)</option>
+                    <option value="BASS">BASS / BASS-II (ISS Glovebox)</option>
+                    <option value="FLEX">FLEX (Droplet CIR)</option>
+                    <option value="SAME">SAME-R (Smoke Aerosol)</option>
+                    <option value="SPICE">SPICE (Laminar Burner)</option>
+                    <option value="SoFIE">SoFIE (Exploration Atmosphere)</option>
+                  </select>
+                </div>
+
+                {/* Filter count */}
+                <div className="pt-2.5 border-t border-[#303741] text-[11px] text-[#A1AAB5] flex items-center justify-between">
+                  <span>Candidate Studies:</span>
+                  <span className="font-bold text-[#F3F5F7] font-mono">
+                    {rankedResults.length} records
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Results Column (8 cols) */}
+              <div className="lg:col-span-8 space-y-4">
+                {/* Interpretation Panel */}
+                <InterpretationPanel
+                  synthesis={synthesis}
+                  loading={synthesisLoading}
+                  onGenerate={handleGenerateInterpretation}
+                />
+
+                {/* Evidence Cards */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs text-[#A1AAB5]">
+                    <span className="uppercase tracking-wider font-bold text-[10px] text-[#737F8C]">
+                      Ranked NASA Microgravity Investigations
+                    </span>
+                    <span className="text-[11px]">Sorted by Transparent Relevance Score</span>
+                  </div>
+
+                  {rankedResults.length === 0 ? (
+                    <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-8 text-center text-[#A1AAB5]">
+                      <FileQuestion className="w-8 h-8 mx-auto text-[#737F8C] mb-2" />
+                      No NASA investigations match the selected filters.
+                    </div>
+                  ) : (
+                    rankedResults.map((evidence, idx) => (
+                      <EvidenceCard
+                        key={evidence.experiment.id}
+                        evidence={evidence}
+                        rank={idx + 1}
+                        isSelectedForCompare={selectedForCompare.includes(evidence.experiment.id)}
+                        onToggleCompare={toggleCompare}
+                      />
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </main>
       </div>
 
       {/* Compare Modal */}
       {isCompareOpen && exp1 && exp2 && (
         <CompareModal exp1={exp1} exp2={exp2} onClose={() => setIsCompareOpen(false)} />
       )}
-
-      {/* Methodology Modal */}
-      {isMethodologyOpen && (
-        <MethodologyModal onClose={() => setIsMethodologyOpen(false)} />
-      )}
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-6 px-4 mt-12 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
-            IGNIS: Intelligent Guidance from NASA Investigation Studies · Team Twinkle Twinkle · NASA Space Apps Ulaanbaatar 2026
-          </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>License: Apache-2.0</span>
-            <span>Data: NASA PSI & NTRS</span>
-          </div>
-        </div>
-      </footer>
-    </main>
+    </div>
   );
 }

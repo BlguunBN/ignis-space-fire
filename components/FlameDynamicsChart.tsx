@@ -10,9 +10,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   ZAxis,
-  Legend,
 } from "recharts";
-import { Info, Flame, Activity } from "lucide-react";
+import { Info, Activity } from "lucide-react";
 
 interface DataPoint {
   id: string;
@@ -146,34 +145,34 @@ export function FlameDynamicsChart() {
     if (active && payload && payload.length) {
       const data = payload[0].payload as DataPoint;
       return (
-        <div className="bg-slate-950 border border-slate-700 p-3 rounded-xl shadow-2xl text-xs max-w-xs space-y-1">
-          <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1">
-            <span className="font-bold text-white text-sm">{data.name}</span>
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-300">
+        <div className="bg-[#0C0F13] border border-[#303741] p-3 rounded-xl shadow-xl text-xs max-w-xs space-y-1">
+          <div className="flex items-center justify-between gap-2 border-b border-[#303741] pb-1">
+            <span className="font-bold text-[#F3F5F7] text-xs">{data.name}</span>
+            <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#1B2027] text-[#78A9D8]">
               {data.programme}
             </span>
           </div>
-          <div className="text-slate-300 pt-1">
-            <span className="text-slate-500">Material: </span>
-            <span className="font-medium text-slate-200">{data.material}</span>
+          <div className="text-[#A1AAB5] pt-0.5 text-[11px]">
+            <span className="text-[#737F8C]">Material: </span>
+            <span className="font-medium text-[#F3F5F7]">{data.material}</span>
           </div>
-          <div className="text-slate-300">
-            <span className="text-slate-500">Facility: </span>
+          <div className="text-[#A1AAB5] text-[11px]">
+            <span className="text-[#737F8C]">Platform: </span>
             <span>{data.platform}</span>
           </div>
-          <div className="text-slate-300">
-            <span className="text-slate-500">Airflow: </span>
-            <span className="font-mono text-cyan-400 font-bold">{data.airflow} cm/s</span>
+          <div className="text-[#A1AAB5] text-[11px]">
+            <span className="text-[#737F8C]">Airflow: </span>
+            <span className="font-mono text-[#78A9D8] font-bold">{data.airflow} cm/s</span>
           </div>
-          <div className="text-slate-300">
-            <span className="text-slate-500">Atmosphere: </span>
-            <span className="font-mono text-amber-400">
+          <div className="text-[#A1AAB5] text-[11px]">
+            <span className="text-[#737F8C]">Atmosphere: </span>
+            <span className="font-mono text-[#E99847]">
               {data.oxygen}% O₂ ({data.pressure} kPa)
             </span>
           </div>
-          <div className="text-slate-300">
-            <span className="text-slate-500">Observed Spread Rate: </span>
-            <span className="font-mono text-rose-400 font-bold">~{data.spreadRateEst} mm/s</span>
+          <div className="text-[#A1AAB5] text-[11px]">
+            <span className="text-[#737F8C]">Observed Spread: </span>
+            <span className="font-mono text-[#D97777] font-bold">~{data.spreadRateEst} mm/s</span>
           </div>
         </div>
       );
@@ -182,36 +181,36 @@ export function FlameDynamicsChart() {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+    <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-5 shadow-sm space-y-4">
       {/* Header and Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#303741]">
         <div>
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-cyan-400" />
+          <h3 className="text-base font-bold text-[#F3F5F7] flex items-center gap-2">
+            <Activity className="w-4 h-4 text-[#78A9D8]" />
             NASA Empirical Microgravity Flame Dynamics
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Real data points plotted across NASA flight missions (Saffire, BASS-II, FLEX, SoFIE, SAME-R).
+          <p className="text-xs text-[#A1AAB5] mt-0.5">
+            Real empirical flight data plotted across Saffire, BASS-II, FLEX, SoFIE, and SAME-R.
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+        <div className="flex items-center gap-1 bg-[#0C0F13] p-1 rounded-lg border border-[#303741] text-xs">
           <button
             onClick={() => setViewMode("airflow")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
+            className={`px-3 py-1 rounded font-medium transition cursor-pointer ${
               viewMode === "airflow"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[#1B2027] text-[#E99847] border border-[#303741] font-semibold"
+                : "text-[#A1AAB5] hover:text-[#F3F5F7]"
             }`}
           >
             Airflow vs. Spread Velocity
           </button>
           <button
             onClick={() => setViewMode("atmosphere")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
+            className={`px-3 py-1 rounded font-medium transition cursor-pointer ${
               viewMode === "atmosphere"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[#1B2027] text-[#E99847] border border-[#303741] font-semibold"
+                : "text-[#A1AAB5] hover:text-[#F3F5F7]"
             }`}
           >
             Oxygen % vs. Ambient Pressure
@@ -220,24 +219,24 @@ export function FlameDynamicsChart() {
       </div>
 
       {/* Recharts Scatter Visual */}
-      <div className="w-full h-80 pt-2">
+      <div className="w-full h-80 pt-2 bg-[#0C0F13] rounded-lg border border-[#303741] p-3">
         <ResponsiveContainer width="100%" height="100%">
           {viewMode === "airflow" ? (
             <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1E242C" />
               <XAxis
                 type="number"
                 dataKey="airflow"
                 name="Airflow Velocity"
                 unit=" cm/s"
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                stroke="#737F8C"
+                tick={{ fill: "#A1AAB5", fontSize: 11 }}
                 domain={[0, 25]}
                 label={{
                   value: "Forced Airflow Velocity (cm/s) — Microgravity Habitat Ventilation",
                   position: "insideBottom",
                   offset: -12,
-                  fill: "#94a3b8",
+                  fill: "#A1AAB5",
                   fontSize: 11,
                 }}
               />
@@ -246,42 +245,42 @@ export function FlameDynamicsChart() {
                 dataKey="spreadRateEst"
                 name="Spread Rate"
                 unit=" mm/s"
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                stroke="#737F8C"
+                tick={{ fill: "#A1AAB5", fontSize: 11 }}
                 domain={[0, 8]}
                 label={{
                   value: "Flame Spread Rate (mm/s)",
                   angle: -90,
                   position: "insideLeft",
-                  fill: "#94a3b8",
+                  fill: "#A1AAB5",
                   fontSize: 11,
                 }}
               />
-              <ZAxis range={[120, 260]} />
+              <ZAxis range={[100, 220]} />
               <Tooltip content={<CustomTooltip />} />
               <Scatter
                 name="NASA Investigations"
                 data={EMPIRICAL_DATA}
-                fill="#38bdf8"
+                fill="#78A9D8"
                 shape="circle"
               />
             </ScatterChart>
           ) : (
             <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1E242C" />
               <XAxis
                 type="number"
                 dataKey="oxygen"
                 name="Oxygen %"
                 unit="%"
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                stroke="#737F8C"
+                tick={{ fill: "#A1AAB5", fontSize: 11 }}
                 domain={[15, 38]}
                 label={{
                   value: "Oxygen Concentration (O₂ %)",
                   position: "insideBottom",
                   offset: -12,
-                  fill: "#94a3b8",
+                  fill: "#A1AAB5",
                   fontSize: 11,
                 }}
               />
@@ -290,23 +289,23 @@ export function FlameDynamicsChart() {
                 dataKey="pressure"
                 name="Cabin Pressure"
                 unit=" kPa"
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                stroke="#737F8C"
+                tick={{ fill: "#A1AAB5", fontSize: 11 }}
                 domain={[40, 110]}
                 label={{
                   value: "Total Cabin Pressure (kPa)",
                   angle: -90,
                   position: "insideLeft",
-                  fill: "#94a3b8",
+                  fill: "#A1AAB5",
                   fontSize: 11,
                 }}
               />
-              <ZAxis range={[120, 260]} />
+              <ZAxis range={[100, 220]} />
               <Tooltip content={<CustomTooltip />} />
               <Scatter
                 name="Atmosphere Conditions"
                 data={EMPIRICAL_DATA}
-                fill="#f59e0b"
+                fill="#E99847"
                 shape="diamond"
               />
             </ScatterChart>
@@ -314,11 +313,11 @@ export function FlameDynamicsChart() {
         </ResponsiveContainer>
       </div>
 
-      {/* Scientific takeaway note */}
-      <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-400 flex items-start gap-2.5">
-        <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+      {/* Scientific Observation */}
+      <div className="bg-[#0C0F13] p-3 rounded-lg border border-[#303741] text-xs text-[#A1AAB5] flex items-start gap-2.5">
+        <Info className="w-4 h-4 text-[#78A9D8] shrink-0 mt-0.5" />
         <p>
-          <strong>Combustion Observation:</strong> In quiescent microgravity (0 cm/s flow), flames extinguish or transition to spherical cool flames due to radiative loss without buoyant oxygen replenishment. As forced ventilation increases (2 to 20 cm/s), convective oxygen delivery increases flame spread rate non-monotonically, demonstrating why cabin HVAC velocity is a critical safety determinant.
+          <strong className="text-[#F3F5F7]">Combustion Science Observation:</strong> In quiescent microgravity (0 cm/s flow), flames extinguish or transition to spherical cool flames due to radiative loss without buoyant replenishment. As ventilation increases (2 to 20 cm/s), convective oxygen delivery increases flame spread rate non-monotonically, demonstrating why cabin HVAC velocity is a critical safety determinant.
         </p>
       </div>
     </div>

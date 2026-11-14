@@ -11,12 +11,17 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        nasa: {
-          blue: "#0B3D91",
-          red: "#FC3D21",
-          dark: "#0a0e17",
-          card: "#111827",
-          border: "#1f2937",
+        ignis: {
+          canvas: "#0C0F13",
+          sidebar: "#15191F",
+          card: "#1B2027",
+          border: "#303741",
+          amber: "#E99847",
+          blue: "#78A9D8",
+          green: "#5CB59B",
+          red: "#D97777",
+          muted: "#A1AAB5",
+          dim: "#737F8C",
         },
       },
     },
