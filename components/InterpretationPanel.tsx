@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { SynthesisResponse } from "@/lib/synthesis";
-import { Sparkles, ShieldCheck, AlertTriangle, ExternalLink, Cpu, Brain, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowUpRight, BookOpen, Info, Sparkles } from "lucide-react";
+import type { SynthesisResponse } from "@/lib/synthesis";
 
 interface InterpretationPanelProps {
   synthesis: SynthesisResponse | null;
@@ -10,166 +9,52 @@ interface InterpretationPanelProps {
   onGenerate: () => void;
 }
 
-export function InterpretationPanel({
-  synthesis,
-  loading,
-  onGenerate,
-}: InterpretationPanelProps) {
-  const [showReasoning, setShowReasoning] = useState(false);
-
+export function InterpretationPanel({ synthesis, loading, onGenerate }: InterpretationPanelProps) {
   return (
-    <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-5 shadow-sm space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#303741]">
+    <section className="ignis-panel overflow-hidden" aria-label="Research interpretation">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
         <div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#E99847]" />
-            <h3 className="text-sm font-bold text-[#F3F5F7]">
-              Grounded Scientific Interpretation
-            </h3>
-          </div>
-          <p className="text-xs text-[#A1AAB5] mt-0.5">
-            Powered by NVIDIA Nemotron-30B Reasoning Model under strict NASA evidence guardrails.
-          </p>
+          <p className="ignis-kicker">OPTIONAL ANALYSIS</p>
+          <h2 className="mt-1 flex items-center gap-2 text-sm font-medium"><Sparkles className="h-4 w-4 text-[#e2ad73]"/> Evidence interpretation</h2>
         </div>
-
-        <button
-          onClick={onGenerate}
-          disabled={loading}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#E99847] hover:bg-[#d68536] disabled:opacity-50 text-[#0C0F13] font-bold text-xs shadow-sm transition cursor-pointer"
-        >
-          <Sparkles className="w-3.5 h-3.5 fill-current" />
-          {loading ? "Reasoning & Synthesising..." : "Synthesize Evidence (NVIDIA)"}
+        <button type="button" onClick={onGenerate} disabled={loading} className="ignis-button ignis-button-primary">
+          {loading ? "Analyzing…" : synthesis ? "Refresh analysis" : "Analyze selected evidence"}
         </button>
       </div>
-
-      {!synthesis && !loading && (
-        <div className="py-6 text-center text-[#737F8C] text-xs">
-          <Cpu className="w-6 h-6 mx-auto text-[#303741] mb-1.5" />
-          Click <strong className="text-[#A1AAB5]">&quot;Synthesize Evidence&quot;</strong> to generate a source-grounded scientific synthesis for the active query.
+      {!synthesis && !loading && <div className="flex items-start gap-3 px-5 py-6 text-xs leading-relaxed text-[#a3a6a7]">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#d0ad85]"/>
+        <p>Run a source-constrained summary of relevant records. Original NASA evidence remains the authority, and the interpretation is not fire-risk certification.</p>
+      </div>}
+      {loading && <p className="px-5 py-7 text-sm text-[#aeb0b0]" role="status">Reviewing the indexed evidence…</p>}
+      {synthesis && !loading && <div className="space-y-5 p-5">
+        <div className="flex flex-wrap items-center gap-2 text-[10px]">
+          <span className="rounded-md border border-white/10 bg-[#202224] px-2.5 py-1.5 font-medium text-[#d6d7d5]">{synthesis.aiMode === "live_llm" ? "AI generated" : "Deterministic summary"}</span>
+          <span className="text-[#8a8e90]">{synthesis.citedSources.length} linked sources</span>
         </div>
-      )}
-
-      {loading && (
-        <div className="py-8 text-center text-[#A1AAB5] text-xs space-y-2">
-          <div className="w-6 h-6 border-2 border-[#E99847] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-          <div>Querying NVIDIA Nemotron-30B Reasoning Model...</div>
-          <div className="text-[10px] text-[#737F8C] font-mono">
-            Grounding claims to NASA PSI DOIs and verifying microgravity boundary.
+        <p className="max-w-[900px] text-[13px] leading-7 text-[#e5e3df]">{synthesis.summary}</p>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="space-y-2">
+            <h3 className="ignis-kicker">INDEXED FINDINGS</h3>
+            {synthesis.keyFindings.slice(0,4).map((item,index)=><p key={index} className="border-l border-[#5d5b56] pl-3 text-xs leading-6 text-[#aeb0b1]">{item}</p>)}
           </div>
-        </div>
-      )}
-
-      {synthesis && !loading && (
-        <div className="space-y-4 text-xs animate-fade-in">
-          {/* Model Badge */}
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#0C0F13] p-2 rounded-lg border border-[#303741] text-[11px]">
-            <span className="text-[#737F8C]">Inference Engine:</span>
-            <span className="font-semibold text-[#E99847] flex items-center gap-1.5 font-mono">
-              <Cpu className="w-3 h-3 text-[#E99847]" />
-              {synthesis.modelUsed || "NVIDIA Nemotron-30B Reasoning (NIM)"}
-            </span>
-          </div>
-
-          {/* NVIDIA Reasoning Trace (Expandable) */}
-          {synthesis.reasoningSteps && (
-            <div className="bg-[#0C0F13] rounded-lg border border-[#303741] p-3">
-              <button
-                onClick={() => setShowReasoning(!showReasoning)}
-                className="w-full flex items-center justify-between text-[#78A9D8] hover:text-[#F3F5F7] font-semibold text-xs transition cursor-pointer"
-              >
-                <span className="flex items-center gap-1.5 font-mono text-[11px]">
-                  <Brain className="w-3.5 h-3.5 text-[#78A9D8]" />
-                  Internal Reasoning Trace ({synthesis.reasoningSteps.length} chars)
-                </span>
-                {showReasoning ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              </button>
-              {showReasoning && (
-                <div className="mt-2 pt-2 border-t border-[#303741] text-[#A1AAB5] leading-relaxed font-mono text-[10px] whitespace-pre-wrap max-h-48 overflow-y-auto">
-                  {synthesis.reasoningSteps}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Core Summary */}
-          <div className="bg-[#15191F] p-3.5 rounded-lg border border-[#303741]">
-            <span className="font-bold text-[#E99847] text-[10px] uppercase tracking-wider block mb-1 font-mono">
-              Cross-Experiment Synthesis
-            </span>
-            <p className="text-[#F3F5F7] text-xs leading-relaxed">{synthesis.summary}</p>
-          </div>
-
-          {/* Key Findings */}
-          <div className="space-y-1.5">
-            <span className="font-bold text-[#F3F5F7] uppercase tracking-wider text-[10px] flex items-center gap-1.5 font-mono">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#5CB59B]" />
-              Observed Scientific Findings
-            </span>
-            <ul className="space-y-1.5 pl-1">
-              {synthesis.keyFindings.map((finding, idx) => (
-                <li
-                  key={idx}
-                  className="bg-[#0C0F13] p-2.5 rounded-lg border border-[#303741] text-[#A1AAB5] leading-relaxed text-[11px]"
-                >
-                  {finding}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Fire Safety Implications */}
-          <div className="space-y-1.5">
-            <span className="font-bold text-[#E99847] uppercase tracking-wider text-[10px] font-mono">
-              Spacecraft Fire Safety Implications
-            </span>
-            <ul className="space-y-1.5 pl-1">
-              {synthesis.fireSafetyImplications.map((imp, idx) => (
-                <li
-                  key={idx}
-                  className="bg-[#0C0F13] p-2.5 rounded-lg border border-[#303741] text-[#F3F5F7] leading-relaxed text-[11px]"
-                >
-                  {imp}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Scientific Limitations */}
-          <div className="space-y-1.5">
-            <span className="font-bold text-[#D97777] uppercase tracking-wider text-[10px] flex items-center gap-1 font-mono">
-              <AlertTriangle className="w-3 h-3" />
-              Scientific Boundaries & Limitations
-            </span>
-            <ul className="space-y-1 list-disc pl-4 text-[#A1AAB5] text-[11px]">
-              {synthesis.scientificLimitations.map((lim, idx) => (
-                <li key={idx}>{lim}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Cited Sources */}
-          <div className="pt-2.5 border-t border-[#303741]">
-            <span className="font-bold text-[#737F8C] uppercase tracking-wider text-[10px] block mb-1.5 font-mono">
-              Verified NASA Citations
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {synthesis.citedSources.map((src, idx) => (
-                <a
-                  key={idx}
-                  href={src.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#0C0F13] text-[#78A9D8] hover:text-[#F3F5F7] border border-[#303741] transition text-[11px]"
-                >
-                  <span>{src.title}</span>
-                  <span className="text-[#737F8C] font-mono text-[9px]">[{src.doi}]</span>
-                  <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
-                </a>
-              ))}
-            </div>
+          <div className="space-y-2">
+            <h3 className="ignis-kicker">LIMITATIONS</h3>
+            {synthesis.scientificLimitations.slice(0,4).map((item,index)=><p key={index} className="border-l border-[#816044] pl-3 text-xs leading-6 text-[#aeb0b1]">{item}</p>)}
           </div>
         </div>
-      )}
-    </div>
+        <div className="border-t border-white/10 pt-4">
+          <h3 className="mb-3 flex items-center gap-2 text-[11px] font-medium text-[#cdcdca]"><BookOpen className="h-4 w-4"/> Original references</h3>
+          <div className="flex flex-wrap gap-2">
+            {synthesis.citedSources.map(src=><a key={src.id} href={src.sourceUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-md border border-white/10 px-3 py-2 text-[11px] text-[#c9aa86] hover:border-[#826447] hover:text-white">
+              {src.title} <ArrowUpRight className="h-3 w-3"/>
+            </a>)}
+          </div>
+        </div>
+        <div className="flex items-start gap-2 rounded-md border border-white/[.07] bg-[#101113] p-3 text-[11px] leading-5 text-[#919597]">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0"/> Summaries are constrained to the indexed corpus. They can omit context or reproduce errors in source records; verify claims against the linked originals.
+        </div>
+      </div>}
+    </section>
   );
 }
