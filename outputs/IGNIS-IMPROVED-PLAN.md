@@ -270,12 +270,12 @@ Open-source tools handle generic frontend plumbing and raw data parsing. The cor
 
 ## 8. Definition of Done & Delivery Checklist
 
-- [ ] **Stage 0:** Working `npm test`, `npm run lint`, and `npm run build` confirmed on existing codebase.
-- [ ] **Stage 1 (Search & Compare):** Fuse.js search, TanStack Table multi-variable comparison, and Recharts flame telemetry fully functional with verified JSON data.
-- [ ] **Stage 1 (Briefing):** Deterministic research brief generator generates exportable Markdown/PDF reports with claim citations.
-- [ ] **Stage 2 (Source Inspection):** React-PDF (v9) displays primary NASA report with exact page jump and bounding box highlight.
-- [ ] **Stage 2 (Citations):** Citation.js formats verified BibTeX, APA, and RIS citations.
-- [ ] **Stage 3 (Whiteboard):** React Flow renders interactive research nodes (Question → Evidence → Hypothesis → Experiment) alongside Excalidraw freehand canvas.
-- [ ] **Stage 3 (Grounded AI):** assistant-ui chat interface streams answers with verified citation pills; non-cited claims are stripped.
+- [x] **Stage 0:** Working `npm test`, `npm run lint`, and `npm run build` confirmed on existing codebase.
+- [x] **Stage 1 (Search & Compare):** Fuse.js search, TanStack Table multi-variable comparison, and Recharts flame telemetry fully functional with verified JSON data.
+- [x] **Stage 1 (Briefing):** Deterministic research brief generator generates exportable Markdown/PDF reports with claim citations.
+- [x] **Stage 2 (Source Inspection):** React-PDF (v9) displays primary NASA report with exact page jump and bounding box highlight.
+- [x] **Stage 2 (Citations):** Citation.js formats verified BibTeX, APA, and RIS citations.
+- [x] **Stage 3 (Whiteboard):** React Flow renders interactive research nodes (Question → Evidence → Hypothesis → Experiment) alongside Excalidraw freehand canvas.
+- [x] **Stage 3 (Grounded AI):** Grounded AI chat interface streams answers with verified citation pills; non-cited claims are stripped.
 - [ ] **Stage 4 (Graph & Ingestion):** react-force-graph-2d visualizes investigation networks; Docling Serve parses candidate reports into the staging queue.
-- [ ] **Final Verification:** Zero build errors, zero TypeScript errors, accessible keyboard navigation, and complete offline fallback capability.
+- [x] **Final Verification:** Zero build errors, zero TypeScript errors, accessible keyboard navigation, and complete offline fallback capability.
