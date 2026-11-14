@@ -103,3 +103,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## MySimulator (External 3D Web Simulations)
+
+https://www.mysimulator.uk/
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Simulations and educational visualizations provided by MySimulator (Space Fire Safety and Droplet Combustion Lab) are referenced and embedded under the CC BY 4.0 license with attribution. External simulations are standalone educational representations and their calculations are not calibrated with or derived from the NASA experimental datasets indexed in IGNIS.
+
+## NASA Physical Sciences Informatics (PSI) & Open Science Data
+
+https://psi.nasa.gov/
+Public Domain / Creative Commons CC0 1.0 Universal
+
+Microgravity combustion research datasets and metadata from NASA investigations (FLEX PSI-69, BASS-II PSI-87/88, Saffire PSI-98/99/100, SoFIE PSI-124, SAME-R PSI-101, SPICE PSI-107) are released by NASA into the public domain under NASA open science guidelines and CC0-1.0. All research findings cite their respective primary authors and DOIs.

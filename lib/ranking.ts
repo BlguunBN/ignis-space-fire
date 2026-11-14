@@ -1,261 +1,83 @@
 import Fuse from "fuse.js";
 import { ExperimentRecord, SearchQuery, RankedEvidence, ScoreBreakdown } from "@/types/evidence";
+import { isEligibleEvidence } from "@/lib/sourceReviewedRecords";
 
-/**
- * Deterministic Evidence Relevance Ranking Engine for NASA Microgravity Studies.
- * Enhanced with Fuse.js for typo-tolerant fuzzy matching across NASA scientific literature.
- * 
- * Score Formula:
- *   Score = 0.30 * material_similarity
- *         + 0.20 * atmosphere_similarity
- *         + 0.20 * airflow_similarity
- *         + 0.15 * phenomenon_similarity
- *         + 0.10 * scale_platform_relevance
- *         + 0.05 * metadata_completeness
- * 
- * Missing parameters (null) degrade confidence instead of defaulting to terrestrial values.
- */
+type MatchKind = "browse" | "reported_conditions_match" | "related_only" | "no_relevant_evidence";
 
-export function rankEvidence(
-  experiments: ExperimentRecord[],
-  query: SearchQuery
-): RankedEvidence[] {
-  // Pre-calculate fuzzy matching scores if freeText is supplied
-  const fuzzyScores = new Map<string, number>();
-
-  if (query.freeText && query.freeText.trim().length > 0) {
-    const fuse = new Fuse(experiments, {
-      keys: [
-        { name: "investigation", weight: 0.3 },
-        { name: "material", weight: 0.25 },
-        { name: "measurements", weight: 0.2 },
-        { name: "finding", weight: 0.15 },
-        { name: "fire_safety_relevance", weight: 0.1 },
-      ],
-      threshold: 0.45,
-      includeScore: true,
-      ignoreLocation: true,
-    });
-
-    const searchResults = fuse.search(query.freeText.trim());
-    for (const res of searchResults) {
-      if (res.score != null) {
-        const similarity = Math.round((1 - res.score) * 100);
-        fuzzyScores.set(res.item.id, similarity);
-      }
-    }
-  }
-
-  const ranked = experiments.map((exp) => {
-    const fuzzyMatch = fuzzyScores.get(exp.id) ?? 0;
-    const breakdown = calculateScoreBreakdown(exp, query, fuzzyMatch);
-
-    let totalScore = Math.round(
-      0.30 * breakdown.materialScore +
-      0.20 * breakdown.atmosphereScore +
-      0.20 * breakdown.airflowScore +
-      0.15 * breakdown.phenomenonScore +
-      0.10 * breakdown.platformScore +
-      0.05 * breakdown.completenessScore
-    );
-
-    // Apply fuzzy boost if freeText matched strongly
-    if (fuzzyMatch > 60) {
-      totalScore = Math.min(100, Math.round(totalScore * 0.85 + fuzzyMatch * 0.15));
-    }
-
-    let confidenceLevel: "HIGH" | "MODERATE" | "LOW" | "SPARSE" = "SPARSE";
-    if (totalScore >= 80) confidenceLevel = "HIGH";
-    else if (totalScore >= 60) confidenceLevel = "MODERATE";
-    else if (totalScore >= 35) confidenceLevel = "LOW";
-
-    return {
-      experiment: exp,
-      score: Math.min(100, Math.max(0, totalScore)),
-      confidenceLevel,
-      breakdown,
-    };
-  });
-
-  return ranked.sort((a, b) => b.score - a.score);
+function materialMatch(exp: ExperimentRecord, value: string): number {
+  const term = value.toLowerCase().trim();
+  const material = exp.material.toLowerCase();
+  if (material.includes(term)) return 100;
+  if (["pmma", "acrylic", "polymer"].some(x => term.includes(x)) && exp.material_class.includes("polymer")) return 70;
+  if (["fabric", "cotton", "sibal"].some(x => term.includes(x)) && exp.material_class.includes("fabric")) return 70;
+  return 0;
 }
 
-function calculateScoreBreakdown(
-  exp: ExperimentRecord,
-  query: SearchQuery,
-  fuzzyMatch: number
-): ScoreBreakdown {
-  const missingParams: string[] = [];
-  const reasons: string[] = [];
+function phenomenonMatch(exp: ExperimentRecord, value: string): number {
+  const term = value.toLowerCase().replaceAll(" ", "_");
+  return exp.measurements.some(m => m.toLowerCase().includes(term) || term.includes(m.toLowerCase())) ? 100 : 0;
+}
 
-  if (fuzzyMatch >= 75) {
-    reasons.push(`High textual relevance (${fuzzyMatch}% keyword match)`);
+export function rankEvidence(experiments: ExperimentRecord[], query: SearchQuery): RankedEvidence[] {
+  const candidates = experiments.filter(e => isEligibleEvidence(e) && (!query.programme || e.programme.toLowerCase() === query.programme.toLowerCase()));
+  const text = query.freeText?.trim() || "";
+  const matches = new Map<string, number>();
+  if (text) {
+    const fuse = new Fuse(candidates, {
+      keys: ["investigation", "programme", "material", "measurements", "finding", "fire_safety_relevance"],
+      threshold: 0.45, includeScore: true, ignoreLocation: true,
+    });
+    for (const result of fuse.search(text)) matches.set(result.item.id, 100 * (1 - (result.score ?? 1)));
   }
+  const structured = Boolean(query.material || query.phenomenon || query.oxygenPct != null || query.pressureKpa != null || query.airflowCmS != null);
+  return candidates.flatMap(exp => {
+    const material = query.material ? materialMatch(exp, query.material) : 0;
+    const phenomenon = query.phenomenon ? phenomenonMatch(exp, query.phenomenon) : 0;
+    if ((query.material && !material) || (query.phenomenon && !phenomenon)) return [];
+    if (text && !structured && !matches.has(exp.id)) return [];
+    const reasons: string[] = [];
+    const missing: string[] = [];
+    if (query.material) reasons.push(material === 100 ? "Material mentioned in this investigation" : "Related material category");
+    if (query.phenomenon) reasons.push("Investigation addresses the selected phenomenon");
+    const component = (name: string, actual: number | null | undefined, requested: number | null | undefined, distance: number) => {
+      if (requested == null) return 0;
+      if (actual == null) { missing.push(name); return 0; }
+      reasons.push(actual === requested ? name + " matches the requested value" : name + " differs from the requested value");
+      return Math.max(0, 100 * (1 - Math.abs(actual - requested) / distance));
+    };
+    const oxygen = component("Oxygen", exp.oxygen_pct, query.oxygenPct, 10);
+    const pressure = component("Pressure", exp.pressure_kpa, query.pressureKpa, query.pressureKpa || 1);
+    const flow = component("Airflow", exp.airflow_cm_s, query.airflowCmS, 15);
+    const atmospheric = [query.oxygenPct != null ? oxygen : null, query.pressureKpa != null ? pressure : null].filter((n): n is number => n !== null);
+    const atmosphere = atmospheric.length ? atmospheric.reduce((a, b) => a + b, 0) / atmospheric.length : 0;
+    const parts: Array<[boolean, number, number]> = [
+      [Boolean(query.material), material, 0.30],
+      [atmospheric.length > 0, atmosphere, 0.20],
+      [query.airflowCmS != null, flow, 0.20],
+      [Boolean(query.phenomenon), phenomenon, 0.15],
+      [Boolean(text), matches.get(exp.id) ?? 0, 0.15],
+    ];
+    const weight = parts.reduce((sum, [active, , w]) => sum + (active ? w : 0), 0);
+    const score = weight ? Math.round(parts.reduce((sum, [active, value, w]) => sum + (active ? value * w : 0), 0) / weight) : 0;
+    const breakdown: ScoreBreakdown = {
+      materialScore: material, atmosphereScore: atmosphere, airflowScore: flow, phenomenonScore: phenomenon,
+      platformScore: 0, completenessScore: 0, missingParameters: missing, reasons,
+      limitationsWarning: "Microgravity findings do not predict lunar or Martian fire behavior.",
+    };
+    return [{ experiment: exp, score, confidenceLevel: score >= 80 ? "HIGH" as const : score >= 60 ? "MODERATE" as const : score >= 35 ? "LOW" as const : "SPARSE" as const, breakdown }];
+  }).sort((a, b) => b.score - a.score || a.experiment.id.localeCompare(b.experiment.id));
+}
 
-  // 1. Material Similarity (0 - 100)
-  let materialScore = 60;
-  if (query.material) {
-    const qMat = query.material.toLowerCase();
-    const expMat = exp.material.toLowerCase();
-    const expClass = exp.material_class.toLowerCase();
-
-    if (expMat.includes(qMat) || qMat.includes(expMat)) {
-      materialScore = 100;
-      reasons.push(`Direct material match (${exp.material})`);
-    } else if (
-      (qMat.includes("pmma") || qMat.includes("acrylic") || qMat.includes("polymer")) &&
-      expClass.includes("polymer")
-    ) {
-      materialScore = 90;
-      reasons.push("Solid polymer category match");
-    } else if (
-      (qMat.includes("fabric") || qMat.includes("cotton") || qMat.includes("nomex") || qMat.includes("sibal")) &&
-      expClass.includes("fabric")
-    ) {
-      materialScore = 90;
-      reasons.push("Textile/fabric category match");
-    } else if (
-      (qMat.includes("smoke") || qMat.includes("wire") || qMat.includes("insulation")) &&
-      expClass.includes("insulation")
-    ) {
-      materialScore = 90;
-      reasons.push("Wire insulation electrical harness match");
-    } else if (
-      (qMat.includes("droplet") || qMat.includes("fuel") || qMat.includes("heptane")) &&
-      expClass.includes("liquid")
-    ) {
-      materialScore = 85;
-      reasons.push("Liquid hydrocarbon droplet match");
-    } else {
-      materialScore = 20;
-    }
-  }
-
-  // 2. Atmosphere / Oxygen Similarity (0 - 100)
-  let atmosphereScore = 70;
-  if (query.oxygenPct != null) {
-    if (exp.oxygen_pct == null) {
-      missingParams.push("oxygen concentration (O2 %)");
-      atmosphereScore = 20;
-    } else {
-      const diff = Math.abs(exp.oxygen_pct - query.oxygenPct);
-      if (diff < 1.0) {
-        atmosphereScore = 100;
-        reasons.push(`Close oxygen concentration match (${exp.oxygen_pct}%)`);
-      } else if (diff < 5.0) {
-        atmosphereScore = 80;
-        reasons.push(`Comparable oxygen regime (${exp.oxygen_pct}%)`);
-      } else if (diff < 10.0) {
-        atmosphereScore = 55;
-      } else {
-        atmosphereScore = 25;
-      }
-    }
-  }
-
-  if (query.pressureKpa != null) {
-    if (exp.pressure_kpa == null) {
-      missingParams.push("ambient pressure (kPa)");
-      atmosphereScore = Math.max(10, atmosphereScore - 15);
-    } else {
-      const pDiff = Math.abs(exp.pressure_kpa - query.pressureKpa);
-      if (pDiff < 10.0) {
-        atmosphereScore = Math.min(100, atmosphereScore + 15);
-        reasons.push(`Reduced pressure exploration regime match (${exp.pressure_kpa} kPa)`);
-      }
-    }
-  }
-
-  // 3. Airflow Similarity (0 - 100)
-  let airflowScore = 70;
-  if (query.airflowCmS != null) {
-    if (exp.airflow_cm_s == null) {
-      missingParams.push("ventilation airflow velocity");
-      airflowScore = 20;
-    } else {
-      const diff = Math.abs(exp.airflow_cm_s - query.airflowCmS);
-      if (diff <= 2.0) {
-        airflowScore = 100;
-        reasons.push(`Direct ventilation airflow match (${exp.airflow_cm_s} cm/s)`);
-      } else if (diff <= 8.0) {
-        airflowScore = 80;
-        reasons.push(`Comparable low forced-convection velocity`);
-      } else if (diff <= 15.0) {
-        airflowScore = 50;
-      } else {
-        airflowScore = 25;
-      }
-    }
-  } else if (query.freeText && query.freeText.toLowerCase().includes("low airflow")) {
-    if (exp.airflow_cm_s != null && exp.airflow_cm_s <= 5.0) {
-      airflowScore = 95;
-      reasons.push("Low-airflow quiescent regime match (< 5 cm/s)");
-    }
-  }
-
-  // 4. Phenomenon / Measurement Similarity (0 - 100)
-  let phenomenonScore = 65;
-  if (query.phenomenon) {
-    const qPhen = query.phenomenon.toLowerCase();
-    const hasPhen = exp.measurements.some((m) =>
-      m.toLowerCase().includes(qPhen) || qPhen.includes(m.toLowerCase())
-    );
-    if (hasPhen) {
-      phenomenonScore = 100;
-      reasons.push(`Directly measures target phenomenon (${query.phenomenon})`);
-    } else if (qPhen.includes("spread") && exp.measurements.includes("flame_spread")) {
-      phenomenonScore = 95;
-      reasons.push("Direct flame spread empirical rate measurement");
-    } else if (qPhen.includes("extinction") && exp.measurements.some((m) => m.includes("extinction"))) {
-      phenomenonScore = 95;
-      reasons.push("Flame extinction & quenching limit data");
-    } else if (qPhen.includes("smoke") && exp.measurements.some((m) => m.includes("smoke") || m.includes("aerosol"))) {
-      phenomenonScore = 95;
-      reasons.push("Aerosol and smoke particle measurement");
-    } else {
-      phenomenonScore = 30;
-    }
-  }
-
-  // 5. Scale & Platform Relevance (0 - 100)
-  let platformScore = 75;
-  if (exp.platform.toLowerCase().includes("cygnus")) {
-    platformScore = 95;
-    reasons.push("Flight-vehicle scale experiment (Cygnus large tunnel)");
-  } else if (exp.platform.toLowerCase().includes("iss")) {
-    platformScore = 90;
-    reasons.push("ISS flight-certified operational microgravity facility");
-  }
-
-  // 6. Metadata Completeness (0 - 100)
-  let completenessScore = 100;
-  if (exp.pressure_kpa == null) {
-    completenessScore -= 15;
-    if (!missingParams.includes("pressure_kpa")) missingParams.push("pressure_kpa");
-  }
-  if (exp.oxygen_pct == null) {
-    completenessScore -= 20;
-    if (!missingParams.includes("oxygen_pct")) missingParams.push("oxygen_pct");
-  }
-  if (exp.airflow_cm_s == null) {
-    completenessScore -= 20;
-    if (!missingParams.includes("airflow_cm_s")) missingParams.push("airflow_cm_s");
-  }
-  if (!exp.psi_id && !exp.doi) {
-    completenessScore -= 25;
-    missingParams.push("persistent identifier / DOI");
-  }
-
-  return {
-    materialScore,
-    atmosphereScore,
-    airflowScore,
-    phenomenonScore,
-    platformScore,
-    completenessScore,
-    missingParameters: missingParams,
-    reasons,
-    limitationsWarning:
-      "NASA Caution: Conducted in sustained microgravity (0g). Do not extrapolate quantitatively as a predictive model for Lunar (0.16g) or Martian (0.38g) partial gravity environments.",
-  };
+export function assessQuerySupport(query: SearchQuery, ranked: RankedEvidence[]): { kind: MatchKind; reason: string } {
+  const structured = Boolean(query.material || query.phenomenon || query.oxygenPct != null || query.pressureKpa != null || query.airflowCmS != null);
+  if (!structured && !query.freeText?.trim()) return { kind: "browse", reason: "Browse the reviewed investigations." };
+  if (!ranked.length) return { kind: "no_relevant_evidence", reason: "No applicable evidence was found in the reviewed index." };
+  if (structured && ranked.some(({ experiment: e }) =>
+    (!query.material || materialMatch(e, query.material) === 100) &&
+    (!query.phenomenon || phenomenonMatch(e, query.phenomenon) === 100) &&
+    (query.oxygenPct == null || e.oxygen_pct === query.oxygenPct) &&
+    (query.pressureKpa == null || e.pressure_kpa === query.pressureKpa) &&
+    (query.airflowCmS == null || e.airflow_cm_s === query.airflowCmS)
+  )) return { kind: "reported_conditions_match", reason: "Requested reported inputs match; inspect all other conditions and limitations." };
+  return { kind: "related_only", reason: "Related evidence is available, but some requested conditions differ or are not reported." };
 }

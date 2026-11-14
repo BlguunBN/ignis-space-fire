@@ -5,10 +5,10 @@
   "description": "IGNIS - Intelligent Guidance from NASA Investigation Studies for NASA Space Apps 2026",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test tests/ranking.test.ts tests/studio.test.tsx"
+    "test": "tsx --test tests/ranking.test.ts tests/studio.test.tsx tests/simulation.test.ts tests/rebuild.test.ts tests/interpret.test.ts tests/workspace.test.tsx"
   },
   "dependencies": {
     "@img-comparison-slider/react": "^8.0.2",

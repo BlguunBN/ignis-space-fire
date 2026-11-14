@@ -13,7 +13,7 @@ export interface CoverageMatrixResult {
 interface TargetBin {
   materialClass: string;
   materialLabel: string;
-  atmosphereRegime: "Standard ISS (21% O2)" | "Exploration (26-34% O2)";
+  atmosphereRegime: "Oxygen (20-22% O2)" | "Exploration (26-34% O2)";
   airflowRegime: "Quiescent (0 cm/s)" | "Low Flow (1-5 cm/s)" | "Forced Flow (10-20 cm/s)";
 }
 
@@ -21,7 +21,7 @@ const TARGET_BINS: TargetBin[] = [
   {
     materialClass: "solid_polymer",
     materialLabel: "Solid Polymers (PMMA, Acrylic)",
-    atmosphereRegime: "Standard ISS (21% O2)",
+    atmosphereRegime: "Oxygen (20-22% O2)",
     airflowRegime: "Low Flow (1-5 cm/s)",
   },
   {
@@ -33,25 +33,25 @@ const TARGET_BINS: TargetBin[] = [
   {
     materialClass: "solid_fabric",
     materialLabel: "Textiles / SIBAL (Cotton-Fiberglass)",
-    atmosphereRegime: "Standard ISS (21% O2)",
+    atmosphereRegime: "Oxygen (20-22% O2)",
     airflowRegime: "Forced Flow (10-20 cm/s)",
   },
   {
     materialClass: "electrical_insulation",
     materialLabel: "Wire Insulation (PTFE, Kapton)",
-    atmosphereRegime: "Standard ISS (21% O2)",
+    atmosphereRegime: "Oxygen (20-22% O2)",
     airflowRegime: "Low Flow (1-5 cm/s)",
   },
   {
     materialClass: "liquid_hydrocarbon",
     materialLabel: "Liquid Hydrocarbons (Droplets)",
-    atmosphereRegime: "Standard ISS (21% O2)",
+    atmosphereRegime: "Oxygen (20-22% O2)",
     airflowRegime: "Quiescent (0 cm/s)",
   },
   {
     materialClass: "gas_fuel",
     materialLabel: "Gaseous Fuels (Methane, Ethylene)",
-    atmosphereRegime: "Standard ISS (21% O2)",
+    atmosphereRegime: "Oxygen (20-22% O2)",
     airflowRegime: "Forced Flow (10-20 cm/s)",
   },
   {
@@ -87,10 +87,10 @@ export function computeEvidenceCoverage(experiments: ExperimentRecord[]): Covera
 
       // Atmosphere match
       if (exp.oxygen_pct == null) return false;
-      const isStandardAtm = exp.oxygen_pct <= 22.0;
-      const isExplorationAtm = exp.oxygen_pct > 22.0;
+      const isStandardAtm = exp.oxygen_pct >= 20.0 && exp.oxygen_pct <= 22.0;
+      const isExplorationAtm = exp.oxygen_pct >= 26.0 && exp.oxygen_pct <= 34.0;
       const matchesAtm =
-        (bin.atmosphereRegime.includes("21%") && isStandardAtm) ||
+        (bin.atmosphereRegime.includes("20-22%") && isStandardAtm) ||
         (bin.atmosphereRegime.includes("26-34%") && isExplorationAtm);
 
       if (!matchesAtm) return false;
@@ -98,8 +98,8 @@ export function computeEvidenceCoverage(experiments: ExperimentRecord[]): Covera
       // Airflow match
       if (exp.airflow_cm_s == null) return false;
       const isQuiescent = exp.airflow_cm_s === 0;
-      const isLowFlow = exp.airflow_cm_s > 0 && exp.airflow_cm_s <= 8.0;
-      const isForcedFlow = exp.airflow_cm_s > 8.0;
+      const isLowFlow = exp.airflow_cm_s >= 1.0 && exp.airflow_cm_s <= 5.0;
+      const isForcedFlow = exp.airflow_cm_s >= 10.0 && exp.airflow_cm_s <= 20.0;
 
       const matchesFlow =
         (bin.airflowRegime.includes("Quiescent") && isQuiescent) ||
@@ -114,8 +114,8 @@ export function computeEvidenceCoverage(experiments: ExperimentRecord[]): Covera
     let notes = "No verified records in current indexed corpus (does not imply NASA never tested this condition).";
 
     if (count >= 2) {
-      status = "ADEQUATE";
-      notes = `Multiple verified investigations (${matching.map((m) => m.programme).join(", ")}).`;
+      status = "LIMITED";
+      notes = `${count} indexed records; independent investigations have not been established.`;
     } else if (count === 1) {
       status = "LIMITED";
       notes = `Single verified investigation (${matching[0].investigation}).`;

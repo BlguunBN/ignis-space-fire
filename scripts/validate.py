@@ -1,9 +1,10 @@
 """
 Validation script for NASA Microgravity Combustion Evidence Corpus.
-Ensures every indexed record adheres strictly to scientific provenance standards.
+Checks candidate records mechanically; it does not verify scientific claims.
 """
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -76,20 +77,26 @@ def validate_dataset(filepath: Path) -> bool:
 
         # If verified, require source_locator
         if status == "verified" and not rec.get("source_locator"):
-            print(f"  [WARN] Record '{rec_id}' is marked 'verified' but lacks 'source_locator'")
+            print(f"  [FAIL] Record '{rec_id}' is marked 'verified' but lacks 'source_locator'")
+            all_valid = False
 
         # Range checks for physical values (if reported)
         o2 = rec.get("oxygen_pct")
         if o2 is not None:
-            if not isinstance(o2, (int, float)) or not (10.0 <= o2 <= 100.0):
+            if isinstance(o2, bool) or not isinstance(o2, (int, float)) or not math.isfinite(o2) or not (0.0 <= o2 <= 100.0):
                 print(f"  [FAIL] Record '{rec_id}' oxygen_pct outside plausible bounds: {o2}")
                 all_valid = False
 
         flow = rec.get("airflow_cm_s")
         if flow is not None:
-            if not isinstance(flow, (int, float)) or flow < 0:
+            if isinstance(flow, bool) or not isinstance(flow, (int, float)) or not math.isfinite(flow) or flow < 0:
                 print(f"  [FAIL] Record '{rec_id}' airflow_cm_s cannot be negative: {flow}")
                 all_valid = False
+
+        pressure = rec.get("pressure_kpa")
+        if pressure is not None and (isinstance(pressure, bool) or not isinstance(pressure, (int, float)) or not math.isfinite(pressure) or pressure <= 0):
+            print(f"  [FAIL] Record '{rec_id}' pressure_kpa must be positive")
+            all_valid = False
 
         # Validate scientific integrity rules
         if rec.get("gravity") != "microgravity":
