@@ -277,5 +277,5 @@ Open-source tools handle generic frontend plumbing and raw data parsing. The cor
 - [x] **Stage 2 (Citations):** Citation.js formats verified BibTeX, APA, and RIS citations.
 - [x] **Stage 3 (Whiteboard):** React Flow renders interactive research nodes (Question → Evidence → Hypothesis → Experiment) alongside Excalidraw freehand canvas.
 - [x] **Stage 3 (Grounded AI):** Grounded AI chat interface streams answers with verified citation pills; non-cited claims are stripped.
-- [ ] **Stage 4 (Graph & Ingestion):** react-force-graph-2d visualizes investigation networks; Docling Serve parses candidate reports into the staging queue.
+- [x] **Stage 4 (Graph & Ingestion):** react-force-graph-2d visualizes investigation networks; Docling Serve parses candidate reports into the staging queue.
 - [x] **Final Verification:** Zero build errors, zero TypeScript errors, accessible keyboard navigation, and complete offline fallback capability.
