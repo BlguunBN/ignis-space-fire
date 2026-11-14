@@ -1,131 +1,33 @@
 "use client";
-
 import React, { useState } from "react";
-import { VisualExperimentPackage, VisualScene } from "@/types/visualization";
-import { FrameSequencePlayer } from "@/components/experiment/FrameSequencePlayer";
-import { ExperimentApparatusDiagram } from "@/components/experiment/ExperimentApparatusDiagram";
-import { ConditionInspector } from "@/components/experiment/ConditionInspector";
 import { ExperimentRecord } from "@/types/evidence";
-import { ExternalLink, CheckCircle2, ChevronRight, Layers, Compass, Camera, FileCheck2, ShieldAlert } from "lucide-react";
+import { VisualExperimentPackage } from "@/types/visualization";
+import { FrameSequencePlayer } from "@/components/experiment/FrameSequencePlayer";
+import { ImageInspector } from "@/components/experiment/ImageInspector";
+import { ConditionInspector } from "@/components/experiment/ConditionInspector";
+import { ExternalLink } from "lucide-react";
 
-interface PaperVisualStoryboardProps {
-  pkg: VisualExperimentPackage;
-  experiment: ExperimentRecord;
-}
-
-export function PaperVisualStoryboard({ pkg, experiment }: PaperVisualStoryboardProps) {
-  const [activeSceneIndex, setActiveSceneIndex] = useState(1); // Default to observation (Scene 2)
-
-  const scenes = pkg.scenes;
-  const currentScene = scenes[activeSceneIndex] || scenes[0];
-
-  const getSceneIcon = (kind: VisualScene["kind"]) => {
-    switch (kind) {
-      case "setup":
-        return <Compass className="w-3.5 h-3.5 text-[#E99847]" />;
-      case "observation":
-        return <Camera className="w-3.5 h-3.5 text-[#5CB59B]" />;
-      case "findings":
-        return <FileCheck2 className="w-3.5 h-3.5 text-[#78A9D8]" />;
-      case "limitations":
-        return <ShieldAlert className="w-3.5 h-3.5 text-[#D97777]" />;
-    }
-  };
-
-  const sequenceAsset = pkg.assets.find((a) => a.id === "sofie-rtdfs-sequence");
-  const stillAsset = pkg.assets.find((a) => a.id === "sofie-pmma-still");
-
-  return (
-    <div className="space-y-5 text-xs">
-      {/* Storyboard Step Navigator Bar */}
-      <div className="bg-[#1B2027] border border-[#303741] p-2 rounded-xl flex flex-wrap items-center justify-between gap-2 shadow-sm">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {scenes.map((scene, idx) => {
-            const isActive = activeSceneIndex === idx;
-            return (
-              <button
-                key={scene.id}
-                onClick={() => setActiveSceneIndex(idx)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
-                  isActive
-                    ? "bg-[#0C0F13] text-[#F3F5F7] border border-[#E99847] font-semibold"
-                    : "text-[#A1AAB5] hover:text-[#F3F5F7] hover:bg-[#15191F]"
-                }`}
-              >
-                <span>{getSceneIcon(scene.kind)}</span>
-                <span>{scene.title}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <span className="text-[11px] font-mono text-[#737F8C] px-2 hidden sm:inline">
-          Verified Scene {activeSceneIndex + 1} of {scenes.length}
-        </span>
-      </div>
-
-      {/* Main Studio 60 / 40 Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left 60% Visual Evidence Viewer */}
-        <div className="lg:col-span-7 space-y-4">
-          {currentScene.kind === "setup" && <ExperimentApparatusDiagram />}
-
-          {currentScene.kind === "observation" && sequenceAsset && (
-            <FrameSequencePlayer asset={sequenceAsset} />
-          )}
-
-          {(currentScene.kind === "findings" || currentScene.kind === "limitations") && stillAsset && (
-            <div className="bg-[#1B2027] border border-[#303741] rounded-xl overflow-hidden p-4 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#303741]">
-                <span className="font-bold text-[#F3F5F7] text-sm">
-                  {stillAsset.title}
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0C0F13] text-[#5CB59B] border border-[#5CB59B]/40">
-                  Original Flight Snapshot
-                </span>
-              </div>
-              <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center border border-[#303741]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={stillAsset.localPath}
-                  alt={stillAsset.title}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="text-[11px] text-[#A1AAB5] flex items-center justify-between font-mono pt-1">
-                <span>Credit: {stillAsset.nasaCredit}</span>
-                <a
-                  href={stillAsset.locator.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#78A9D8] hover:text-[#F3F5F7] flex items-center gap-1"
-                >
-                  Source Record
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
-          )}
-
-          {/* Current Scene Context Caption */}
-          <div className="bg-[#15191F] border border-[#303741] p-4 rounded-xl space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-mono font-bold text-[#E99847] tracking-wider">
-                Scientific Narrative & Observation
-              </span>
-              <span className="text-[10px] text-[#5CB59B] flex items-center gap-1 font-mono">
-                <CheckCircle2 className="w-3 h-3" /> reviewed by team
-              </span>
-            </div>
-            <p className="text-[#F3F5F7] text-xs leading-relaxed">{currentScene.caption}</p>
-          </div>
-        </div>
-
-        {/* Right 40% Evidence & Provenance Inspector */}
-        <div className="lg:col-span-5 space-y-4">
-          <ConditionInspector experiment={experiment} />
-        </div>
+export function PaperVisualStoryboard({ pkg, experiment, onCompare }: { pkg?: VisualExperimentPackage; experiment: ExperimentRecord; onCompare?: () => void }) {
+  const [view, setView] = useState<"imagery" | "story">("imagery");
+  // The 0.2-second SoFIE sequence is not identified as GEL by its NASA caption.
+  const still = pkg?.assets.find(a => a.experimentId === experiment.id && a.id === "sofie-pmma-still" && a.localPath);
+  const [imageChoice, setImageChoice] = useState<"still" | "montage">("still");
+  const montage = pkg?.assets.find(a => a.experimentId === experiment.id && a.id === "sofie-gel-montage");
+  const selectedImage = imageChoice === "montage" && montage ? montage : still;
+  const sequence = pkg?.assets.find(a => a.experimentId === experiment.id && a.format === "frames" && a.id !== "sofie-rtdfs-sequence" && a.verificationStatus === "verified");
+  return <div className="space-y-4 text-sm">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
+      <section className="xl:col-span-7 studio-panel overflow-hidden">
+        <div className="p-4 border-b border-[#303134]"><h2 className="font-semibold text-lg">{experiment.investigation}</h2><p className="text-xs text-[#9EA2A7] mt-1">{experiment.programme} · {experiment.platform}</p></div>
+        <div className="flex gap-1 p-3 border-b border-[#303134] overflow-x-auto" aria-label="Experiment views"><button onClick={() => setView("imagery")} aria-pressed={view === "imagery"} className={`studio-tab ${view === "imagery" ? "studio-tab-active" : ""}`}>Recorded imagery</button><button onClick={() => setView("story")} aria-pressed={view === "story"} className={`studio-tab ${view === "story" ? "studio-tab-active" : ""}`}>Storyboard</button><button disabled className="studio-tab opacity-40" title="No source-verified setup diagram available">Experimental setup</button><button disabled className="studio-tab opacity-40" title="No source figure available">Source figures</button><button disabled className="studio-tab opacity-40" title="No verified numerical series available">Measurements</button></div>
+        <div className="p-4">{view === "imagery" ? sequence ? <FrameSequencePlayer asset={sequence}/> : selectedImage ? <>{montage && <div className="flex gap-2 mb-3"><button onClick={() => setImageChoice("still")} aria-pressed={imageChoice === "still"} className="studio-link">GEL image</button><button onClick={() => setImageChoice("montage")} aria-pressed={imageChoice === "montage"} className="studio-link">Snapshot montage</button></div>}<ImageInspector key={selectedImage.id} src={selectedImage.localPath!} alt={`${experiment.investigation} experiment image from NASA`}/><p className="text-xs text-[#9EA2A7] mt-3">Original NASA imagery · {selectedImage.nasaCredit} · <a href={selectedImage.locator.url} target="_blank" rel="noreferrer" className="text-[#DDA36B]">View source ↗</a>{imageChoice === "montage" && " · NASA describes snapshots approximately 3 seconds apart."}</p></> : <div className="min-h-64 flex items-center justify-center text-center text-[#9EA2A7] p-8">No source-matched imagery is available for this investigation.</div> : <div className="space-y-3">{pkg?.scenes.length ? pkg.scenes.filter(scene => scene.kind === "limitations").map(scene => <div key={scene.id} className="p-4 rounded-lg bg-[#111214] border border-[#303134]"><h3 className="font-medium">Limitations</h3><p className="text-[#9EA2A7] mt-2">{scene.caption}</p><a className="text-[#DDA36B] text-xs" href={scene.sourceLocators[0]?.url || experiment.source_url} target="_blank" rel="noreferrer">Source ↗</a></div>) : <p className="text-[#9EA2A7]">No reviewed storyboard is available for this record.</p>}<p className="text-xs text-[#9EA2A7]">Other storyboard scenes require source review before display.</p></div>}</div>
+      </section>
+      <div className="xl:col-span-5 grid sm:grid-cols-2 gap-4 content-start">
+        <ConditionInspector experiment={experiment}/>
+        <section className="studio-panel p-4"><h2 className="font-semibold pb-3 border-b border-[#303134]">{experiment.id === "sofie-gel" ? "Research focus" : "Key finding"}</h2><p className="mt-4 text-xs leading-6 text-[#d3d2cf]">{experiment.finding}</p><a href={experiment.source_url} target="_blank" rel="noreferrer" className="inline-flex gap-1 mt-4 text-xs text-[#DDA36B]">Source record <ExternalLink size={13}/></a><p className="text-xs text-[#9EA2A7] mt-5">Record status reflects the dataset; individual claims and conditions need source review.</p></section>
+        <section className="studio-panel p-4 sm:col-span-2"><h2 className="font-semibold pb-3 border-b border-[#303134]">Source & publication</h2><p className="mt-3">{experiment.investigation}</p><p className="text-xs text-[#9EA2A7] mt-1">{experiment.source_locator || "Source locator not reported"}</p><div className="flex flex-wrap gap-3 mt-4 text-xs"><a className="studio-link" href={experiment.source_url} target="_blank" rel="noreferrer">NASA source ↗</a>{experiment.doi && <a className="studio-link" href={`https://doi.org/${experiment.doi}`} target="_blank" rel="noreferrer">DOI ↗</a>}</div></section>
       </div>
     </div>
-  );
+    <div className="grid md:grid-cols-3 gap-4"><section className="studio-panel p-4"><h3 className="font-semibold">Measurements</h3><p className="text-xs leading-5 text-[#9EA2A7] mt-4">No source-verified numerical series is available for display. Consult the original source for reported measurements.</p></section><section className="studio-panel p-4"><h3 className="font-semibold">Frame sequence</h3><p className="text-xs leading-5 text-[#9EA2A7] mt-4">{sequence ? "Use the viewer controls to inspect the available frames." : montage ? "NASA provides a GEL snapshot montage approximately 3 seconds apart. Frame ordering and crops need review before playback." : "No source-matched frame sequence is available for this investigation."}</p></section><section className="studio-panel p-4"><h3 className="font-semibold">Compare experiments</h3><p className="text-xs leading-5 text-[#9EA2A7] mt-4">Compare conditions and source records across investigations.</p><button onClick={onCompare} className="studio-link mt-4">Open Compare Lab →</button></section></div>
+  </div>;
 }

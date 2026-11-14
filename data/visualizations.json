@@ -55,6 +55,23 @@
         "verificationStatus": "verified",
         "nasaCredit": "NASA Glenn Research Center (Illustrated Schematic)",
         "processingNotes": "Vector apparatus layout for geometry context."
+      },
+      {
+        "id": "sofie-gel-montage",
+        "experimentId": "sofie-gel",
+        "title": "SoFIE-GEL snapshot montage",
+        "representation": "original_media",
+        "format": "image",
+        "localPath": "/nasa/sofie-gel/gel-sequence-original.jpg",
+        "locator": {
+          "sourceId": "NASA SVS 31394",
+          "url": "https://svs.gsfc.nasa.gov/31394/#media_group_380285",
+          "originalCaption": "A sequence of snapshots taken about 3 seconds apart during SoFIE-GEL."
+        },
+        "intervalSeconds": 3,
+        "verificationStatus": "verified",
+        "nasaCredit": "NASA",
+        "processingNotes": "Original NASA montage; no frames have been extracted or reordered."
       }
     ],
     "scenes": [

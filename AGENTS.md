@@ -34,3 +34,13 @@ python scripts/extract_pdf.py <pdf_path>  # Extracts tables and parameters from 
 - The score is research *relevance* to an engineering inquiry, NEVER a physical fire danger or hazard probability metric.
 - Never extrapolate microgravity (~0g) results quantitatively to Lunar (0.16g) or Martian (0.38g) gravity without dedicated testing (e.g. FLARE).
 - Grounding constraint: Every synthesized claim cites its record (`source_url`, DOI, or `psi_id`). If absent, output `"not reported in the indexed evidence"`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

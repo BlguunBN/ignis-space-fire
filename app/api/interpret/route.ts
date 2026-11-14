@@ -1,3 +1,4 @@
+import { sourceReviewedRecords } from "@/lib/sourceReviewedRecords";
 import { NextRequest, NextResponse } from "next/server";
 import { generateGroundedInterpretation } from "@/lib/synthesis";
 import { rankEvidence } from "@/lib/ranking";
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
     const requestedIds: string[] = Array.isArray(body.experimentIds) ? body.experimentIds : [];
 
     // Security & Data Integrity: Always load and trust records directly from server-side JSON
-    const allExperiments = trustedExperiments as ExperimentRecord[];
+    const allExperiments = sourceReviewedRecords(trustedExperiments as ExperimentRecord[]);
     
     let candidateRecords: ExperimentRecord[];
     if (requestedIds.length > 0) {

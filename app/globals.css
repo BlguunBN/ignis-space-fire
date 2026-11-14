@@ -1,67 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --background: #0C0F13;
-  --foreground: #F3F5F7;
-  --sidebar-bg: #15191F;
-  --card-bg: #1B2027;
-  --card-border: #303741;
-  --accent-amber: #E99847;
-  --info-blue: #78A9D8;
-  --verified-green: #5CB59B;
-  --warning-red: #D97777;
-  --text-muted: #A1AAB5;
-  --text-dim: #737F8C;
-}
-
-html,
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  min-height: 100vh;
-  letter-spacing: -0.012em;
-  overflow-x: clip;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-}
-
-/* Accessible focus outline */
-:focus-visible {
-  outline: 2px solid var(--accent-amber);
-  outline-offset: 2px;
-}
-
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Tabular figures for numbers and scores */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0C0F13;
-}
-::-webkit-scrollbar-thumb {
-  background: #303741;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
+:root { --background:#0B0C0E; --foreground:#F3F2EF; --accent-amber:#DDA36B; }
+html, body { min-height:100%; color:var(--foreground); background:var(--background); font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+:focus-visible { outline:2px solid #DDA36B; outline-offset:2px; }
+.studio-panel { background:#191A1D; border:1px solid #303134; border-radius:12px; }
+.studio-tab { white-space:nowrap; padding:8px 12px; border-radius:8px; color:#9EA2A7; font-size:12px; }
+.studio-tab-active { color:#F3F2EF; background:#29231f; box-shadow:inset 0 0 0 1px #DDA36B; }
+.studio-link { display:inline-flex; align-items:center; padding:7px 10px; border:1px solid #303134; border-radius:8px; color:#F3F2EF; font-size:12px; }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }

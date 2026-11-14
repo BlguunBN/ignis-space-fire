@@ -1,6 +1,9 @@
 "use client";
 
+import { sourceReviewedRecords } from "@/lib/sourceReviewedRecords";
+
 import React, { useState, useMemo } from "react";
+import sourcesData from "@/data/sources.json";
 import experimentsData from "@/data/experiments.json";
 import visualizationsData from "@/data/visualizations.json";
 import { ExperimentRecord, SearchQuery, RankedEvidence } from "@/types/evidence";
@@ -15,6 +18,7 @@ import { InterpretationPanel } from "@/components/InterpretationPanel";
 import { FlameDynamicsChart } from "@/components/FlameDynamicsChart";
 import { MasterComparisonTable } from "@/components/MasterComparisonTable";
 import { PaperVisualStoryboard } from "@/components/papers/PaperVisualStoryboard";
+import { MissionLab } from "@/components/mission/MissionLab";
 import { VisualComparison } from "@/components/experiment/VisualComparison";
 import { AppSidebar, NavTab } from "@/components/layout/AppSidebar";
 import {
@@ -27,7 +31,7 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const allExperiments = experimentsData as ExperimentRecord[];
+  const allExperiments = sourceReviewedRecords(experimentsData as ExperimentRecord[]);
   const visualPackages = visualizationsData as VisualExperimentPackage[];
 
   // Navigation State (defaults to flagship studio view)
@@ -47,6 +51,7 @@ export default function Home() {
   // Compare Basket State
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>(["sofie-gel", "saffire-1"]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [isMethodologyOpen, setIsMethodologyOpen] = useState(false);
 
   // Interpretation State
   const [synthesis, setSynthesis] = useState<SynthesisResponse | null>(null);
@@ -81,7 +86,7 @@ export default function Home() {
   );
 
   const activeVisualPackage = useMemo(
-    () => visualPackages.find((v) => v.experimentId === activeStudioExp.id) || visualPackages[0],
+    () => visualPackages.find((v) => v.experimentId === activeStudioExp.id)  ,
     [visualPackages, activeStudioExp]
   );
 
@@ -183,7 +188,7 @@ export default function Home() {
   const compareExp2 = allExperiments.find((e) => e.id === selectedForCompare[1]) || allExperiments[1];
 
   return (
-    <div className="min-h-screen bg-[#0C0F13] text-[#F3F5F7] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#0B0C0E] text-[#F3F2EF] flex flex-col lg:flex-row">
       {/* Sidebar Navigation */}
       <AppSidebar
         activeTab={activeTab}
@@ -194,136 +199,15 @@ export default function Home() {
 
       {/* Main Content Workspace */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header Bar */}
-        <header className="border-b border-[#303741] bg-[#15191F]/80 backdrop-blur px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#E99847] font-mono">
-              IGNIS 2.0
-            </span>
-            <span className="text-[#303741]">/</span>
-            <span className="text-xs text-[#A1AAB5]">NASA Microgravity Visual Research Studio</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] px-2 py-0.5 rounded bg-[#1B2027] text-[#5CB59B] border border-[#303741] font-mono">
-              10 Verified Investigations
-            </span>
-            <span className="text-[11px] px-2 py-0.5 rounded bg-[#1B2027] text-[#78A9D8] border border-[#303741] font-mono">
-              NASA SVS 31394 Flight Media
-            </span>
-          </div>
+        <header className="border-b border-[#303134] bg-[#111214] px-5 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+          <span className="text-sm text-[#9EA2A7]">Microgravity combustion <span className="text-[#F3F2EF]">/ Research explorer</span></span>
+          <label className="flex items-center gap-2 bg-[#191A1D] border border-[#303134] rounded-lg px-3 py-2 w-full sm:w-80"><Search className="w-4 h-4 text-[#9EA2A7]"/><input aria-label="Search research library" value={freeText} onChange={e => { setFreeText(e.target.value); setActiveTab("explore"); }} placeholder="Search experiments, materials, or phenomena" className="bg-transparent w-full text-xs outline-none placeholder:text-[#9EA2A7]" /></label>
         </header>
-
-        {/* Scientific Boundary Banner */}
-        <div className="bg-[#15191F] border-b border-[#303741] px-4 sm:px-6 py-2">
-          <div className="flex items-center gap-2 text-xs text-[#A1AAB5]">
-            <ShieldAlert className="w-3.5 h-3.5 text-[#E99847] shrink-0" />
-            <p className="text-[11px]">
-              <strong className="text-[#F3F5F7]">Scientific Boundary:</strong> Microgravity (~0g) alters buoyancy; these findings are empirical spacecraft intelligence and do not predict Lunar (0.16g) or Martian (0.38g) partial-gravity fires without dedicated testing.
-            </p>
-          </div>
-        </div>
-
-        {/* Main Body */}
-        <main className="p-4 sm:p-6 space-y-6 max-w-7xl w-full mx-auto">
-          {/* Preset Inquiry Chips */}
-          <div className="bg-[#1B2027] p-3.5 rounded-xl border border-[#303741] space-y-2">
-            <span className="text-[10px] font-bold text-[#737F8C] uppercase tracking-wider block font-mono">
-              One-Click Demonstration Scenarios:
-            </span>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <button
-                onClick={() => {
-                  setSelectedStudioExpId("sofie-gel");
-                  setActiveTab("studio");
-                }}
-                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#5CB59B] border border-[#5CB59B]/40 transition cursor-pointer font-medium flex items-center gap-1.5"
-              >
-                <Tv className="w-3.5 h-3.5" />
-                Inspect SoFIE Flight Footage (0.2s sequence)
-              </button>
-              <button
-                onClick={() => applyPreset("pmma")}
-                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
-              >
-                PMMA Low Airflow (BASS-II)
-              </button>
-              <button
-                onClick={() => applyPreset("saffire-fabric")}
-                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
-              >
-                Large Fabric Fire in Cygnus (Saffire-I)
-              </button>
-              <button
-                onClick={() => applyPreset("smoke-detection")}
-                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
-              >
-                Smoke Particle Sizing for Detectors (SAME-R)
-              </button>
-              <button
-                onClick={() => applyPreset("cool-flame")}
-                className="px-2.5 py-1 rounded-lg bg-[#15191F] hover:bg-[#303741] text-[#A1AAB5] hover:text-[#F3F5F7] border border-[#303741] transition cursor-pointer"
-              >
-                Cool Flame Extinction & CO₂ (FLEX)
-              </button>
-            </div>
-          </div>
-
-          {/* FLAGSHIP VIEW: Experiment Studio (Paper Visual Storyboard) */}
-          {activeTab === "studio" && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-[#303741]">
-                <div>
-                  <h2 className="text-base font-bold text-[#F3F5F7] flex items-center gap-2">
-                    <Tv className="w-4 h-4 text-[#E99847]" />
-                    Visual Experiment Studio: {activeStudioExp.investigation}
-                  </h2>
-                  <p className="text-xs text-[#A1AAB5] mt-0.5">
-                    Interactive paper explorer: Inspect real NASA flight imagery, apparatus geometry, condition controls, and verified findings.
-                  </p>
-                </div>
-
-                {/* Studio Experiment Switcher */}
-                <div className="flex items-center gap-1.5 bg-[#15191F] p-1 rounded-lg border border-[#303741] text-xs">
-                  <span className="text-[#737F8C] px-2 text-[10px] uppercase font-mono font-semibold">
-                    Target Paper:
-                  </span>
-                  <button
-                    onClick={() => setSelectedStudioExpId("sofie-gel")}
-                    className={`px-2.5 py-1 rounded font-medium transition cursor-pointer ${
-                      selectedStudioExpId === "sofie-gel"
-                        ? "bg-[#0C0F13] text-[#5CB59B] border border-[#5CB59B]/40 font-semibold"
-                        : "text-[#A1AAB5] hover:text-[#F3F5F7]"
-                    }`}
-                  >
-                    SoFIE-GEL (ISS)
-                  </button>
-                  <button
-                    onClick={() => setSelectedStudioExpId("saffire-1")}
-                    className={`px-2.5 py-1 rounded font-medium transition cursor-pointer ${
-                      selectedStudioExpId === "saffire-1"
-                        ? "bg-[#0C0F13] text-[#E99847] border border-[#E99847]/40 font-semibold"
-                        : "text-[#A1AAB5] hover:text-[#F3F5F7]"
-                    }`}
-                  >
-                    Saffire-I (Cygnus)
-                  </button>
-                </div>
-              </div>
-
-              <PaperVisualStoryboard pkg={activeVisualPackage} experiment={activeStudioExp} />
-            </div>
-          )}
-
-          {/* VIEW: Visual Compare Lab */}
-          {activeTab === "compare_lab" && (
-            <VisualComparison
-              exp1={compareExp1}
-              exp2={compareExp2}
-              visualPkg1={activeVisualPackage}
-            />
-          )}
-
+        <main className="p-4 sm:p-6 lg:p-8 space-y-5 max-w-[1600px] w-full mx-auto">
+          {activeTab === "overview" && <div className="space-y-5"><div><p className="text-xs uppercase tracking-widest text-[#DDA36B]">NASA microgravity research</p><h1 className="text-3xl mt-2 font-semibold">Explore the science of fire in space.</h1><p className="text-sm text-[#9EA2A7] mt-2">Inspect investigations, source imagery, and the evidence behind the findings.</p></div><div className="studio-panel p-6"><h2 className="text-lg font-semibold">Experiment Studio</h2><p className="text-sm text-[#9EA2A7] mt-2">Start with {activeStudioExp.investigation} or explore the research library.</p><div className="flex gap-3 mt-5"><button className="studio-link" onClick={() => setActiveTab("studio")}>Open Studio →</button><button className="studio-link" onClick={() => setActiveTab("explore")}>Research Library →</button></div></div><div className="studio-panel p-5 text-sm text-[#9EA2A7]">Evidence is drawn from the indexed dataset. Microgravity findings do not predict lunar or Martian fire behavior without validated models.</div></div>}
+          {activeTab === "studio" && <div className="space-y-5"><div className="flex flex-wrap justify-between items-end gap-3"><div><h1 className="text-3xl font-semibold tracking-tight">Experiment Studio</h1><p className="text-sm text-[#9EA2A7] mt-1">Explore NASA combustion experiments and their sources.</p></div><label className="text-xs text-[#9EA2A7]">Investigation <select aria-label="Select investigation" value={selectedStudioExpId} onChange={e => setSelectedStudioExpId(e.target.value)} className="ml-2 bg-[#191A1D] border border-[#303134] text-[#F3F2EF] rounded-lg px-3 py-2 max-w-[250px]">{allExperiments.map(e => <option key={e.id} value={e.id}>{e.investigation}</option>)}</select></label></div><PaperVisualStoryboard key={activeStudioExp.id} pkg={activeVisualPackage} experiment={activeStudioExp} onCompare={() => { setSelectedForCompare([activeStudioExp.id, allExperiments.find(e => e.id !== activeStudioExp.id)!.id]); setActiveTab("compare_lab"); }} /></div>}
+          {activeTab === "mission" && <MissionLab />}
+          {activeTab === "compare_lab" && <div className="space-y-4"><h1 className="text-3xl font-semibold">Compare Lab</h1><div className="grid sm:grid-cols-2 gap-4">{[0,1].map(i => <label key={i} className="text-xs text-[#9EA2A7]">Investigation {i+1}<select value={selectedForCompare[i] || ""} onChange={e => setSelectedForCompare(prev => { const next = [...prev]; next[i] = e.target.value; return next; })} className="block w-full mt-2 bg-[#191A1D] text-[#F3F2EF] border border-[#303134] rounded-lg p-2">{allExperiments.map(exp => <option key={exp.id} value={exp.id}>{exp.investigation}</option>)}</select></label>)}</div><VisualComparison exp1={compareExp1} exp2={compareExp2} visualPkg1={visualPackages.find(p => p.experimentId === compareExp1.id)} visualPkg2={visualPackages.find(p => p.experimentId === compareExp2.id)} /></div>}
           {/* VIEW: Empirical Flame Spread Measurements */}
           {activeTab === "chart" && <FlameDynamicsChart />}
 
@@ -339,31 +223,26 @@ export default function Home() {
           {/* VIEW: Coverage Matrix */}
           {activeTab === "coverage" && <GapMatrix experiments={allExperiments} />}
 
-          {/* VIEW: Provenance & Limits */}
-          {activeTab === "methodology" && (
-            <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-6">
-              <MethodologyModal onClose={() => setActiveTab("studio")} />
-            </div>
-          )}
-
+          {activeTab === "methodology" && <div className="space-y-4"><h1 className="text-3xl font-semibold">Sources & Methodology</h1><p className="text-sm text-[#9EA2A7]">Sources indexed by IGNIS. Verify individual records and media against their original publications.</p><div className="grid md:grid-cols-3 gap-4">{sourcesData.map(source => <section key={source.url} className="studio-panel p-5"><h2 className="font-semibold">{source.name}</h2><p className="text-xs leading-5 text-[#9EA2A7] mt-3">{source.description}</p><a href={source.url} target="_blank" rel="noreferrer" className="studio-link mt-4">Open source ↗</a></section>)}</div><div className="studio-panel p-5 text-sm text-[#9EA2A7]">Indexed coverage is not a complete inventory of NASA research. Findings from microgravity cannot be quantitatively extrapolated to partial gravity without validated evidence.<div><button className="studio-link mt-4" onClick={() => setIsMethodologyOpen(true)}>Read methodology</button></div></div></div>}
           {/* VIEW: Evidence Explorer */}
           {activeTab === "explore" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Filter Panel (4 cols) */}
-              <div className="lg:col-span-4 bg-[#1B2027] border border-[#303741] rounded-xl p-4 shadow-sm space-y-4 text-xs">
-                <div className="flex items-center justify-between border-b border-[#303741] pb-2.5">
-                  <h3 className="font-bold text-[#F3F5F7] flex items-center gap-2">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-[#E99847]" />
+              <div className="lg:col-span-4 bg-[#191A1D] border border-[#303134] rounded-xl p-4 shadow-sm space-y-4 text-xs">
+                <div className="flex items-center justify-between border-b border-[#303134] pb-2.5">
+                  <h3 className="font-bold text-[#F3F2EF] flex items-center gap-2">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-[#DDA36B]" />
                     Inquiry Filters & Controls
                   </h3>
                   <button
                     onClick={resetFilters}
-                    className="text-[11px] text-[#A1AAB5] hover:text-[#F3F5F7] flex items-center gap-1 transition cursor-pointer"
+                    className="text-[11px] text-[#9EA2A7] hover:text-[#F3F2EF] flex items-center gap-1 transition cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" /> Reset
                   </button>
                 </div>
 
+                <div><span className="text-[#9EA2A7]">Example inquiries</span><div className="flex flex-wrap gap-2 mt-2">{[["pmma","PMMA"],["saffire-fabric","Saffire"],["smoke-detection","Smoke"],["cool-flame","Cool flames"],["exploration-atm","Exploration atmosphere"]].map(([id,label]) => <button key={id} onClick={() => applyPreset(id)} className="studio-link">{label}</button>)}</div></div>
                 {/* Fuse.js Search */}
                 <div>
                   <label className="text-[10px] uppercase tracking-wider font-semibold text-[#737F8C] block mb-1 font-mono">
@@ -375,7 +254,7 @@ export default function Home() {
                       value={freeText}
                       onChange={(e) => setFreeText(e.target.value)}
                       placeholder="e.g. acrylic, soot particle, quiescent"
-                      className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-3 py-1.5 text-xs text-[#F3F5F7] placeholder-[#737F8C] focus:outline-none focus:border-[#E99847] transition pl-8"
+                      className="w-full bg-[#0B0C0E] border border-[#303134] rounded-lg px-3 py-1.5 text-xs text-[#F3F2EF] placeholder-[#737F8C] focus:outline-none focus:border-[#DDA36B] transition pl-8"
                     />
                     <Search className="w-3.5 h-3.5 text-[#737F8C] absolute left-2.5 top-2.5" />
                   </div>
@@ -389,7 +268,7 @@ export default function Home() {
                   <select
                     value={material}
                     onChange={(e) => setMaterial(e.target.value)}
-                    className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F5F7] focus:outline-none focus:border-[#E99847] transition"
+                    className="w-full bg-[#0B0C0E] border border-[#303134] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F2EF] focus:outline-none focus:border-[#DDA36B] transition"
                   >
                     <option value="">All Materials</option>
                     <option value="PMMA">PMMA / Acrylic Polymer</option>
@@ -416,8 +295,8 @@ export default function Home() {
                         onClick={() => setOxygenPct(pct)}
                         className={`flex-1 py-1 text-[11px] rounded border transition cursor-pointer ${
                           oxygenPct === pct
-                            ? "bg-[#E99847] text-[#0C0F13] border-[#E99847] font-bold"
-                            : "bg-[#0C0F13] text-[#A1AAB5] border-[#303741] hover:bg-[#15191F]"
+                            ? "bg-[#DDA36B] text-[#0B0C0E] border-[#DDA36B] font-bold"
+                            : "bg-[#0B0C0E] text-[#9EA2A7] border-[#303134] hover:bg-[#111214]"
                         }`}
                       >
                         {pct ? `${pct}%` : "All"}
@@ -446,8 +325,8 @@ export default function Home() {
                         onClick={() => setAirflowCmS(flow.val)}
                         className={`flex-1 py-1 text-[11px] rounded border transition cursor-pointer ${
                           airflowCmS === flow.val
-                            ? "bg-[#E99847] text-[#0C0F13] border-[#E99847] font-bold"
-                            : "bg-[#0C0F13] text-[#A1AAB5] border-[#303741] hover:bg-[#15191F]"
+                            ? "bg-[#DDA36B] text-[#0B0C0E] border-[#DDA36B] font-bold"
+                            : "bg-[#0B0C0E] text-[#9EA2A7] border-[#303134] hover:bg-[#111214]"
                         }`}
                       >
                         {flow.label}
@@ -464,7 +343,7 @@ export default function Home() {
                   <select
                     value={phenomenon}
                     onChange={(e) => setPhenomenon(e.target.value)}
-                    className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F5F7] focus:outline-none focus:border-[#E99847] transition"
+                    className="w-full bg-[#0B0C0E] border border-[#303134] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F2EF] focus:outline-none focus:border-[#DDA36B] transition"
                   >
                     <option value="">All Phenomena</option>
                     <option value="flame_spread">Flame Spread Velocity</option>
@@ -483,7 +362,7 @@ export default function Home() {
                   <select
                     value={programme}
                     onChange={(e) => setProgramme(e.target.value)}
-                    className="w-full bg-[#0C0F13] border border-[#303741] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F5F7] focus:outline-none focus:border-[#E99847] transition"
+                    className="w-full bg-[#0B0C0E] border border-[#303134] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F2EF] focus:outline-none focus:border-[#DDA36B] transition"
                   >
                     <option value="ALL">All Flight Programmes</option>
                     <option value="Saffire">Saffire (Cygnus Vehicle)</option>
@@ -496,9 +375,9 @@ export default function Home() {
                 </div>
 
                 {/* Filter count */}
-                <div className="pt-2.5 border-t border-[#303741] text-[11px] text-[#A1AAB5] flex items-center justify-between">
+                <div className="pt-2.5 border-t border-[#303134] text-[11px] text-[#9EA2A7] flex items-center justify-between">
                   <span>Candidate Studies:</span>
-                  <span className="font-bold text-[#F3F5F7] font-mono">
+                  <span className="font-bold text-[#F3F2EF] font-mono">
                     {rankedResults.length} records
                   </span>
                 </div>
@@ -507,15 +386,15 @@ export default function Home() {
               {/* Right Results Column (8 cols) */}
               <div className="lg:col-span-8 space-y-4">
                 {/* Interpretation Panel */}
-                <InterpretationPanel
+                <details className="studio-panel p-4"><summary className="cursor-pointer text-sm">Optional AI interpretation</summary><div className="mt-4"><InterpretationPanel
                   synthesis={synthesis}
                   loading={synthesisLoading}
                   onGenerate={handleGenerateInterpretation}
-                />
+                /></div></details>
 
                 {/* Evidence Cards */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs text-[#A1AAB5]">
+                  <div className="flex items-center justify-between text-xs text-[#9EA2A7]">
                     <span className="uppercase tracking-wider font-bold text-[10px] text-[#737F8C] font-mono">
                       Ranked NASA Microgravity Investigations
                     </span>
@@ -523,7 +402,7 @@ export default function Home() {
                   </div>
 
                   {rankedResults.length === 0 ? (
-                    <div className="bg-[#1B2027] border border-[#303741] rounded-xl p-8 text-center text-[#A1AAB5]">
+                    <div className="bg-[#191A1D] border border-[#303134] rounded-xl p-8 text-center text-[#9EA2A7]">
                       <FileQuestion className="w-8 h-8 mx-auto text-[#737F8C] mb-2" />
                       No NASA investigations match the selected filters.
                     </div>
@@ -535,6 +414,7 @@ export default function Home() {
                         rank={idx + 1}
                         isSelectedForCompare={selectedForCompare.includes(evidence.experiment.id)}
                         onToggleCompare={toggleCompare}
+                        onOpenStudio={(id) => { setSelectedStudioExpId(id); setActiveTab("studio"); }}
                       />
                     ))
                   )}
@@ -545,6 +425,7 @@ export default function Home() {
         </main>
       </div>
 
+      {isMethodologyOpen && <MethodologyModal onClose={() => setIsMethodologyOpen(false)} />}
       {/* Compare Modal */}
       {isCompareOpen && (
         <CompareModal exp1={compareExp1} exp2={compareExp2} onClose={() => setIsCompareOpen(false)} />
