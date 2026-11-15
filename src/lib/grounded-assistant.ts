@@ -43,31 +43,21 @@ export function validateCitations(
   citations: GroundedCitation[],
   corpus: ExperimentRecord[]
 ): { valid: boolean; invalidClaims: string[] } {
-  const validClaimIds = new Set<string>();
-  const validRecordIds = new Set<string>();
-
-  for (const record of corpus) {
-    validRecordIds.add(record.id);
-    if (record.claim_locator_details?.claimId) {
-      validClaimIds.add(record.claim_locator_details.claimId);
-    }
-  }
-
+  const byId = new Map(corpus.map((record) => [record.id, record]));
   const invalidClaims: string[] = [];
-
   for (const citation of citations) {
-    const hasValidRecord = validRecordIds.has(citation.recordId);
-    const hasValidClaim = validClaimIds.has(citation.claimId);
-
-    if (!hasValidRecord || !hasValidClaim) {
+    const record = byId.get(citation.recordId);
+    const locator = record?.claim_locator_details;
+    // A globally existing claim ID is insufficient: it must belong to the
+    // cited record and match its indexed page. This is an internal consistency
+    // check; it cannot independently authenticate the underlying NASA paper.
+    if (!record || !locator ||
+        locator.claimId !== citation.claimId ||
+        locator.pageNumber !== citation.pageNumber) {
       invalidClaims.push(citation.claimId || `unknown-record:${citation.recordId}`);
     }
   }
-
-  return {
-    valid: invalidClaims.length === 0,
-    invalidClaims,
-  };
+  return { valid: invalidClaims.length === 0, invalidClaims };
 }
 
 /**
