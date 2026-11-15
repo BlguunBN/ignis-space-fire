@@ -26,6 +26,8 @@ import {
   ReviewStatus,
   promoteCandidateToCorpus,
 } from "../lib/ingestion";
+import { generateInvestigatorDossier, InvestigatorDossier } from "../lib/investigator-dossier";
+import experimentsData from "../data/experiments.json";
 import { ExperimentRecord } from "../types/evidence";
 
 interface IngestionReviewModalProps {
@@ -33,6 +35,7 @@ interface IngestionReviewModalProps {
   onClose: () => void;
   onPromoteRecord?: (record: ExperimentRecord) => void;
   selectedStagedId?: string | null;
+  corpus?: ExperimentRecord[];
 }
 
 export function IngestionReviewModal({
@@ -40,10 +43,12 @@ export function IngestionReviewModal({
   onClose,
   onPromoteRecord,
   selectedStagedId,
+  corpus,
 }: IngestionReviewModalProps) {
   const [queue, setQueue] = useState<StagedCandidateRecord[]>([]);
   const [reviewerName, setReviewerName] = useState("Dr. Sarah Chen (NASA GRC)");
   const [reviewNotes, setReviewNotes] = useState("");
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [selectedCandidate, setSelectedCandidate] = useState<StagedCandidateRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | ReviewStatus>("ALL");
@@ -53,6 +58,20 @@ export function IngestionReviewModal({
     type: "success" | "error" | "info";
     message: string;
   } | null>(null);
+
+  const activeCorpus = useMemo(
+    () => corpus || (experimentsData as unknown as ExperimentRecord[]),
+    [corpus]
+  );
+
+  const dossier: InvestigatorDossier | null = useMemo(() => {
+    if (!selectedCandidate) return null;
+    return generateInvestigatorDossier(selectedCandidate, activeCorpus);
+  }, [selectedCandidate, activeCorpus]);
+
+  useEffect(() => {
+    setCheckedItems({});
+  }, [selectedCandidate?.stagedId]);
 
   // Fetch current queue from the server API
   const fetchQueue = useCallback(async (targetIdToSelect?: string | null) => {
@@ -577,6 +596,115 @@ export function IngestionReviewModal({
                   )}
                 </div>
               </div>
+
+              {/* AI Investigator Pre-Review Dossier Card */}
+              {dossier && (
+                <div className="border border-cyan-500/30 rounded-xl p-4 bg-[#0d1520]/80 space-y-3 font-mono text-xs shadow-lg backdrop-blur-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-cyan-300 font-semibold">
+                      <Sparkles className="w-4 h-4 text-cyan-400" />
+                      <span>AI Investigator Copilot Pre-Review Dossier</span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase ${
+                        dossier.riskLevel === "LOW"
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                          : dossier.riskLevel === "MEDIUM"
+                          ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                          : "bg-rose-500/20 text-rose-300 border-rose-500/30"
+                      }`}
+                    >
+                      {dossier.riskLevel} FLIGHT RISK
+                    </span>
+                  </div>
+
+                  {/* Executive Summary */}
+                  <div className="text-slate-300 font-sans text-xs leading-relaxed bg-[#0a1017] p-3 rounded-lg border border-white/[0.04]">
+                    {dossier.executiveSummary}
+                  </div>
+
+                  {/* Nearest Historical Flight */}
+                  {dossier.nearestFlightReference && (
+                    <div className="flex items-center gap-2 text-[11px] text-slate-400 bg-white/[0.02] px-3 py-1.5 rounded border border-white/[0.05]">
+                      <span className="text-cyan-400 font-semibold">Nearest Flight Baseline:</span>
+                      <span className="text-slate-200">
+                        {dossier.nearestFlightReference.programme} ({dossier.nearestFlightReference.investigation})
+                      </span>
+                      <span>•</span>
+                      <span className="text-slate-400">
+                        {dossier.nearestFlightReference.material} @ {dossier.nearestFlightReference.oxygenPct ?? 21}% O₂ ({dossier.nearestFlightReference.airflowCmS ?? 0} cm/s flow)
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 3-Point Interactive Verification Checklist */}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">
+                      Pre-Flight Telemetry Verification Checklist (3 Points)
+                    </div>
+                    <div className="space-y-1.5">
+                      {dossier.checklist.map((item) => {
+                        const isChecked = !!checkedItems[item.id];
+                        return (
+                          <label
+                            key={item.id}
+                            className={`flex items-start gap-2.5 p-2 rounded cursor-pointer transition-colors border ${
+                              isChecked
+                                ? "bg-cyan-950/30 border-cyan-500/40 text-slate-200"
+                                : "bg-black/30 border-white/[0.04] text-slate-400 hover:border-white/[0.1] hover:text-slate-300"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) =>
+                                setCheckedItems((prev) => ({
+                                  ...prev,
+                                  [item.id]: e.target.checked,
+                                }))
+                              }
+                              className="mt-0.5 rounded border-slate-600 text-cyan-500 focus:ring-0 focus:ring-offset-0 bg-[#0c0f14]"
+                            />
+                            <div className="flex-1 text-[11px] leading-snug">
+                              <span className="font-semibold text-slate-200 mr-1.5">{item.label}:</span>
+                              <span>{item.description}</span>
+                            </div>
+                            <span
+                              className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase shrink-0 ${
+                                item.category === "PHYSICS"
+                                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                  : item.category === "TELEMETRY"
+                                  ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                                  : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                              }`}
+                            >
+                              {item.category}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 1-Click Rationale Recommendation */}
+                  <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06]">
+                    <div className="text-[10px] text-slate-400 truncate max-w-md">
+                      <span className="text-slate-500">Suggested: </span>
+                      <span className="text-slate-300 italic">"{dossier.recommendedRationale}"</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setReviewNotes(dossier.recommendedRationale)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded text-xs transition-colors shrink-0 font-sans"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Apply AI Recommended Rationale</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Human Review Sign-Off Form */}
               <div className="border border-white/[0.08] rounded-xl p-4 bg-[#13171e] space-y-3 font-mono text-xs shadow-md">
