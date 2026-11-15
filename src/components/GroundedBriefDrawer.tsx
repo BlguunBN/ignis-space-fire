@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { X, Copy, Check, Download, FileText, ShieldAlert } from "lucide-react";
 import { EvidenceBrief } from "../lib/synthesis";
+import { saveResearcherItem } from "../lib/researcher-items";
 
 interface GroundedBriefDrawerProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface GroundedBriefDrawerProps {
 
 export function GroundedBriefDrawer({ isOpen, onClose, brief }: GroundedBriefDrawerProps) {
   const [copied, setCopied] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("");
 
   if (!isOpen) return null;
 
@@ -51,6 +53,7 @@ export function GroundedBriefDrawer({ isOpen, onClose, brief }: GroundedBriefDra
           </div>
 
           <div className="flex items-center gap-2">
+            <button onClick={async () => { try { await saveResearcherItem("brief", brief.title, { text: brief.markdownContent }); setSaveStatus("Saved to workspace"); } catch (error) { setSaveStatus(error instanceof Error ? error.message : "Could not save brief."); } }} className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-200">Save to account</button>
             <button
               onClick={handleCopy}
               className="flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
@@ -78,6 +81,7 @@ export function GroundedBriefDrawer({ isOpen, onClose, brief }: GroundedBriefDra
 
         {/* Content Viewport */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-950 text-slate-200 font-mono text-xs leading-relaxed space-y-4 select-text">
+          {saveStatus && <p role="status">{saveStatus}</p>}
           <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-[11px] text-amber-300">
             <ShieldAlert className="w-4 h-4 flex-shrink-0" />
             <span>

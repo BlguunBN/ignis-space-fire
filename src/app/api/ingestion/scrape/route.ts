@@ -23,6 +23,9 @@ export interface ScrapeIngestResponse {
 }
 
 export async function POST(req: NextRequest) {
+  const { authenticateResearcher } = await import("../../../../lib/auth-server");
+  const user = await authenticateResearcher(req);
+  if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   try {
     const body: ScrapeIngestRequestBody = await req.json();
 
@@ -106,6 +109,12 @@ export async function POST(req: NextRequest) {
       doi: audit.extractedCandidate?.doi || scraped.extractedMetadata.doi,
     });
 
+    const { getSupabaseAdmin } = await import("../../../../lib/supabase");
+    const { candidateToRow } = await import("../../../../lib/supabase-db");
+    const admin = getSupabaseAdmin();
+    if (!admin) return NextResponse.json({ error: "Research storage unavailable" }, { status: 503 });
+    const { error: saveError } = await admin.from("staged_candidates").insert({ ...candidateToRow(stagedRecord), owner_id: user.id });
+    if (saveError) return NextResponse.json({ error: "Could not save submission" }, { status: 503 });
     return NextResponse.json({
       success: true,
       verdict: "STAGED_FOR_REVIEW",

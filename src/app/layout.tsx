@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
+import { AuthProvider } from "../components/AuthProvider"
 
 export const metadata: Metadata = {
   title: "IGNIS | NASA Microgravity Fire Safety Intelligence",
@@ -18,7 +19,7 @@ export default function RootLayout({
             The app is already dark-themed, so opt out of the extension entirely. */}
         <meta name="darkreader-lock" />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning><AuthProvider>{children}</AuthProvider></body>
     </html>
   )
 }

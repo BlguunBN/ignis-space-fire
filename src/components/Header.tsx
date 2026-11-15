@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "./AuthProvider";
 import { ArrowRightLeft, BookOpen, Bot, Columns, Compass, FileText, FileUp, Flame, Grid3X3, LayoutDashboard, Menu, Network, PanelLeftClose, PanelLeftOpen, RotateCcw, Share2, X } from "lucide-react";
 
 interface HeaderProps {
@@ -23,6 +25,7 @@ interface HeaderProps {
 }
 
 export function Header({ corpusCount, onReset, onOpenBrief, onOpenCompare, onOpenCoverage, onOpenSources, onOpenWhiteboard, onOpenAssistant, onOpenGraph, onOpenIngestion, onOpenSimulator, onOpenUpload, selectedCount, activeView, activeMainView, onSelectView }: HeaderProps) {
+  const { session, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const closeAfter = (action?: () => void) => () => { action?.(); setOpen(false); };
@@ -55,6 +58,7 @@ export function Header({ corpusCount, onReset, onOpenBrief, onOpenCompare, onOpe
           </div>
         </nav>
         <div className="mt-5 border-t border-slate-700 pt-4">
+          <Link href={session ? "/workspace" : "/auth"} className="mb-3 block rounded-md px-3 py-2 text-sm text-amber-400 hover:bg-slate-800/40">{loading ? "Account…" : session ? "My workspace" : "Researcher sign in"}</Link>
           <p className={`px-3 text-xs text-slate-500 ${collapsed ? "md:sr-only" : ""}`}>{corpusCount} studies in library</p>
           <button type="button" onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? "Expand navigation" : "Collapse navigation"} aria-expanded={!collapsed} className="mt-3 hidden rounded-md p-3 text-slate-400 hover:bg-slate-800/40 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-400 md:block">{collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}</button>
         </div>

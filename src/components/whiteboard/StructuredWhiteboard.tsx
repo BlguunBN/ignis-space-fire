@@ -40,6 +40,9 @@ import {
 import { ExperimentRecord } from "../../types/evidence";
 import experimentsData from "../../data/experiments.json";
 import { BuildHypothesisTreeArgs } from "../../lib/agent-tools";
+import { useAuth } from "../AuthProvider";
+import { authClient } from "../../lib/auth-client";
+import { saveResearcherItem } from "../../lib/researcher-items";
 
 const nodeTypes = {
   question: QuestionNode,
@@ -241,6 +244,7 @@ export function StructuredWhiteboard({
   initialPrompt,
   initialTree,
 }: StructuredWhiteboardProps) {
+  const { session } = useAuth();
   const [activeTemplate, setActiveTemplate] = useState("ventilation");
   const [nodes, setNodes, onNodesChange] = useNodesState(TEMPLATES.ventilation.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(TEMPLATES.ventilation.edges);
@@ -1022,20 +1026,30 @@ export function StructuredWhiteboard({
     setNodes((nds) => [...nds, newNode]);
   };
 
-  const handleSaveToLocal = () => {
+  const handleSaveToLocal = async () => {
     try {
       const state = { nodes, edges };
-      localStorage.setItem("ignis_whiteboard_state", JSON.stringify(state));
+      if (session) await saveResearcherItem("whiteboard", `Evidence tree ${new Date().toLocaleString()}`, state);
+      else localStorage.setItem("ignis_whiteboard_state", JSON.stringify(state));
       setSavedFeedback(true);
       setTimeout(() => setSavedFeedback(false), 2000);
     } catch (e) {
-      console.error(e);
+      setAiStatusFeedback(e instanceof Error ? e.message : "Could not save board.");
     }
   };
 
-  const handleLoadFromLocal = () => {
+  const handleLoadFromLocal = async () => {
     try {
-      const raw = localStorage.getItem("ignis_whiteboard_state");
+      let raw: string | null = null;
+      if (session && authClient) {
+        const selectedId = sessionStorage.getItem(`ignis_open_board_${session.user.id}`);
+        let query = authClient.from("researcher_items").select("content").eq("kind", "whiteboard");
+        if (selectedId) query = query.eq("id", selectedId);
+        const { data, error } = await query.order("created_at", { ascending: false }).limit(1).maybeSingle();
+        if (error) throw error;
+        raw = data ? JSON.stringify(data.content) : null;
+        if (data && selectedId) sessionStorage.removeItem(`ignis_open_board_${session.user.id}`);
+      } else raw = localStorage.getItem("ignis_whiteboard_state");
       if (raw) {
         const state = JSON.parse(raw);
         if (state.nodes && state.edges) {
@@ -1053,9 +1067,13 @@ export function StructuredWhiteboard({
         }
       }
     } catch (e) {
-      console.error(e);
+      setAiStatusFeedback("Could not load your saved board.");
     }
   };
+
+  useEffect(() => {
+    if (session && sessionStorage.getItem(`ignis_open_board_${session.user.id}`)) void handleLoadFromLocal();
+  }, [session?.user.id]);
 
   const handleSerializeToBrief = () => {
     const lines: string[] = [
@@ -1168,10 +1186,10 @@ export function StructuredWhiteboard({
         <button
           onClick={handleSaveToLocal}
           className="px-2.5 py-1 bg-[#13171e] hover:bg-white/[0.06] text-slate-300 rounded border border-white/10 flex items-center gap-1 transition-colors"
-          title="Save mind tree locally"
+          title={session ? "Save mind tree to your account" : "Save mind tree on this device"}
         >
           <Save className="w-3 h-3 text-cyan-400" />
-          <span>{savedFeedback ? "Saved!" : "Save"}</span>
+          <span>{savedFeedback ? "Saved!" : session ? "Save to account" : "Save locally"}</span>
         </button>
 
         <button

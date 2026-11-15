@@ -1,13 +1,18 @@
-import { test, describe } from "node:test";
+import { test, describe, before, after } from "node:test";
+import { installIngestionTestBackend, reviewerHeaders } from "./ingestion-test-backend";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import { GET, POST as POST_INGEST, PATCH as PATCH_INGEST } from "../src/app/api/ingestion/route";
 import { POST as POST_SCRAPE } from "../src/app/api/ingestion/scrape/route";
 import { getStagingQueue } from "../src/lib/ingestion";
 
+let restoreBackend: () => void;
+before(() => { restoreBackend = installIngestionTestBackend(); });
+after(() => restoreBackend());
+
 describe("Ingestion API Routes (/api/ingestion)", () => {
   test("GET /api/ingestion returns current staging queue", async () => {
-    const res = await GET();
+    const res = await GET(new NextRequest("http://localhost:3000/api/ingestion", { headers: reviewerHeaders }));
     assert.strictEqual(res.status, 200);
 
     const data = await res.json();
@@ -35,6 +40,7 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
 
     const req = new NextRequest("http://localhost:3000/api/ingestion", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify(payload),
     });
 
@@ -56,6 +62,7 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
     // Stage first
     const stageReq = new NextRequest("http://localhost:3000/api/ingestion", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         documentTitle: "FLEX Heptane Droplet Microgravity Test Run #12",
         filename: "NASA-TM-FLEX-12.pdf",
@@ -79,10 +86,11 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
     // Now review and approve
     const patchReq = new NextRequest("http://localhost:3000/api/ingestion", {
       method: "PATCH",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         stagedId,
         decision: "APPROVED_FOR_CORPUS",
-        reviewerName: "Dr. David Urban (NASA GRC)",
+        reviewerName: "reviewer@example.test",
         notes: "Extracted cool-flame parameters verified against raw CIR radiometer telemetry.",
       }),
     });
@@ -93,20 +101,21 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
     const patchData = await patchRes.json();
     assert.strictEqual(patchData.success, true);
     assert.strictEqual(patchData.updated.reviewStatus, "APPROVED_FOR_CORPUS");
-    assert.strictEqual(patchData.updated.reviewerName, "Dr. David Urban (NASA GRC)");
+    assert.strictEqual(patchData.updated.reviewerName, "reviewer@example.test");
 
     // Check promoted record
     assert.ok(patchData.promotedRecord);
     assert.strictEqual(patchData.promotedRecord.verification_status, "verified");
     assert.strictEqual(patchData.promotedRecord.quality, "primary_nasa");
     assert.strictEqual(patchData.promotedRecord.claim_locator_details?.reviewStatus, "verified");
-    assert.strictEqual(patchData.promotedRecord.claim_locator_details?.reviewer, "Dr. David Urban (NASA GRC)");
+    assert.strictEqual(patchData.promotedRecord.claim_locator_details?.reviewer, "reviewer@example.test");
   });
 
   test("PATCH /api/ingestion rejects candidate and isolates it", async () => {
     // Stage first
     const stageReq = new NextRequest("http://localhost:3000/api/ingestion", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         documentTitle: "Ambiguous Low-Gravity Report",
         filename: "UNCONFIRMED-REPORT.pdf",
@@ -129,6 +138,7 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
     // Reject
     const patchReq = new NextRequest("http://localhost:3000/api/ingestion", {
       method: "PATCH",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         stagedId,
         decision: "REJECTED_UNVERIFIED",
@@ -150,6 +160,7 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
     // Step 1: Scrape official NASA PSI-102
     const scrapeReq = new NextRequest("http://localhost:3000/api/ingestion/scrape", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         url: "https://psi.nasa.gov/physci/repo/data/investigations/PSI-102",
       }),
@@ -163,7 +174,7 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
     const stagedId = scrapeData.stagedRecord.stagedId;
 
     // Step 2: GET /api/ingestion and verify it appears at top of queue
-    const getRes = await GET();
+    const getRes = await GET(new NextRequest("http://localhost:3000/api/ingestion", { headers: reviewerHeaders }));
     const getData = await getRes.json();
     const found = getData.queue.find((q: any) => q.stagedId === stagedId);
     assert.ok(found);
@@ -172,6 +183,7 @@ describe("Ingestion API Routes (/api/ingestion)", () => {
     // Step 3: Approve candidate via PATCH /api/ingestion
     const approveReq = new NextRequest("http://localhost:3000/api/ingestion", {
       method: "PATCH",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         stagedId,
         decision: "APPROVED_FOR_CORPUS",

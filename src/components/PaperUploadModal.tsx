@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { authenticatedFetch } from "../lib/auth-client";
 import {
   X,
   Upload,
@@ -23,7 +24,7 @@ import {
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
 import { GatekeeperAuditReport } from "../lib/scientific-gatekeeper";
-import { StagedCandidateRecord, promoteCandidateToCorpus } from "../lib/ingestion";
+import { StagedCandidateRecord } from "../lib/ingestion";
 import { SwarmAuditReport } from "../lib/ingestion-swarm";
 
 interface PaperUploadModalProps {
@@ -169,7 +170,7 @@ export function PaperUploadModal({
           };
 
       // Execute unified multi-agent ingestion swarm
-      const res = await fetch("/api/ingestion/agent-audit", {
+      const res = await authenticatedFetch("/api/ingestion/agent-audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -216,9 +217,7 @@ export function PaperUploadModal({
   const handleCommitToCorpus = async () => {
     if (!stagedRecord || !onCommitRecord) return;
     try {
-      // Sync decision to server ingestion store
-      try {
-        await fetch("/api/ingestion", {
+      const response = await authenticatedFetch("/api/ingestion", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -228,18 +227,10 @@ export function PaperUploadModal({
             notes: "Directly verified and promoted through Harsh Scientific Gatekeeper",
           }),
         });
-      } catch (patchErr) {
-        console.warn("Could not sync direct promotion to server staging store:", patchErr);
-      }
-
-      const approvedCandidate = {
-        ...stagedRecord,
-        reviewStatus: "APPROVED_FOR_CORPUS" as const,
-        reviewerName: "NASA Flight Safety Lead (Direct Ingest)",
-        reviewDecisionDate: new Date().toISOString(),
-      };
-      const promoted = promoteCandidateToCorpus(approvedCandidate);
-      onCommitRecord(promoted);
+      if (!response.ok) throw new Error("Reviewer access is required to publish this paper.");
+      const result = await response.json();
+      if (!result.promotedRecord) throw new Error("The server did not publish this paper.");
+      onCommitRecord(result.promotedRecord);
       setCommittedSuccess(true);
       setTimeout(() => {
         setCommittedSuccess(false);

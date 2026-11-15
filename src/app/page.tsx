@@ -26,6 +26,7 @@ import { GuidedResearchStepper, GuidedStep } from "../components/GuidedResearchS
 import { generateDeterministicBrief } from "../lib/synthesis";
 import { resolveActiveStudy } from "../lib/active-study";
 import { takeNextAction } from "../lib/guided-actions";
+import { saveResearcherItem } from "../lib/researcher-items";
 
 import {
   BuildHypothesisTreeArgs,
@@ -35,6 +36,7 @@ import {
 } from "../lib/agent-tools";
 
 export default function UnifiedWorkspace() {
+  const [saveFeedback, setSaveFeedback] = useState("");
   const [corpus, setCorpus] = useState<ExperimentRecord[]>(experimentsData as ExperimentRecord[]);
   const [query, setQuery] = useState<SearchQuery>({});
   const [activeId, setActiveId] = useState<string | null>(corpus[0]?.id || null);
@@ -55,6 +57,7 @@ export default function UnifiedWorkspace() {
   const [isCoverageOpen, setIsCoverageOpen] = useState(false);
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("openBoard") === "1") setIsWhiteboardOpen(true); }, []);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isGraphOpen, setIsGraphOpen] = useState(false);
   const [isIngestionOpen, setIsIngestionOpen] = useState(false);
@@ -300,6 +303,7 @@ export default function UnifiedWorkspace() {
       />
 
       <main className="min-w-0 flex-1 w-full max-w-[1750px] mx-auto px-4 py-7 md:px-8 lg:px-10 md:py-10 space-y-6">
+        {selectedRecords.length > 0 && <div className="text-sm"><button className="text-amber-400 underline" onClick={async () => { try { for (const record of selectedRecords) await saveResearcherItem("paper", record.investigation, { id: record.id, source_url: record.source_url }); setSaveFeedback("Selected papers saved to your workspace."); } catch (error) { setSaveFeedback(error instanceof Error ? error.message : "Could not save papers."); } }}>Save selected papers to account</button>{saveFeedback && <span role="status" className="ml-3 text-slate-300">{saveFeedback}</span>}</div>}
         {pendingActions.length > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 text-sm text-slate-200" role="status">
             <span>{pendingActions.length} suggested {pendingActions.length === 1 ? "step" : "steps"} remaining</span>

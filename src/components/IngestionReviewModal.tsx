@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { authenticatedFetch } from "../lib/auth-client";
 import {
   X,
   FileUp,
@@ -83,7 +84,7 @@ export function IngestionReviewModal({
   const fetchQueue = useCallback(async (targetIdToSelect?: string | null) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/ingestion", { cache: "no-store" });
+      const res = await authenticatedFetch("/api/ingestion", { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const fetchedQueue: StagedCandidateRecord[] = data.queue || [];
@@ -130,7 +131,7 @@ export function IngestionReviewModal({
     setActionLoading(true);
     setNotification(null);
     try {
-      const res = await fetch("/api/ingestion", {
+      const res = await authenticatedFetch("/api/ingestion", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -202,7 +203,7 @@ export function IngestionReviewModal({
         doi: "10.60555/0t15-sofie-gel",
       };
 
-      const res = await fetch("/api/ingestion", {
+      const res = await authenticatedFetch("/api/ingestion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

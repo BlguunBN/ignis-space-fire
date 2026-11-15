@@ -6,6 +6,7 @@ import { StructuredWhiteboard } from "./whiteboard/StructuredWhiteboard";
 import { ExcalidrawCanvas } from "./whiteboard/ExcalidrawCanvas";
 import { ExperimentRecord } from "../types/evidence";
 import { BuildHypothesisTreeArgs } from "../lib/agent-tools";
+import { useAuth } from "./AuthProvider";
 
 interface WhiteboardStudioModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export function WhiteboardStudioModal({
   initialPrompt,
   initialTree,
 }: WhiteboardStudioModalProps) {
+  const { session } = useAuth();
   const [activeTab, setActiveTab] = useState<"tree" | "sketch">("tree");
   const [opened, setOpened] = useState(false);
   const [sketchOpened, setSketchOpened] = useState(false);
@@ -47,7 +49,7 @@ export function WhiteboardStudioModal({
 
         <div className="min-h-0 flex-1 bg-[#090a0d] p-2 sm:p-3">
           <div style={{ display: activeTab === "tree" ? "flex" : "none" }} className="h-full flex-col">
-            <StructuredWhiteboard activeRecord={activeRecord} onExportBrief={onExportBrief} initialPrompt={initialPrompt} initialTree={initialTree} />
+            <StructuredWhiteboard key={session?.user.id || "guest"} activeRecord={activeRecord} onExportBrief={onExportBrief} initialPrompt={initialPrompt} initialTree={initialTree} />
           </div>
           {sketchOpened && <div style={{ display: activeTab === "sketch" ? "block" : "none" }} className="h-full"><ExcalidrawCanvas /></div>}
         </div>

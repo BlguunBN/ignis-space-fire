@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runIngestionAgentSwarm, IngestionSwarmInput } from "../../../../lib/ingestion-swarm";
 import { StagedCandidateRecord } from "../../../../lib/ingestion";
-import { saveStagedCandidateToDb } from "../../../../lib/supabase-db";
+import { candidateToRow } from "../../../../lib/supabase-db";
+import { authenticateResearcher } from "../../../../lib/auth-server";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
 import experimentsData from "../../../../data/experiments.json";
 import { ExperimentRecord } from "../../../../types/evidence";
 
@@ -9,6 +11,8 @@ export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const user = await authenticateResearcher(req);
+  if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   try {
     const body: IngestionSwarmInput = await req.json();
 
@@ -24,7 +28,11 @@ export async function POST(req: NextRequest) {
 
     let stagedRecord: StagedCandidateRecord | undefined;
     if (report.overallVerdict === "STAGED_FOR_REVIEW" && report.stagedCandidate) {
-      stagedRecord = await saveStagedCandidateToDb(report.stagedCandidate);
+      const admin = getSupabaseAdmin();
+      if (!admin) return NextResponse.json({ error: "Research storage unavailable" }, { status: 503 });
+      stagedRecord = report.stagedCandidate;
+      const { error } = await admin.from("staged_candidates").insert({ ...candidateToRow(stagedRecord), owner_id: user.id });
+      if (error) return NextResponse.json({ error: "Could not save submission" }, { status: 503 });
     }
 
     const statusCode = report.overallVerdict === "STAGED_FOR_REVIEW" ? 200 : 422;

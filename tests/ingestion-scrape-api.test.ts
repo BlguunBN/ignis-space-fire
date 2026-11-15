@@ -1,13 +1,19 @@
-import { test, describe } from "node:test";
+import { test, describe, before, after } from "node:test";
+import { installIngestionTestBackend, reviewerHeaders } from "./ingestion-test-backend";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import { POST } from "../src/app/api/ingestion/scrape/route";
 import { getStagingQueue } from "../src/lib/ingestion";
 
+let restoreBackend: () => void;
+before(() => { restoreBackend = installIngestionTestBackend(); });
+after(() => restoreBackend());
+
 describe("Ingestion & Scrape API Route (/api/ingestion/scrape)", () => {
   test("successfully scrapes, audits, and stages paper from NASA NTRS URL", async () => {
     const req = new NextRequest("http://localhost:3000/api/ingestion/scrape", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         url: "https://ntrs.nasa.gov/citations/20220014245",
       }),
@@ -41,6 +47,7 @@ describe("Ingestion & Scrape API Route (/api/ingestion/scrape)", () => {
 
     const req = new NextRequest("http://localhost:3000/api/ingestion/scrape", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         fileText: maliciousPayload,
         filename: "malicious-paper.txt",
@@ -67,6 +74,7 @@ describe("Ingestion & Scrape API Route (/api/ingestion/scrape)", () => {
 
     const req = new NextRequest("http://localhost:3000/api/ingestion/scrape", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         fileText: terrestrialDoc,
         filename: "wildfire-1g.txt",
@@ -96,6 +104,7 @@ describe("Ingestion & Scrape API Route (/api/ingestion/scrape)", () => {
 
     const req = new NextRequest("http://localhost:3000/api/ingestion/scrape", {
       method: "POST",
+      headers: reviewerHeaders,
       body: JSON.stringify({
         fileText: validUpload,
         filename: "bass_study.txt",
