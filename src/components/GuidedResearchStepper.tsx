@@ -27,7 +27,7 @@ export function GuidedResearchStepper({
       id: "explore",
       number: "01",
       label: "Explore Library",
-      desc: "Filter 50 flight records",
+      desc: "34 verified + 16 context records",
       icon: <Compass className="w-3.5 h-3.5" />,
     },
     {

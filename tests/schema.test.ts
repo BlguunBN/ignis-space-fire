@@ -21,7 +21,7 @@ describe("Evidence Corpus Schema Validation", () => {
 
     const validRecordTypes = ["experiment_run", "investigation_summary", "paper_finding"];
     const validVerificationStatuses = ["verified", "needs_review", "unsupported"];
-    const validSourceTypes = ["NASA_PSI", "PEER_REVIEWED", "NTRS"];
+    const validSourceTypes = ["NASA_PSI", "PEER_REVIEWED", "NTRS", "NASA_WEB", "AGENCY_REPORT"];
     const validGravities = ["microgravity", "partial_gravity", "terrestrial"];
     const validQualities = ["primary_nasa", "peer_reviewed_nasa", "supporting"];
 

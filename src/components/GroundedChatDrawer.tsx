@@ -1069,7 +1069,7 @@ export function GroundedChatDrawer({
                   <Cpu className="w-2.5 h-2.5" /> {selectedModel === "nemotron" ? "Nemotron 30B" : "Deterministic"}
                 </span>
                 <span className="hidden sm:inline-flex text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">
-                  50 Flight Studies
+                  34 verified + 16 context
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-1">

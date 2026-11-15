@@ -20,7 +20,6 @@ describe("Flagship Research Journey & Workspace Logic", () => {
     // 1. Researcher defines inquiry
     const flagshipQuery: SearchQuery = {
       freeText: "flame spread forced airflow",
-      material: "PMMA",
       airflowCmS: 15,
       oxygenPct: 21,
     };
@@ -31,32 +30,32 @@ describe("Flagship Research Journey & Workspace Logic", () => {
 
     // Saffire and BASS records should be in the retrieved set
     const saffire1 = allRecords.find((r) => r.id === "saffire-1")!;
-    const bassPmma = allRecords.find((r) => r.id === "bass-2-pmma")!;
+    const bassRecord = allRecords.find((r) => r.id === "reg-record-032")!;
     assert.ok(saffire1, "Saffire-I must exist in corpus");
-    assert.ok(bassPmma, "BASS-II PMMA must exist in corpus");
+    assert.ok(bassRecord, "BASS-II reg-record-032 must exist in corpus");
 
     // 3. Condition applicability assessment
     const saffireAssess = assessApplicability(saffire1, flagshipQuery);
-    const bassAssess = assessApplicability(bassPmma, flagshipQuery);
+    const bassAssess = assessApplicability(bassRecord, flagshipQuery);
 
     // BASS has PMMA match, but airflow differs (3.5 cm/s in study vs 15 cm/s in query)
     assert.equal(bassAssess.verdict, "CONDITION_VARIANCE");
     assert.ok(bassAssess.differences.some((d) => d.includes("Airflow variance")));
 
     // 4. Comparison detects physical confounder between Saffire and BASS
-    const comparison = compareInvestigations([saffire1, bassPmma]);
+    const comparison = compareInvestigations([saffire1, bassRecord]);
     assert.equal(comparison.canQuantitativelyAggregate, false);
     assert.ok(comparison.confounders.some((c) => c.type === "SCALE_DISPARITY"));
     assert.ok(comparison.confounders.some((c) => c.type === "FLOW_REGIME"));
 
     // 5. Generates traceable brief with claim citations and confounders
-    const brief = generateDeterministicBrief(flagshipQuery, [saffire1, bassPmma]);
+    const brief = generateDeterministicBrief(flagshipQuery, [saffire1, bassRecord]);
     assert.ok(brief.markdownContent.includes("Saffire-I Flight Experiment"));
-    assert.ok(brief.markdownContent.includes("BASS-II Opposed Flow PMMA Slabs"));
+    assert.ok(brief.markdownContent.includes("BASS-II"));
     assert.ok(brief.markdownContent.includes("Apparatus Scale Disparity"));
     assert.ok(brief.markdownContent.includes("Disparate Flow Regimes"));
     assert.ok(brief.citedRecordIds.includes("saffire-1"));
-    assert.ok(brief.citedRecordIds.includes("bass-2-pmma"));
+    assert.ok(brief.citedRecordIds.includes("reg-record-032"));
   });
 
   it("enforces scientific abstention for unsupported physical queries", () => {

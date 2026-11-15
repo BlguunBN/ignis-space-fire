@@ -46,6 +46,6 @@ describe("Stage 2 Primary PDF Evidence & Bounding Box Inspection", () => {
     assert.equal(loc.pageNumber, 4);
     assert.ok(loc.tableOrFigure?.includes("Table 1"));
     assert.equal(loc.reviewStatus, "verified");
-    assert.ok(loc.reviewer.includes("Urban"));
+    assert.ok(loc.reviewer.includes("IGNIS team source check"));
   });
 });

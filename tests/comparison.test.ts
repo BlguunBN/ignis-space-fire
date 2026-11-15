@@ -9,7 +9,8 @@ const records = experimentsData as ExperimentRecord[];
 describe("Cross-Investigation Comparison Engine", () => {
   const saffire1 = records.find((r) => r.id === "saffire-1")!;
   const bassPmma = records.find((r) => r.id === "bass-2-pmma")!;
-  const saffire4 = records.find((r) => r.id === "saffire-4")!;
+  const saffireV2 = records.find((r) => r.id === "reg-record-002")!;
+  const bass032 = records.find((r) => r.id === "reg-record-032")!;
   const flexDroplet = records.find((r) => r.id === "flex-droplet-1")!;
 
   it("handles single record by reporting insufficient records", () => {
@@ -19,7 +20,7 @@ describe("Cross-Investigation Comparison Engine", () => {
   });
 
   it("detects apparatus scale disparity between Saffire and BASS", () => {
-    const comp = compareInvestigations([saffire1, bassPmma]);
+    const comp = compareInvestigations([saffire1, bass032]);
     assert.equal(comp.canQuantitativelyAggregate, false);
 
     const scaleConfounder = comp.confounders.find((c) => c.type === "SCALE_DISPARITY");
@@ -27,13 +28,13 @@ describe("Cross-Investigation Comparison Engine", () => {
     assert.ok(scaleConfounder?.description.includes("0.4 m x 1.0 m"));
 
     const flowConfounder = comp.confounders.find((c) => c.type === "FLOW_REGIME");
-    assert.ok(flowConfounder, "Must detect flow disparity (20 cm/s vs 3.5 cm/s)");
+    assert.ok(flowConfounder, "Must detect flow disparity (20 cm/s vs 2.2 cm/s)");
   });
 
   it("detects pressure variance between standard and exploration atmospheres", () => {
-    const comp = compareInvestigations([saffire1, saffire4]);
+    const comp = compareInvestigations([saffire1, saffireV2]);
     const pressureConfounder = comp.confounders.find((c) => c.type === "PRESSURE_VARIANCE");
-    assert.ok(pressureConfounder, "Must detect pressure variance (101.3 kPa vs 57.0 kPa)");
+    assert.ok(pressureConfounder, "Must detect pressure variance (101.3 kPa vs 70.7 kPa)");
     assert.ok(comp.divergentConditions.some((d) => d.includes("Divergent Pressure")));
   });
 
