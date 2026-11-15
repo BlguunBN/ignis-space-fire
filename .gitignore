@@ -29,6 +29,7 @@ yarn-error.log*
 # Vercel
 .vercel
 .perch
+.omg/
 supabase/.temp/
 
 # TypeScript
