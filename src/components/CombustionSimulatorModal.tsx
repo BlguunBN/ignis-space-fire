@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { DropletSetting, assessProximity, predict, testedRange } from "../lib/droplet-engine";
+import { Flame3D } from "./flame3d";
 import {
   X,
   Flame,
@@ -149,6 +150,19 @@ export function CombustionSimulatorModal({
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const diagCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // WebGL2 support probe (one-time, client-only) — Flame3D renders on top of
+  // the 2D canvas when available; the 2D drawing stays as the fallback.
+  const [flame3dActive, setFlame3dActive] = useState(false);
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const probe = document.createElement("canvas");
+      setFlame3dActive(!!probe.getContext("webgl2"));
+    } catch {
+      setFlame3dActive(false);
+    }
+  }, [isOpen]);
 
   // Sync state when invoked by Agentic AI Copilot
   useEffect(() => {
@@ -1184,8 +1198,24 @@ export function CombustionSimulatorModal({
                       ref={canvasRef}
                       width={560}
                       height={350}
-                      className="w-full h-full object-contain cursor-crosshair"
+                      className={`w-full h-full object-contain cursor-crosshair ${flame3dActive ? "opacity-0 pointer-events-none absolute" : ""}`}
                     />
+                    {flame3dActive && (
+                      <Flame3D
+                        className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
+                        scene={{
+                          // Scene units: the droplet's real radius, normalised
+                          // so a 2.5 mm droplet sits at ~1 unit.
+                          dropR: currentDiameterMm / 5,
+                          flameR: isBurning ? Math.max(currentDiameterMm / 5, 0.2) * 2.2 : 0,
+                          on: isBurning ? 1 : 0,
+                          // Soot rises with fuel sootiness; heptane/decane are sootier than methanol.
+                          soot: fuelType === "Methanol" ? 0.25 : 0.7,
+                          // Microgravity burns spherical; gravity stretches the flame.
+                          stretch: 1 + (gravityMode === "µg" ? 0 : gravityMode === "0.16g" ? 0.35 : gravityMode === "0.38g" ? 0.6 : 1.0),
+                        }}
+                      />
+                    )}
 
                     {/* Overlay Prompt */}
                     {!isBurning && elapsedTime === 0 && (
