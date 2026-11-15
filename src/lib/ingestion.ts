@@ -1,4 +1,5 @@
 import { ExperimentRecord } from "../types/evidence";
+import { BoundingBox, ExtractedTableSeries } from "./vlm-extractor";
 
 export type ReviewStatus = "PENDING_REVIEW" | "APPROVED_FOR_CORPUS" | "REJECTED_UNVERIFIED";
 
@@ -22,6 +23,8 @@ export interface StagedCandidateRecord {
   reviewerName?: string;
   reviewDecisionDate?: string;
   reviewerNotes?: string;
+  extractedBoundingBoxes?: BoundingBox[];
+  extractedTables?: ExtractedTableSeries[];
 }
 
 declare global {

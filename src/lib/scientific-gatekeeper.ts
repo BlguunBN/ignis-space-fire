@@ -7,6 +7,7 @@
 
 import { scanDocumentForPromptInjection, InjectionScanResult } from "./prompt-injection-guard";
 import { StagedCandidateRecord } from "./ingestion";
+import { extractScientificTelemetryVLM } from "./vlm-extractor";
 
 export type GatekeeperVerdict = "STAGED_FOR_REVIEW" | "REJECTED_UNVERIFIED" | "REJECTED_SECURITY_THREAT";
 
@@ -219,11 +220,12 @@ export function auditScientificDocument(
   // Build candidate record if staged
   let extractedCandidate: Partial<StagedCandidateRecord> | undefined;
   if (isApprovedForStaging) {
-    const o2Val = o2Match ? parseFloat(o2Match[1]) : 21;
-    const pressVal = pressMatch ? parseFloat(pressMatch[1]) : 101.3;
-    const flowVal = flowMatch ? parseFloat(flowMatch[1]) : (text.includes("droplet") ? 0 : 15);
+    const vlmResult = extractScientificTelemetryVLM(rawText, metadata);
+    const o2Val = vlmResult.telemetry.oxygenPct ?? (o2Match ? parseFloat(o2Match[1]) : 21);
+    const pressVal = vlmResult.telemetry.pressureKpa ?? (pressMatch ? parseFloat(pressMatch[1]) : 101.3);
+    const flowVal = vlmResult.telemetry.airflowCmS ?? (flowMatch ? parseFloat(flowMatch[1]) : (text.includes("droplet") ? 0 : 15));
 
-    let matStr = "PMMA plastic";
+    let matStr = vlmResult.telemetry.fuelMaterial || "PMMA plastic";
     if (text.includes("sibal") || text.includes("fabric") || text.includes("cotton")) {
       matStr = "SIBAL cotton-fiberglass fabric";
     } else if (text.includes("droplet") || text.includes("methanol")) {
@@ -258,6 +260,8 @@ export function auditScientificDocument(
       sourceLocator: metadata.sourceUrl || "External Ingestion Queue",
       doi: text.match(/10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+/)?.[0],
       reviewStatus: "PENDING_REVIEW",
+      extractedBoundingBoxes: vlmResult.boundingBoxes,
+      extractedTables: vlmResult.tables,
     };
   }
 
