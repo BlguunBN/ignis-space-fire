@@ -166,7 +166,7 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
 
       <div className="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-emerald-400">
         <ShieldCheck className="w-3 h-3" />
-        <span>Flight Provenance Locked</span>
+        <span>Indexed Record Verified</span>
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-cyan-400 !w-2.5 !h-2.5" />
     </div>

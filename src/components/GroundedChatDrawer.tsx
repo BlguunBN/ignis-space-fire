@@ -905,7 +905,7 @@ export function GroundedChatDrawer({
           </form>
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-2.5 px-1">
             <span>{selectedModel === "nemotron" ? "NVIDIA Nemotron 30B • RAG Grounding Engine" : "Local Deterministic Grounded Engine"}</span>
-            <span>Strict Zero-Hallucination Flight Verification</span>
+            <span>Answers only from indexed records and says when evidence is missing</span>
           </div>
         </div>
       </div>

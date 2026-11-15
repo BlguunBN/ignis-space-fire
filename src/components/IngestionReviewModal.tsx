@@ -331,11 +331,11 @@ export function IngestionReviewModal({
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 flex-shrink-0 text-amber-400" />
             <span>
-              <strong>Strict Safety Invariant:</strong> Extracted candidate claims remain quarantined from the live search index until verified by a certified flight investigator.
+              <strong>Review Invariant:</strong> Extracted candidate claims remain quarantined from the live search index until verified against primary sources. Answers only from indexed records and says when evidence is missing.
             </span>
           </div>
           <span className="text-[10px] text-amber-400/80 uppercase tracking-wider font-bold hidden md:inline">
-            Zero-Hallucination Gate
+            Verification Gate
           </span>
         </div>
 

@@ -141,9 +141,9 @@ const TEMPLATES: Record<string, { label: string; nodes: Node[]; edges: Edge[] }>
         position: { x: 300, y: 180 },
         data: {
           claimId: "CLM-SAFFIRE-004",
-          investigation: "Saffire-IV Exploration Atmosphere",
-          conditions: "26% O₂ • 20 cm/s Flow • 57 kPa",
-          quote: "Elevated oxygen concentration significantly accelerates thick PMMA and composite flame propagation.",
+          investigation: "Saffire-IV Sample IV-1 Fire Test",
+          conditions: "22% O₂ • 20 cm/s Flow • 100 kPa",
+          quote: "Flame spread occurred; reports 130 s burning with 3,150 W average heat release.",
         },
       },
       {
@@ -344,9 +344,9 @@ export function StructuredWhiteboard({
         qDetails: "Why do reduced atmospheric pressure (56 kPa) and elevated oxygen (26%–34% O₂) accelerate opposed and concurrent flame propagation over solid PMMA and SIBAL fabric in 0.16g Lunar gravity?",
         ev1: {
           claimId: "CLM-SAFFIRE-004",
-          investigation: "Saffire-IV Exploration Atmosphere Fire Test",
-          conditions: "26% O₂ • 20 cm/s Flow • 57 kPa",
-          quote: "Elevated oxygen concentration significantly accelerates thick PMMA and composite flame propagation even under reduced pressure.",
+          investigation: "Saffire-IV Sample IV-1 Fire Test",
+          conditions: "22% O₂ • 20 cm/s Flow • 100 kPa",
+          quote: "Flame spread occurred; reports 130 s burning with 3,150 W average heat release.",
         },
         ev2: {
           claimId: "CLM-REG-008",

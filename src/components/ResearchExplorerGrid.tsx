@@ -82,17 +82,32 @@ export function ResearchExplorerGrid({
 
   const getOutcome = (r: ExperimentRecord): { id: OutcomeFilter; label: string; dotColor: string } => {
     const text = `${r.investigation} ${r.finding} ${r.fire_safety_relevance}`.toLowerCase();
-    if (text.includes("cool flame") || text.includes("low-temp")) {
+    const isMethanol = r.material.toLowerCase().includes("methanol");
+
+    // 1. Cool flame: only for alkane fuels exhibiting cool flame kinetics (not methanol)
+    if (!isMethanol && (text.includes("cool flame") || text.includes("low-temp"))) {
       return { id: "cool_flame", label: "Cool-flame burning", dotColor: "#eab308" };
     }
-    if (text.includes("spread") || text.includes("propagation") || text.includes("rate") || text.includes("growth")) {
+
+    // 2. Liquid droplet combustion & extinction tests (FLEX droplet records are extinction, not flame spread)
+    if (
+      r.material_class === "liquid_droplet" ||
+      r.measurements.some((m) => m.toLowerCase().includes("extinct")) ||
+      text.includes("extinct") ||
+      text.includes("quench")
+    ) {
+      return { id: "extinction", label: "Extinction", dotColor: "#38bdf8" };
+    }
+
+    // 3. Flame spread across solid and fabric materials
+    if (text.includes("spread") || text.includes("propagation") || text.includes("growth")) {
       return { id: "spread", label: "Flame spread", dotColor: "#f97316" };
     }
-    if (text.includes("scaling") || text.includes("trend") || text.includes("diameter") || text.includes("upward")) {
+    if (text.includes("scaling") || text.includes("trend") || text.includes("upward")) {
       return { id: "scaling", label: "Scaling / trend", dotColor: "#4ade80" };
     }
-    if (text.includes("extinct") || text.includes("limit")) {
-      return { id: "extinction", label: "Extinction / limit", dotColor: "#38bdf8" };
+    if (text.includes("limit")) {
+      return { id: "extinction", label: "Extinction", dotColor: "#38bdf8" };
     }
     return { id: "other", label: "Other topic", dotColor: "#94a3b8" };
   };
