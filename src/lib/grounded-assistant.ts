@@ -72,7 +72,7 @@ export function detectPhysicalBoundaryViolations(queryText: string): string[] {
 
   if (text.includes("mars") || text.includes("martian") || text.includes("0.38g") || text.includes("0.38 g")) {
     warnings.push(
-      "Query requests Martian partial-gravity (0.38g) predictions. Indexed corpus is restricted to orbital microgravity (10⁻⁶ to 10⁻⁴ g); partial gravity buoyant transition cannot be quantitatively extrapolated."
+      "Query requests Martian partial-gravity (0.38g) predictions. Orbital microgravity results do not by themselves establish Martian partial-gravity fire behavior. Do not extrapolate without matched experiments and a validated model."
     );
   }
 
@@ -112,7 +112,7 @@ const STOP_WORDS = new Set([
 
 /**
  * Deterministic grounded synthesis generator.
- * Operates offline without external API keys and is mathematically guaranteed to never hallucinate.
+ * Operates offline by summarizing indexed records; this does not independently verify the underlying scientific sources.
  */
 export function generateGroundedAssistantResponse(
   queryText: string,
