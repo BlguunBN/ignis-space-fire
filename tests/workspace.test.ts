@@ -79,7 +79,7 @@ describe("Flagship Research Journey & Workspace Logic", () => {
     // Brief must abstain
     const brief = generateDeterministicBrief(unsupportedQuery, matched);
     assert.ok(brief.markdownContent.includes("No indexed records match the current query filters"));
-    assert.ok(brief.markdownContent.toLowerCase().includes("scientific abstention"));
+    assert.ok(brief.markdownContent.includes("No source-backed conclusion can be drawn"));
     assert.equal(brief.citedRecordIds.length, 0);
   });
 
