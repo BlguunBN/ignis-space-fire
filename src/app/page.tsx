@@ -24,6 +24,7 @@ import { ExecutiveAnalyticsDashboard } from "../components/ExecutiveAnalyticsDas
 import { PaperUploadModal } from "../components/PaperUploadModal";
 import { GuidedResearchStepper, GuidedStep } from "../components/GuidedResearchStepper";
 import { generateDeterministicBrief } from "../lib/synthesis";
+import { rankFireSafetyEvidence } from "../lib/fire-safety-ranking";
 import { resolveActiveStudy } from "../lib/active-study";
 import { takeNextAction } from "../lib/guided-actions";
 import { saveResearcherItem } from "../lib/researcher-items";
@@ -192,6 +193,14 @@ export default function UnifiedWorkspace() {
       result.sort((a, b) => a.investigation.localeCompare(b.investigation));
     } else if (sort === "name_desc") {
       result.sort((a, b) => b.investigation.localeCompare(a.investigation));
+    } else if (sort === "relevance") {
+      const researchQuestion = [
+        query.freeText, query.material, query.phenomenon,
+        query.missionContext, query.pillar,
+        query.airflowCmS != null ? "airflow" : "",
+        query.oxygenPct != null ? "oxygen" : "",
+      ].filter(Boolean).join(" ") || "spacecraft cabin solid material flammability and flame spread";
+      result = rankFireSafetyEvidence(result, researchQuestion).map(({ record }) => record);
     }
 
     return result;
