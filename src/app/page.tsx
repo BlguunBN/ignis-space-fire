@@ -299,7 +299,13 @@ export default function UnifiedWorkspace() {
         selectedCount={selectedIds.size}
         activeView="workspace"
         activeMainView={viewMode}
-        onSelectView={setViewMode}
+        onSelectView={(view) => {
+          if (view === "assistant") {
+            setIsAssistantOpen(true);
+          } else {
+            setViewMode(view);
+          }
+        }}
       />
 
       <main className="min-w-0 flex-1 w-full max-w-[1750px] mx-auto px-4 py-7 md:px-8 lg:px-10 md:py-10 space-y-6">
@@ -318,7 +324,7 @@ export default function UnifiedWorkspace() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-[11px] font-semibold text-slate-400">Microgravity research</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{viewMode === "dashboard" ? "Overview" : viewMode === "explorer" ? "Explore research" : "Analysis"}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{viewMode === "explorer" ? "Explore research" : "Analysis"}</h1>
           </div>
           <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-slate-400">{viewMode === "split" ? `${filteredRecords.length} of ${corpus.length}` : corpus.length} studies</span>
         </div>
