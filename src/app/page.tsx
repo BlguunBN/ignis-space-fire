@@ -45,7 +45,7 @@ export default function UnifiedWorkspace() {
   );
 
   // View States: Executive Dashboard vs Research Explorer vs Split Workspace
-  const [viewMode, setViewMode] = useState<"dashboard" | "explorer" | "split">("dashboard");
+  const [viewMode, setViewMode] = useState<"dashboard" | "explorer" | "split" | "assistant">("dashboard");
   const [guidedStep, setGuidedStep] = useState<GuidedStep>("explore");
   const [pendingActions, setPendingActions] = useState<Array<() => void>>([]);
   const [explorerResetKey, setExplorerResetKey] = useState(0);
@@ -199,7 +199,8 @@ export default function UnifiedWorkspace() {
 
   // Keep the analysis selection within its filtered results.
   useEffect(() => {
-    const nextId = resolveActiveStudy(viewMode, isSourceModalOpen, activeId, filteredRecords.map((record) => record.id));
+    const activeStudyMode = viewMode === "assistant" ? "split" : viewMode;
+    const nextId = resolveActiveStudy(activeStudyMode, isSourceModalOpen, activeId, filteredRecords.map((record) => record.id));
     if (nextId !== activeId) setActiveId(nextId);
   }, [viewMode, isSourceModalOpen, filteredRecords, activeId]);
 
@@ -258,7 +259,7 @@ export default function UnifiedWorkspace() {
     } else if (step === "gaps") {
       setIsCoverageOpen(true);
     } else if (step === "agent") {
-      setIsAssistantOpen(true);
+      setViewMode("assistant"); setIsAssistantOpen(false);
     } else if (step === "whiteboard") {
       setIsWhiteboardOpen(true);
     }
@@ -300,11 +301,8 @@ export default function UnifiedWorkspace() {
         activeView="workspace"
         activeMainView={viewMode}
         onSelectView={(view) => {
-          if (view === "assistant") {
-            setIsAssistantOpen(true);
-          } else {
-            setViewMode(view);
-          }
+          setViewMode(view);
+          if (view === "assistant") setIsAssistantOpen(false);
         }}
       />
 
@@ -319,7 +317,7 @@ export default function UnifiedWorkspace() {
             </div>
           </div>
         )}
-        {viewMode !== "dashboard" && (
+        {viewMode !== "dashboard" && viewMode !== "assistant" && (
           <>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -334,8 +332,96 @@ export default function UnifiedWorkspace() {
         </details>
           </>
         )}
-        {/* Content View: Dashboard vs Research Explorer vs Split Workspace */}
-        {viewMode === "dashboard" ? (
+        {/* Content View: Dashboard vs Research Explorer vs Split Workspace vs Full Page AI */}
+        {viewMode === "assistant" ? (
+          <div className="w-full flex-1 flex flex-col min-h-[calc(100vh-8rem)]">
+            <GroundedChatDrawer
+              isOpen={true}
+              isFullPage={true}
+              onClose={() => setViewMode("dashboard")}
+              onToggleFullPage={() => {
+                setViewMode("dashboard");
+                setIsAssistantOpen(true);
+              }}
+              corpus={corpus}
+              selectedRecordIds={selectedIds}
+              initialPrompt={assistantInitialPrompt}
+              onConsumeInitialPrompt={() => setAssistantInitialPrompt(null)}
+              onInspectClaim={(recId) => {
+                setActiveId(recId);
+                setIsSourceModalOpen(true);
+              }}
+              onAddToWhiteboard={(text, citations, customTree) => {
+                setWhiteboardInitialPrompt(text);
+                if (customTree) setWhiteboardInitialTree(customTree);
+                setIsWhiteboardOpen(true);
+              }}
+              onRunSimulation={(args) => {
+                setSimulatorInitialConfig(args);
+                setSimulatorInitialTab("physics");
+                setIsSimulatorOpen(true);
+              }}
+              onOpenSimulator={(preset) => {
+                setSimulatorInitialTab("physics");
+                setIsSimulatorOpen(true);
+              }}
+              onOpenDiagnostics={(plateId, filterMode) => {
+                if (plateId || filterMode) {
+                  setSimulatorInitialDiagConfig({
+                    plateId: (plateId as any) || "rtdfs",
+                    filterMode: (filterMode as any) || "chemiluminescence",
+                    rationale: "AI Copilot Calibrated CV Diagnostic Inspection",
+                  });
+                }
+                setSimulatorInitialTab("diagnostics");
+                setIsSimulatorOpen(true);
+              }}
+              onFilterExplorer={(args) => {
+                let mappedMaterial: "all" | "liquid_droplets" | "pmma" | "fabrics_cellulose" | "wire_insulation" | "gaseous_fuels" | "other_solids" = "all";
+                const matStr = (args.materialClasses || []).join(" ").toLowerCase();
+                if (matStr.includes("fabric") || matStr.includes("cellulose") || matStr.includes("thin") || matStr.includes("sibal")) {
+                  mappedMaterial = "fabrics_cellulose";
+                } else if (matStr.includes("pmma") || matStr.includes("acrylic") || matStr.includes("plexiglass")) {
+                  mappedMaterial = "pmma";
+                } else if (matStr.includes("droplet") || matStr.includes("liquid") || matStr.includes("heptane") || matStr.includes("decane") || matStr.includes("methanol")) {
+                  mappedMaterial = "liquid_droplets";
+                } else if (matStr.includes("wire") || matStr.includes("insulation") || matStr.includes("kapton")) {
+                  mappedMaterial = "wire_insulation";
+                } else if (matStr.includes("gas") || matStr.includes("methane")) {
+                  mappedMaterial = "gaseous_fuels";
+                }
+
+                let mappedGravity: "all" | "microgravity" | "partial_gravity" | "lunar" | "martian" | "terrestrial" = "all";
+                const gravStr = (args.gravityRegimes || []).join(" ").toLowerCase();
+                if (gravStr.includes("lunar") || gravStr.includes("0.16")) {
+                  mappedGravity = "lunar";
+                } else if (gravStr.includes("martian") || gravStr.includes("0.38")) {
+                  mappedGravity = "martian";
+                } else if (gravStr.includes("micro") || gravStr.includes("µg") || gravStr.includes("0g")) {
+                  mappedGravity = "microgravity";
+                } else if (gravStr.includes("partial")) {
+                  mappedGravity = "partial_gravity";
+                }
+
+                setExplorerFilters({
+                  searchQuery: args.searchQuery,
+                  material: mappedMaterial,
+                  gravity: mappedGravity,
+                  oxygenRange: args.oxygenRange,
+                });
+                setViewMode("explorer");
+              }}
+              onOpenCoverageMap={() => setIsCoverageOpen(true)}
+              onOpenGraph={() => setIsGraphOpen(true)}
+              onOpenIngestion={() => setIsIngestionOpen(true)}
+              onRunPipeline={(steps) => {
+                const { next, remaining } = takeNextAction(steps);
+                setPendingActions(() => remaining);
+                next?.();
+              }}
+            />
+          </div>
+        ) : viewMode === "dashboard" ? (
           <ExecutiveAnalyticsDashboard
             records={corpus}
             onSelectRecord={(id) => {
@@ -352,7 +438,8 @@ export default function UnifiedWorkspace() {
             onOpenSources={() => setIsSourcesOpen(true)}
             onOpenAssistant={(prompt) => {
               setAssistantInitialPrompt(prompt);
-              setIsAssistantOpen(true);
+              setViewMode("assistant");
+              setIsAssistantOpen(false);
             }}
           />
         ) : viewMode === "split" ? (
@@ -439,7 +526,8 @@ export default function UnifiedWorkspace() {
             }}
             onAskAI={(prompt) => {
               setAssistantInitialPrompt(prompt);
-              setIsAssistantOpen(true);
+              setViewMode("assistant");
+              setIsAssistantOpen(false);
             }}
             initialSearchQuery={explorerFilters.searchQuery}
             initialGravity={explorerFilters.gravity}
@@ -459,7 +547,8 @@ export default function UnifiedWorkspace() {
         onAskAI={(prompt) => {
           setIsSimulatorOpen(false);
           setAssistantInitialPrompt(prompt);
-          setIsAssistantOpen(true);
+          setViewMode("assistant");
+          setIsAssistantOpen(false);
         }}
       />
 
@@ -505,7 +594,8 @@ export default function UnifiedWorkspace() {
         onApplyCellFilter={(newQ) => setQuery((prev) => ({ ...prev, ...newQ }))}
         onAskAI={(prompt) => {
           setAssistantInitialPrompt(prompt);
-          setIsAssistantOpen(true);
+          setViewMode("assistant");
+          setIsAssistantOpen(false);
         }}
         onSelectRecord={(recId) => {
           setActiveId(recId);
@@ -537,9 +627,15 @@ export default function UnifiedWorkspace() {
         }}
       />
 
-      {/* Stage 3: Grounded AI Assistant Drawer (Nemotron 30B RAG) */}
-      <GroundedChatDrawer
-        isOpen={isAssistantOpen}
+      {/* Stage 3: Grounded AI Assistant Drawer (Nemotron 30B RAG) - side drawer fallback */}
+      {viewMode !== "assistant" && (
+        <GroundedChatDrawer
+          isOpen={isAssistantOpen}
+          isFullPage={false}
+          onToggleFullPage={() => {
+            setIsAssistantOpen(false);
+            setViewMode("assistant");
+          }}
         onClose={() => {
           setIsAssistantOpen(false);
           setAssistantInitialPrompt(null);
@@ -653,6 +749,7 @@ export default function UnifiedWorkspace() {
           setIsUploadOpen(true);
         }}
       />
+      )}
 
       {/* Stage 4: Global Knowledge Relationship Network Graph (Image 5) */}
       <RelationshipGraphModal
