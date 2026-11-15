@@ -251,8 +251,7 @@ How can I assist your mission research today?`,
       for (const r of corpus) {
         if (
           lower.includes(r.investigation.toLowerCase()) ||
-          lower.includes(r.id.toLowerCase()) ||
-          (r.material && lower.includes(r.material.toLowerCase().slice(0, 5)))
+          lower.includes(r.id.toLowerCase())
         ) {
           matchedCitations.push({
             claimId: r.claim_locator_details?.claimId || `CLM-${r.id.toUpperCase()}`,
@@ -272,7 +271,7 @@ How can I assist your mission research today?`,
     if (finalAnswer.length < 80) {
       const groundedFallback = generateGroundedAssistantResponse(queryText, corpus);
       if (groundedFallback.answer && !groundedFallback.isAbstention) {
-        finalAnswer = `${groundedFallback.answer}\n\n*(Autonomous mission control actions have been dispatched across the workspace below. Click the cards or action buttons to inspect live telemetry and filtered records.)*`;
+        finalAnswer = `${groundedFallback.answer}\n\n*(Suggested research actions are available in the workspace below. Review each step before applying it.)*`;
         // Merge citations from groundedFallback
         for (const cit of groundedFallback.citations) {
           if (!matchedCitations.some((c) => c.claimId === cit.claimId)) {
