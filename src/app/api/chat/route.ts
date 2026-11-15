@@ -3,6 +3,7 @@ import experimentsData from "../../../data/experiments.json";
 import { ExperimentRecord } from "../../../types/evidence";
 import {
   validateCitations,
+  isConversationalGreeting,
   GroundedAssistantResponseSchema,
 } from "../../../lib/grounded-assistant";
 import { generateNemotronGroundedResponse } from "../../../lib/nvidia-nemotron";
@@ -63,6 +64,20 @@ export async function POST(req: NextRequest) {
           ...nemotronResponse.scientificLimitations,
           "Source verification is incomplete; no safety conclusion should be drawn from this answer.",
         ],
+        toolCalls: [],
+      });
+    }
+
+    // An uncited scientific response is not evidence-grounded, even if its
+    // schema is well-formed. Greetings and already-abstained answers are exempt.
+    if (!nemotronResponse.isAbstention &&
+        !isConversationalGreeting(latestMessage) &&
+        nemotronResponse.citations.length === 0) {
+      return NextResponse.json({
+        ...nemotronResponse,
+        answer: "I could not find an indexed source that directly supports an answer to this research question. Please refine the query or inspect the original NASA reports.",
+        isAbstention: true,
+        abstentionReason: "No supporting record-level scientific citation was identified.",
         toolCalls: [],
       });
     }
