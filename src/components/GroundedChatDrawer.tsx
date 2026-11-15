@@ -641,7 +641,7 @@ export function GroundedChatDrawer({
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold tracking-tight text-white">FLARE Research Intelligence Copilot</h2>
                 <p className="text-xs text-slate-400 max-w-xl mx-auto">
-                  Chief AI Research Officer grounded in 50 NASA Physical Sciences Informatics (PSI) flight records across microgravity, Lunar (0.16g), and Martian (0.38g) regimes.
+                  Research assistant using 50 indexed research records from NASA PSI, NASA NTRS, and supporting publications. Lunar and Martian simulations are exploratory rather than measured fire predictions.
                 </p>
               </div>
 

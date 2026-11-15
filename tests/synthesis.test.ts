@@ -32,13 +32,13 @@ const mockRecord: ExperimentRecord = {
 describe("Deterministic Synthesis Generator", () => {
   it("generates an abstention brief when no records match", () => {
     const brief = generateDeterministicBrief({ freeText: "unsupported query" }, []);
-    assert.ok(brief.markdownContent.includes("No reviewed NASA microgravity combustion records"));
+    assert.ok(brief.markdownContent.includes("No indexed records match the current query filters"));
     assert.equal(brief.citedRecordIds.length, 0);
   });
 
   it("generates structured brief with citations for matched records", () => {
     const brief = generateDeterministicBrief({ freeText: "Saffire" }, [mockRecord]);
-    assert.ok(brief.markdownContent.includes("Verified NASA Experimental Observations"));
+    assert.ok(brief.markdownContent.includes("Indexed Research Findings and Their Review Status"));
     assert.ok(brief.markdownContent.includes("Saffire-I Flight Experiment"));
     assert.ok(brief.markdownContent.includes("PSI Investigation Record PSI-98"));
     assert.ok(brief.markdownContent.includes("https://doi.org/10.60555/0t15-1z43"));

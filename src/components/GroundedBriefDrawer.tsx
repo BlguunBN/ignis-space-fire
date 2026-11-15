@@ -85,7 +85,7 @@ export function GroundedBriefDrawer({ isOpen, onClose, brief }: GroundedBriefDra
           <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-[11px] text-amber-300">
             <ShieldAlert className="w-4 h-4 flex-shrink-0" />
             <span>
-              Deterministic evidence synthesis compiled strictly from verified NASA Physical Sciences Informatics (PSI) records. Hallucinated extrapolation is disabled.
+              Deterministic summary of selected indexed research records. Internal review labels are not independent source verification. Check original reports before using these findings for safety decisions; simulations are exploratory.
             </span>
           </div>
 

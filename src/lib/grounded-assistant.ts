@@ -43,31 +43,21 @@ export function validateCitations(
   citations: GroundedCitation[],
   corpus: ExperimentRecord[]
 ): { valid: boolean; invalidClaims: string[] } {
-  const validClaimIds = new Set<string>();
-  const validRecordIds = new Set<string>();
-
-  for (const record of corpus) {
-    validRecordIds.add(record.id);
-    if (record.claim_locator_details?.claimId) {
-      validClaimIds.add(record.claim_locator_details.claimId);
-    }
-  }
-
+  const byId = new Map(corpus.map((record) => [record.id, record]));
   const invalidClaims: string[] = [];
-
   for (const citation of citations) {
-    const hasValidRecord = validRecordIds.has(citation.recordId);
-    const hasValidClaim = validClaimIds.has(citation.claimId);
-
-    if (!hasValidRecord || !hasValidClaim) {
+    const record = byId.get(citation.recordId);
+    const locator = record?.claim_locator_details;
+    // A globally existing claim ID is insufficient: it must belong to the
+    // cited record and match its indexed page. This is an internal consistency
+    // check; it cannot independently authenticate the underlying NASA paper.
+    if (!record || !locator ||
+        locator.claimId !== citation.claimId ||
+        locator.pageNumber !== citation.pageNumber) {
       invalidClaims.push(citation.claimId || `unknown-record:${citation.recordId}`);
     }
   }
-
-  return {
-    valid: invalidClaims.length === 0,
-    invalidClaims,
-  };
+  return { valid: invalidClaims.length === 0, invalidClaims };
 }
 
 /**
@@ -82,7 +72,7 @@ export function detectPhysicalBoundaryViolations(queryText: string): string[] {
 
   if (text.includes("mars") || text.includes("martian") || text.includes("0.38g") || text.includes("0.38 g")) {
     warnings.push(
-      "Query requests Martian partial-gravity (0.38g) predictions. Indexed corpus is restricted to orbital microgravity (10⁻⁶ to 10⁻⁴ g); partial gravity buoyant transition cannot be quantitatively extrapolated."
+      "Query requests Martian partial-gravity (0.38g) predictions. Orbital microgravity results do not by themselves establish Martian partial-gravity fire behavior. Do not extrapolate without matched experiments and a validated model."
     );
   }
 
@@ -122,7 +112,7 @@ const STOP_WORDS = new Set([
 
 /**
  * Deterministic grounded synthesis generator.
- * Operates offline without external API keys and is mathematically guaranteed to never hallucinate.
+ * Operates offline by summarizing indexed records; this does not independently verify the underlying scientific sources.
  */
 export function generateGroundedAssistantResponse(
   queryText: string,
