@@ -13,7 +13,6 @@ import {
   FileSearch,
   Flame,
   FlaskConical,
-  Grid3X3,
   Layers3,
   ShieldCheck,
   Wind,
@@ -105,9 +104,9 @@ export function ExecutiveAnalyticsDashboard({
   }, [records]);
 
   const featured = useMemo(() => {
-    const chosen = LENSES.find((item) => item.id === lens);
-    const filtered = chosen?.pattern
-      ? records.filter((r) => chosen.pattern!.test([r.investigation, r.finding, r.fire_safety_relevance].join(" ")))
+    const pattern = LENSES.find((item) => item.id === lens)?.pattern;
+    const filtered = pattern
+      ? records.filter((r) => pattern.test([r.investigation, r.finding, r.fire_safety_relevance].join(" ")))
       : records;
     const sorted = [...filtered].sort((a, b) => {
       const rank = (r: ExperimentRecord) =>
