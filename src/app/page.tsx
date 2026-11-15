@@ -313,6 +313,8 @@ export default function UnifiedWorkspace() {
             </div>
           </div>
         )}
+        {viewMode !== "dashboard" && (
+          <>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-[11px] font-semibold text-slate-400">Microgravity research</p>
@@ -324,6 +326,8 @@ export default function UnifiedWorkspace() {
           <summary className="cursor-pointer px-4 py-3 text-sm text-slate-300 hover:text-white">Research pathway</summary>
           <GuidedResearchStepper currentStep={guidedStep} onSelectStep={handleSelectGuidedStep} />
         </details>
+          </>
+        )}
         {/* Content View: Dashboard vs Research Explorer vs Split Workspace */}
         {viewMode === "dashboard" ? (
           <ExecutiveAnalyticsDashboard
@@ -337,6 +341,9 @@ export default function UnifiedWorkspace() {
               setViewMode("split");
             }}
             onOpenExplorer={() => setViewMode("explorer")}
+            onOpenCoverage={() => setIsCoverageOpen(true)}
+            onOpenSimulator={() => setIsSimulatorOpen(true)}
+            onOpenSources={() => setIsSourcesOpen(true)}
             onOpenAssistant={(prompt) => {
               setAssistantInitialPrompt(prompt);
               setIsAssistantOpen(true);
