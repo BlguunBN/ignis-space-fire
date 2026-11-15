@@ -141,6 +141,7 @@ export function CombustionSimulatorModal({
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [airCursorActive, setAirCursorActive] = useState<boolean>(false);
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({ x: 280, y: 175 });
+  const [airFlowVec, setAirFlowVec] = useState<[number, number, number]>([0, 0, 0]);
 
   // CV Diagnostics States (Tab 2)
   const [diagSequence, setDiagSequence] = useState<"rtdfs" | "sofie" | "hotwire" | "flex" | "saffire">("rtdfs");
@@ -974,11 +975,11 @@ export function CombustionSimulatorModal({
                       <span className="text-slate-400">Oxygen (O₂)</span>
                       <span className="text-cyan-300 font-bold">{o2Pct}%</span>
                     </div>
-                    <div className="relative w-full h-1.5 bg-slate-800 rounded-lg">
+                    <div className="relative w-full h-1.5 bg-slate-800 rounded-lg overflow-hidden">
                       {(() => {
                         const r = testedRange(fuelType === "n-Decane" ? "n-decane" : fuelType, "o2_frac");
-                        const lo = r ? ((r[0] * 100 - 10) / 30) * 100 : 0;
-                        const hi = r ? ((r[1] * 100 - 10) / 30) * 100 : 100;
+                        const lo = r ? Math.max(0, Math.min(100, ((r[0] * 100 - 10) / 30) * 100)) : 0;
+                        const hi = r ? Math.max(0, Math.min(100, ((r[1] * 100 - 10) / 30) * 100)) : 100;
                         return (
                           <div
                             className="absolute inset-y-0 bg-emerald-500/30 rounded-lg"
@@ -1014,11 +1015,11 @@ export function CombustionSimulatorModal({
                         {pressureAtm} atm ({(pressureAtm * 14.696).toFixed(1)} psia)
                       </span>
                     </div>
-                    <div className="relative w-full h-1.5 bg-slate-800 rounded-lg">
+                    <div className="relative w-full h-1.5 bg-slate-800 rounded-lg overflow-hidden">
                       {(() => {
                         const r = testedRange(fuelType === "n-Decane" ? "n-decane" : fuelType, "pressure_atm");
-                        const lo = r ? ((r[0] - 0.25) / 1.75) * 100 : 0;
-                        const hi = r ? ((r[1] - 0.25) / 1.75) * 100 : 100;
+                        const lo = r ? Math.max(0, Math.min(100, ((r[0] - 0.25) / 1.75) * 100)) : 0;
+                        const hi = r ? Math.max(0, Math.min(100, ((r[1] - 0.25) / 1.75) * 100)) : 100;
                         return (
                           <div
                             className="absolute inset-y-0 bg-emerald-500/30 rounded-lg"
@@ -1188,10 +1189,14 @@ export function CombustionSimulatorModal({
                     className="relative w-full aspect-[16/10] bg-black rounded-lg border border-white/[0.08] overflow-hidden flex items-center justify-center"
                     onMouseMove={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
-                      setCursorPos({
-                        x: e.clientX - rect.left,
-                        y: e.clientY - rect.top,
-                      });
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
+                      setCursorPos({ x, y });
+                      if (rect.width > 0 && rect.height > 0) {
+                        const dx = (rect.width / 2 - x) / (rect.width / 2);
+                        const dy = (y - rect.height / 2) / (rect.height / 2);
+                        setAirFlowVec([dx * 0.9, dy * 0.9, 0]);
+                      }
                     }}
                   >
                     <canvas
@@ -1213,6 +1218,7 @@ export function CombustionSimulatorModal({
                           soot: fuelType === "Methanol" ? 0.25 : 0.7,
                           // Microgravity burns spherical; gravity stretches the flame.
                           stretch: 1 + (gravityMode === "µg" ? 0 : gravityMode === "0.16g" ? 0.35 : gravityMode === "0.38g" ? 0.6 : 1.0),
+                          flow: airCursorActive ? airFlowVec : undefined,
                         }}
                       />
                     )}

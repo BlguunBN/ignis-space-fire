@@ -140,6 +140,8 @@ interface FlameScene {
   soot: number;
   /** 1 = spherical microgravity flame; >1 stretches under buoyancy. */
   stretch: number;
+  /** Optional external airflow vector [x, y, z] (e.g. from cursor nozzle). */
+  flow?: [number, number, number];
 }
 
 interface Flame3DProps {
@@ -216,7 +218,7 @@ export function Flame3D({ scene, className, orbit = true }: Flame3DProps) {
 
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(program, "aPos");
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
@@ -250,7 +252,7 @@ export function Flame3D({ scene, className, orbit = true }: Flame3DProps) {
     ro.observe(canvas);
 
     const camera = (s: FlameScene) => {
-      const R0 = Math.max(s.flameR, 1e-3);
+      const R0 = Math.max(s.flameR, s.dropR * 2.2, 1e-3);
       const st = s.stretch;
       const target = [0, R0 * (st - 1) * 0.45, 0];
       const dist = R0 * (1 + (st - 1) * 1.35) * 4.6 * zoom;
@@ -295,7 +297,10 @@ export function Flame3D({ scene, className, orbit = true }: Flame3DProps) {
       gl.uniform3fv(u.uRight, c.right);
       gl.uniform3fv(u.uUp, c.up);
       gl.uniform3fv(u.uFwd, c.fwd);
-      gl.uniform3fv(u.uFlow, [0, s.stretch - 1, 0]);
+      const fx = s.flow?.[0] ?? 0;
+      const fy = (s.flow?.[1] ?? 0) + (s.stretch - 1);
+      const fz = s.flow?.[2] ?? 0;
+      gl.uniform3fv(u.uFlow, [fx, fy, fz]);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
     raf = requestAnimationFrame(render);
