@@ -143,9 +143,9 @@ export function generateDeterministicBrief(
   md += `---
 
 ## 4. Next Research Inquiry
-To resolve remaining uncertainties for spacecraft exploration atmospheres (e.g. 26%–34% O₂ at 56–70 kPa):
-1. Cross-reference Saffire-IV exploration atmosphere data with SoFIE GEL extinction limits.
-2. Characterize low-velocity boundary extinction ($< 5\\text{ cm/s}$) for candidate polymers before habitat deployment.
+1. Confirm the original source and internal review status of each finding before relying on it.
+2. Identify which material, gravity, pressure, oxygen or airflow conditions differ from the proposed habitat.
+3. Seek further flight evidence or propose a controlled experiment to address those gaps.
 `;
 
   return {
