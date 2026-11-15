@@ -7,7 +7,6 @@
  */
 
 import { StagedCandidateRecord } from "./ingestion";
-import { predict } from "./droplet-engine";
 
 export interface TheoreticalSimulationResult {
   material: string;
@@ -107,35 +106,11 @@ export function simulateTheoreticalFlameSpread(
     n_o2 = 1.35;
     p_press = 0.25;
   } else if (matLower.includes("droplet") || matLower.includes("methanol") || matLower.includes("heptane")) {
-    // Droplet burns: use the Fotia-derived droplet engine (NASA FLEX-1 +
-    // MSL-1 learned models, d² law) instead of the generic power-law fit.
     regime = "SPHERICAL_DROPLET_DIFFUSION";
-    const fuel = matLower.includes("methanol") ? "Methanol" : "Heptane";
-    const droplet = predict({
-      fuel,
-      pressure_atm: press / 101.325,
-      o2_frac: o2 / 100,
-      co2_frac: 0,
-      he_frac: 0,
-      d0_mm: 2.5,
-      gravity_g: input.gravityG ?? 0,
-    });
-    // The engine's K (mm²/s) is a d²-law constant; express the reconciliation
-    // baseline as an effective regression rate so the delta stays comparable.
-    const effectiveRate = +((droplet.k_mm2_s / 2.5) * 0.55).toFixed(3);
-    const burnout = droplet.extinguishes
-      ? droplet.duration_s
-      : (2.5 ** 2) / droplet.k_mm2_s;
-    return {
-      material: input.material,
-      spreadRateMmS: Math.max(0.01, effectiveRate),
-      burnoutTimeSec: +burnout.toFixed(1),
-      isQuenched: droplet.extinguishes === true,
-      quenchReason: droplet.extinguishes
-        ? `Learned extinction model (NASA FLEX-1): ${(100 * (droplet.extinction_probability ?? 0)).toFixed(0)}% extinction probability; verdict "${droplet.verdict}".`
-        : undefined,
-      flammabilityRegime: regime,
-    };
+    baseRate = 0.12;
+    m_flow = 0.10;
+    n_o2 = 0.45;
+    p_press = 0.12;
   }
 
   const flowFactor = Math.pow(Math.max(1, flow) / 10, m_flow);
