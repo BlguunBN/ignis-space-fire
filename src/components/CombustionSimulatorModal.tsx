@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { DropletSetting, assessProximity, predict, testedRange } from "../lib/droplet-engine";
 import {
   X,
   Flame,
@@ -16,6 +17,7 @@ import {
   ChevronRight,
   Info,
   CheckCircle2,
+  AlertTriangle,
   Scan,
   Camera,
   Bot,
@@ -184,29 +186,42 @@ export function CombustionSimulatorModal({
     }
   }, [initialDiagConfig]);
 
-  // Derived Physics Metrics
-  const baseK = fuelType === "Methanol" ? 0.56 : fuelType === "Heptane" ? 0.72 : 0.85;
-  const o2Multiplier = (o2Pct / 21) ** 0.45;
-  const pressureMultiplier = (pressureAtm / 1.0) ** 0.12;
-  const diluentMultiplier = diluent === "+ CO2" ? 0.82 : diluent === "+ Helium" ? 1.15 : 1.0;
-  const burningRateK = Math.round(baseK * o2Multiplier * pressureMultiplier * diluentMultiplier * 100) / 100;
+  // Derived Physics Metrics — Fotia engine (NASA FLEX-1 + MSL-1 learned models,
+  // d² law, Spalding extrapolation, proximity confidence badge).
+  const enginePrediction = predict({
+    fuel: fuelType === "n-Decane" ? "n-decane" : fuelType,
+    pressure_atm: pressureAtm,
+    o2_frac: o2Pct / 100,
+    co2_frac: diluent === "+ CO2" ? 0.35 : 0.0,
+    he_frac: diluent === "+ Helium" ? 0.35 : 0.0,
+    d0_mm: initialDropletMm,
+    gravity_g: gravityMode === "µg" ? 0.0 : gravityMode === "0.16g" ? 0.16 : gravityMode === "0.38g" ? 0.38 : 1.0,
+  });
+  const engineProximity = assessProximity({
+    fuel: fuelType === "n-Decane" ? "n-decane" : fuelType,
+    pressure_atm: pressureAtm,
+    o2_frac: o2Pct / 100,
+    co2_frac: diluent === "+ CO2" ? 0.35 : 0.0,
+    he_frac: diluent === "+ Helium" ? 0.35 : 0.0,
+    d0_mm: initialDropletMm,
+    gravity_g: 0.0,
+  });
+  const burningRateK = Math.round(enginePrediction.k_mm2_s * 100) / 100;
 
-  // Total burn time: t_burn = d0^2 / K
-  const totalBurnTimeSec = Math.round(((initialDropletMm ** 2) / burningRateK) * 10) / 10;
+  // Total burn time from the engine's d² law (uses extinction diameter when the
+  // model expects the flame to go out).
+  const totalBurnTimeSec = Math.round(enginePrediction.duration_s * 10) / 10;
 
-  // Extinction probability
-  let extinctionProbability = 17;
-  let predictionStatus = "Burns to completion";
-  if (o2Pct < 14) {
-    extinctionProbability = 89;
-    predictionStatus = "Radiative extinction limit (Flame quenches)";
-  } else if (o2Pct < 17) {
-    extinctionProbability = 52;
-    predictionStatus = "Marginal extinction boundary";
-  } else if (diluent === "+ CO2") {
-    extinctionProbability = 38;
-    predictionStatus = "Radiative cooling near boundary";
-  }
+  // Extinction status from the learned logistic model — never extrapolated.
+  const extinctionProbability =
+    enginePrediction.extinction_probability === null
+      ? null
+      : Math.round(enginePrediction.extinction_probability * 100);
+  const predictionStatus = enginePrediction.extinguishes
+    ? "Extinguishes before burnout (learned model)"
+    : enginePrediction.extinguishes === false
+      ? "Burns to completion (learned model)"
+      : "Extinction not modelled for this fuel";
 
   // Handle Preset Selection
   const applyPreset = (presetId: string) => {
@@ -945,18 +960,32 @@ export function CombustionSimulatorModal({
                       <span className="text-slate-400">Oxygen (O₂)</span>
                       <span className="text-cyan-300 font-bold">{o2Pct}%</span>
                     </div>
-                    <input
-                      type="range"
-                      min="10"
-                      max="40"
-                      step="1"
-                      value={o2Pct}
-                      onChange={(e) => {
-                        setO2Pct(parseFloat(e.target.value));
-                        setSelectedPreset("custom");
-                      }}
-                      className="w-full accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-                    />
+                    <div className="relative w-full h-1.5 bg-slate-800 rounded-lg">
+                      {(() => {
+                        const r = testedRange(fuelType === "n-Decane" ? "n-decane" : fuelType, "o2_frac");
+                        const lo = r ? ((r[0] * 100 - 10) / 30) * 100 : 0;
+                        const hi = r ? ((r[1] * 100 - 10) / 30) * 100 : 100;
+                        return (
+                          <div
+                            className="absolute inset-y-0 bg-emerald-500/30 rounded-lg"
+                            style={{ left: `${lo}%`, width: `${Math.max(hi - lo, 0)}%` }}
+                            title="Range tested by NASA droplet burns"
+                          />
+                        );
+                      })()}
+                      <input
+                        type="range"
+                        min="10"
+                        max="40"
+                        step="1"
+                        value={o2Pct}
+                        onChange={(e) => {
+                          setO2Pct(parseFloat(e.target.value));
+                          setSelectedPreset("custom");
+                        }}
+                        className="relative w-full accent-cyan-400 h-1.5 bg-transparent rounded-lg cursor-pointer"
+                      />
+                    </div>
                     <div className="flex justify-between text-[10px] text-slate-400">
                       <span>Tested: 10%</span>
                       <span>40%</span>
@@ -971,18 +1000,32 @@ export function CombustionSimulatorModal({
                         {pressureAtm} atm ({(pressureAtm * 14.696).toFixed(1)} psia)
                       </span>
                     </div>
-                    <input
-                      type="range"
-                      min="0.25"
-                      max="2.0"
-                      step="0.05"
-                      value={pressureAtm}
-                      onChange={(e) => {
-                        setPressureAtm(parseFloat(e.target.value));
-                        setSelectedPreset("custom");
-                      }}
-                      className="w-full accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-                    />
+                    <div className="relative w-full h-1.5 bg-slate-800 rounded-lg">
+                      {(() => {
+                        const r = testedRange(fuelType === "n-Decane" ? "n-decane" : fuelType, "pressure_atm");
+                        const lo = r ? ((r[0] - 0.25) / 1.75) * 100 : 0;
+                        const hi = r ? ((r[1] - 0.25) / 1.75) * 100 : 100;
+                        return (
+                          <div
+                            className="absolute inset-y-0 bg-emerald-500/30 rounded-lg"
+                            style={{ left: `${lo}%`, width: `${Math.max(hi - lo, 0)}%` }}
+                            title="Range tested by NASA droplet burns"
+                          />
+                        );
+                      })()}
+                      <input
+                        type="range"
+                        min="0.25"
+                        max="2.0"
+                        step="0.05"
+                        value={pressureAtm}
+                        onChange={(e) => {
+                          setPressureAtm(parseFloat(e.target.value));
+                          setSelectedPreset("custom");
+                        }}
+                        className="relative w-full accent-cyan-400 h-1.5 bg-transparent rounded-lg cursor-pointer"
+                      />
+                    </div>
                     <div className="flex justify-between text-[10px] text-slate-400">
                       <span>0.25 atm</span>
                       <span>2.0 atm</span>
@@ -1227,13 +1270,15 @@ export function CombustionSimulatorModal({
                     <div className="font-semibold text-xs text-slate-100 flex items-center gap-1.5">
                       <span
                         className={`w-2 h-2 rounded-full ${
-                          extinctionProbability > 50 ? "bg-amber-400" : "bg-emerald-400"
+                          (extinctionProbability ?? 0) > 50 ? "bg-amber-400" : "bg-emerald-400"
                         }`}
                       />
                       <span>{predictionStatus}</span>
                     </div>
                     <div className="text-[11px] text-slate-400 mt-1">
-                      {extinctionProbability}% radiative extinction risk
+                      {extinctionProbability === null
+                        ? "No NASA droplet test for this fuel — not extrapolated"
+                        : `${extinctionProbability}% extinction probability (${enginePrediction.extinction_basis === "edge" ? "edge of tests" : "learned"})`}
                     </div>
                   </div>
 
@@ -1245,7 +1290,13 @@ export function CombustionSimulatorModal({
                     <div className="text-lg font-bold text-cyan-300">
                       {burningRateK.toFixed(2)} <span className="text-xs font-normal text-slate-400">mm²/s</span>
                     </div>
-                    <span className="text-[10px] text-slate-500">Learned from NASA FLEX tests</span>
+                    <span className="text-[10px] text-slate-500">
+                      {enginePrediction.k_basis === "learned"
+                        ? "Learned from NASA FLEX-1 + MSL-1 tests"
+                        : enginePrediction.k_basis === "physics"
+                          ? "Spalding theory beyond tested range"
+                          : "Surrogate: computed from heptane"}
+                    </span>
                   </div>
 
                   {/* Estimated Burn Time */}
@@ -1266,13 +1317,32 @@ export function CombustionSimulatorModal({
                     <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
                       Evidence Grounding
                     </span>
-                    <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-semibold">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Empirical Flight Data</span>
+                    <div
+                      className={`flex items-center gap-1.5 text-xs font-semibold ${
+                        engineProximity.verdict === "inside"
+                          ? "text-emerald-400"
+                          : engineProximity.verdict === "extrapolation"
+                            ? "text-amber-400"
+                            : "text-rose-400"
+                      }`}
+                    >
+                      {engineProximity.verdict === "inside" ? (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      ) : (
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                      )}
+                      <span>{engineProximity.label}</span>
                     </div>
                     <p className="text-[10px] text-slate-400 leading-normal">
-                      Tested on ISS CIR Multi-user Droplet Combustion Apparatus (MDCA) under PSI-69.
+                      {engineProximity.explanation}
                     </p>
+                    {enginePrediction.notes.length > 0 && (
+                      <ul className="text-[10px] text-slate-500 leading-normal list-disc pl-3 space-y-0.5">
+                        {enginePrediction.notes.slice(0, 3).map((note, i) => (
+                          <li key={i}>{note}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
 
                   {/* Action: Ask AI Copilot */}
