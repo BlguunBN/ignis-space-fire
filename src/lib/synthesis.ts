@@ -14,7 +14,7 @@ export interface EvidenceBrief {
 export function generateDeterministicBrief(
   query: SearchQuery,
   records: ExperimentRecord[],
-  corpusVersion = "2026.11-NASA-PSI-CURATED"
+  corpusVersion = "2026.11-MIXED-SOURCE-INDEX"
 ): EvidenceBrief {
   const timestamp = new Date().toISOString();
   const citedIds = records.map((r) => r.id);
@@ -40,9 +40,9 @@ export function generateDeterministicBrief(
 
 ## 1. Finding & Applicability Status
 > [!WARNING]
-> **No reviewed NASA microgravity combustion records in this corpus match the requested query conditions.**
+> **No indexed records match the current query filters. This does not prove the research does not exist.**
 > 
-> FLARE strictly enforces scientific abstention. Extrapolations or synthetic estimations are withheld to prevent mischaracterizing spacecraft fire risk.
+> No source-backed conclusion can be drawn from these results. Broaden the search or inspect additional primary sources.
 
 ## 2. Recommended Next Steps
 - Broaden oxygen or airflow bounds.
@@ -63,32 +63,32 @@ export function generateDeterministicBrief(
 **Generated:** ${timestamp}  
 **Corpus Version:** ${corpusVersion}  
 **Inquiry Query:** ${querySummary}  
-**Indexed Evidence Sources:** ${records.length} Reviewed Investigation(s)
+**Indexed Evidence Sources:** ${records.length} Indexed Record(s) (Internal Review Status May Vary)
 
 ---
 
-## 1. Verified NASA Experimental Observations
+## 1. Indexed Research Findings and Their Review Status
 
 `;
 
   for (const rec of records) {
     const assess = assessApplicability(rec, query);
     md += `### ${rec.investigation} (${rec.platform})
-- **Record ID:** \`${rec.id}\` | **Type:** \`${rec.record_type}\` | **Status:** **${rec.verification_status.toUpperCase()}**
+- **Record ID:** \`${rec.id}\` | **Type:** \`${rec.record_type}\` | **Internal Review Status:** **${rec.verification_status.toUpperCase()}**
 - **Material Tested:** ${rec.material} (*${rec.material_class}*)
 - **Reported Conditions:** ${rec.oxygen_pct != null ? `${rec.oxygen_pct}% O₂` : "Unknown O₂"}, ${
       rec.pressure_kpa != null ? `${rec.pressure_kpa} kPa` : "Unknown Pressure"
-    }, ${rec.airflow_cm_s != null ? `${rec.airflow_cm_s} cm/s forced flow` : "Quiescent"} (${rec.gravity})
+    }, ${rec.airflow_cm_s != null ? `${rec.airflow_cm_s} cm/s forced flow` : "Airflow unreported"} (${rec.gravity})
 - **Applicability Verdict:** **${assess.verdictLabel}**
-- **Verified Finding:**
+- **Finding as Recorded (Check Original Source):**
   > "${rec.finding}"
 - **Spacecraft Fire Safety Relevance:**
   ${rec.fire_safety_relevance}
 - **Primary Source Citation:**
   - **Locator:** ${rec.source_locator || "N/A"}
   - **DOI:** ${rec.doi ? `https://doi.org/${rec.doi}` : "None"}
-  - **NASA Repository:** [${rec.psi_id || rec.id}](${rec.source_url})
-  - **Verified By:** ${rec.verified_by || "NASA Physical Sciences Informatics"}
+  - **Research Source:** [${rec.psi_id || rec.id}](${rec.source_url})
+  - **Internal Attribution / Review Note:** ${rec.verified_by || "No independent validation recorded"}
 
 `;
   }
@@ -122,8 +122,8 @@ export function generateDeterministicBrief(
   }
 
   md += `
-- **Flow Velocity Boundaries:** Convective heat transfer and oxidizer delivery change drastically between quiescent conditions (FLEX) and forced tunnel flow (Saffire 15–20 cm/s). Direct numerical interpolation across different flow regimes is invalid.
-- **Scale and Enclosure Geometry:** Saffire utilizes large-scale flight flow ducts (0.4m x 1m), whereas BASS and ISS experiments utilize sub-scale flow tunnels. Scale effects alter radiant heat loss and flame extinction limits.
+- **Flow Velocity Boundaries:** Differences between quiescent and forced flow affect oxidizer delivery and flame behavior. Do not interpolate numerically across regimes without a validated model.
+- **Scale and Enclosure Geometry:** Flight investigations can differ greatly in fuel size, enclosure geometry, ventilation and instrumentation. Treat cross-study comparisons as qualitative unless conditions are controlled.
 
 ---
 
