@@ -91,14 +91,27 @@ export function getStagingQueue(): StagedCandidateRecord[] {
 }
 
 export function stageNewDocument(
-  doc: Omit<StagedCandidateRecord, "stagedId" | "extractedAt" | "reviewStatus">
+  doc: Partial<StagedCandidateRecord>
 ): StagedCandidateRecord {
   const store = getStore();
   const newRecord: StagedCandidateRecord = {
+    documentTitle: doc.documentTitle || "Candidate Investigation Report",
+    filename: doc.filename || "candidate-document.pdf",
+    candidateProgramme: doc.candidateProgramme || "Candidate Programme",
+    candidatePlatform: doc.candidatePlatform || "Microgravity Platform",
+    candidateMaterial: doc.candidateMaterial || "Tested Specimen",
+    candidateOxygenPct: doc.candidateOxygenPct ?? 21,
+    candidateAirflowCmS: doc.candidateAirflowCmS ?? 0,
+    candidatePressureKpa: doc.candidatePressureKpa ?? 101.3,
+    extractedFinding: doc.extractedFinding || "Finding extracted pending review.",
+    extractedQuote: doc.extractedQuote || "Quote extracted pending review.",
+    pageNumber: doc.pageNumber ?? 1,
+    sourceLocator: doc.sourceLocator || "Staging Queue",
+    doi: doc.doi,
     ...doc,
-    stagedId: `staged-${Date.now().toString(36)}`,
-    extractedAt: new Date().toISOString(),
-    reviewStatus: "PENDING_REVIEW",
+    stagedId: doc.stagedId || `staged-${Date.now().toString(36)}`,
+    extractedAt: doc.extractedAt || new Date().toISOString(),
+    reviewStatus: doc.reviewStatus || "PENDING_REVIEW",
   };
   // Place newly staged candidate at the top of the queue for immediate visibility
   store.unshift(newRecord);

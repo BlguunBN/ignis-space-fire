@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getStagingQueue,
-  stageNewDocument,
-  reviewCandidate,
-  promoteCandidateToCorpus,
-} from "../../../lib/ingestion";
+  fetchStagedCandidatesFromDb,
+  saveStagedCandidateToDb,
+  updateCandidateReviewInDb,
+  savePromotedRecordToDb,
+} from "../../../lib/supabase-db";
+import { promoteCandidateToCorpus } from "../../../lib/ingestion";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const queue = getStagingQueue();
+  const queue = await fetchStagedCandidatesFromDb();
   return NextResponse.json({ queue, total: queue.length });
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const staged = stageNewDocument(body);
+    const staged = await saveStagedCandidateToDb(body);
     return NextResponse.json({ success: true, staged }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json(
@@ -36,11 +39,18 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const updated = reviewCandidate(stagedId, decision, reviewerName, notes);
+    const updated = await updateCandidateReviewInDb(stagedId, decision, reviewerName, notes);
+    if (!updated) {
+      return NextResponse.json(
+        { error: `Candidate record '${stagedId}' not found.` },
+        { status: 404 }
+      );
+    }
 
     let promotedRecord = null;
     if (decision === "APPROVED_FOR_CORPUS") {
       promotedRecord = promoteCandidateToCorpus(updated);
+      await savePromotedRecordToDb(promotedRecord);
     }
 
     return NextResponse.json({

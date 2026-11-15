@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runIngestionAgentSwarm, IngestionSwarmInput } from "../../../../lib/ingestion-swarm";
-import { stageNewDocument, StagedCandidateRecord } from "../../../../lib/ingestion";
+import { StagedCandidateRecord } from "../../../../lib/ingestion";
+import { saveStagedCandidateToDb } from "../../../../lib/supabase-db";
 import experimentsData from "../../../../data/experiments.json";
 import { ExperimentRecord } from "../../../../types/evidence";
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     let stagedRecord: StagedCandidateRecord | undefined;
     if (report.overallVerdict === "STAGED_FOR_REVIEW" && report.stagedCandidate) {
-      stagedRecord = stageNewDocument(report.stagedCandidate);
+      stagedRecord = await saveStagedCandidateToDb(report.stagedCandidate);
     }
 
     const statusCode = report.overallVerdict === "STAGED_FOR_REVIEW" ? 200 : 422;
