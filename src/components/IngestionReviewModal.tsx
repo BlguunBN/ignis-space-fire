@@ -27,6 +27,7 @@ import {
   promoteCandidateToCorpus,
 } from "../lib/ingestion";
 import { generateInvestigatorDossier, InvestigatorDossier } from "../lib/investigator-dossier";
+import { reconcileCandidateWithSimulation } from "../lib/simulation-reconciler";
 import experimentsData from "../data/experiments.json";
 import { ExperimentRecord } from "../types/evidence";
 
@@ -68,6 +69,11 @@ export function IngestionReviewModal({
     if (!selectedCandidate) return null;
     return generateInvestigatorDossier(selectedCandidate, activeCorpus);
   }, [selectedCandidate, activeCorpus]);
+
+  const simReconciliation = useMemo(() => {
+    if (!selectedCandidate) return null;
+    return reconcileCandidateWithSimulation(selectedCandidate);
+  }, [selectedCandidate]);
 
   useEffect(() => {
     setCheckedItems({});
@@ -565,6 +571,54 @@ export function IngestionReviewModal({
                   <div className="text-[10px] text-slate-500 mt-0.5 truncate">Primary Solid/Liquid</div>
                 </div>
               </div>
+
+              {/* Closed-Loop Simulation Reconciliation Strip */}
+              {simReconciliation && (
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-white/[0.08] bg-[#0c1219] font-mono text-xs shadow-sm">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <Flame className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">
+                          Closed-Loop Simulation Reconciliation
+                        </span>
+                        <span
+                          className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase ${
+                            simReconciliation.agreementLevel === "EXCELLENT"
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                              : simReconciliation.agreementLevel === "MODERATE"
+                              ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                              : simReconciliation.agreementLevel === "HIGH_DISCREPANCY"
+                              ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                              : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                          }`}
+                        >
+                          {simReconciliation.agreementLevel.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-300 font-sans mt-0.5">
+                        {simReconciliation.discrepancyDiagnosis}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 text-right">
+                    <div>
+                      <div className="text-[9px] text-slate-400 uppercase">Simulated Spread</div>
+                      <div className="text-xs font-bold text-cyan-400">
+                        {simReconciliation.simulatedSpreadRateMmS.toFixed(2)} mm/s
+                      </div>
+                    </div>
+                    <div className="border-l border-white/[0.08] pl-3">
+                      <div className="text-[9px] text-slate-400 uppercase">Model Regime</div>
+                      <div className="text-[10px] text-slate-300">
+                        {simReconciliation.flammabilityRegime}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Parsed Finding & Table Quote */}
               <div className="space-y-2 rounded-xl border border-white/[0.06] bg-[#0e1218] p-4">
