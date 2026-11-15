@@ -194,18 +194,20 @@ export function CombustionSimulatorModal({
   // Total burn time: t_burn = d0^2 / K
   const totalBurnTimeSec = Math.round(((initialDropletMm ** 2) / burningRateK) * 10) / 10;
 
-  // Extinction probability
-  let extinctionProbability = 17;
-  let predictionStatus = "Burns to completion";
-  if (o2Pct < 14) {
-    extinctionProbability = 89;
+  // Flame Extinction Regime (NASA FLEX empirical LOI boundary, no invented probabilities)
+  const isExtinctionRegime = o2Pct < 14;
+  const isMarginalRegime = o2Pct >= 14 && o2Pct < 17;
+  let predictionStatus = "Burns to completion (Sustained diffusion flame)";
+  let predictionRegimeNote = "Ambient oxygen above radiative extinction threshold.";
+  if (isExtinctionRegime) {
     predictionStatus = "Radiative extinction limit (Flame quenches)";
-  } else if (o2Pct < 17) {
-    extinctionProbability = 52;
+    predictionRegimeNote = "Oxygen concentration is below the limiting oxygen index (LOI).";
+  } else if (isMarginalRegime) {
     predictionStatus = "Marginal extinction boundary";
+    predictionRegimeNote = "Near limiting oxygen boundary; radiative loss competes with heat release.";
   } else if (diluent === "+ CO2") {
-    extinctionProbability = 38;
     predictionStatus = "Radiative cooling near boundary";
+    predictionRegimeNote = "CO2 diluent increases radiative gas-phase emission.";
   }
 
   // Handle Preset Selection
@@ -1189,13 +1191,13 @@ export function CombustionSimulatorModal({
                           <div className="flex items-center justify-center gap-2 text-cyan-300 text-xs font-bold">
                             <Sparkles className="w-4 h-4 text-cyan-400" />
                             <span>
-                              {extinctionProbability > 50
+                              {isExtinctionRegime
                                 ? "Flame Extinguished (Radiative Quenching)"
                                 : "Droplet Burn Complete (d² Law)"}
                             </span>
                           </div>
                           <p className="text-[10px] text-slate-400 max-w-xs mx-auto">
-                            {extinctionProbability > 50
+                            {isExtinctionRegime
                               ? `Radiative heat loss exceeded chemical heat release rate at ${o2Pct}% O₂.`
                               : `Total burn time ${totalBurnTimeSec.toFixed(1)}s reached for ${initialDropletMm.toFixed(2)}mm ${fuelType} droplet.`}
                           </p>
@@ -1280,13 +1282,13 @@ export function CombustionSimulatorModal({
                     <div className="font-semibold text-xs text-slate-100 flex items-center gap-1.5">
                       <span
                         className={`w-2 h-2 rounded-full ${
-                          extinctionProbability > 50 ? "bg-amber-400" : "bg-emerald-400"
+                          isExtinctionRegime ? "bg-rose-400" : isMarginalRegime ? "bg-amber-400" : "bg-emerald-400"
                         }`}
                       />
                       <span>{predictionStatus}</span>
                     </div>
                     <div className="text-[11px] text-slate-400 mt-1">
-                      {extinctionProbability}% radiative extinction risk
+                      {predictionRegimeNote}
                     </div>
                   </div>
 

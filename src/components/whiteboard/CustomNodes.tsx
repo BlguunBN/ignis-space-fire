@@ -69,10 +69,10 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
       },
       {
         id: "saffire-4",
-        label: "Saffire-IV Exploration Atmosphere",
+        label: "Saffire-IV Sample IV-1 Fire Test",
         claimId: "CLM-SAFFIRE-004",
-        conditions: "26% O₂ • 20 cm/s Flow • 57 kPa",
-        quote: "Elevated oxygen concentration significantly accelerates thick PMMA and composite flame propagation.",
+        conditions: "22% O₂ • 20 cm/s Flow • 100 kPa",
+        quote: "Flame spread occurred; reports 130 s burning with 3,150 W average heat release.",
       },
       {
         id: "bass-2-pmma",

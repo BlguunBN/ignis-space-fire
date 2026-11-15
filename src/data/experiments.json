@@ -781,8 +781,8 @@
   },
   {
     "id": "saffire-4",
-    "programme": "Saffire-IV Exploration Atmosphere Fire Test",
-    "investigation": "Saffire-IV Exploration Atmosphere Fire Test",
+    "programme": "Saffire-IV Flight Fire Test",
+    "investigation": "Saffire-IV Sample IV-1 Fire Test",
     "record_type": "experiment_run",
     "verification_status": "verified",
     "source_type": "NTRS",
@@ -791,8 +791,8 @@
     "platform": "Cygnus Cargo Vehicle",
     "material": "PMMA and SIBAL composite",
     "material_class": "solid_plastic",
-    "oxygen_pct": 26,
-    "pressure_kpa": 57,
+    "oxygen_pct": 22.0,
+    "pressure_kpa": 100.0,
     "airflow_cm_s": 20,
     "measurements": [
       "spread",
@@ -809,7 +809,7 @@
     "verified_by": "Dr. David L. Urban / NASA GRC (ICES-2024-365)",
     "claim_locator_details": {
       "claimId": "CLM-SAFFIRE-004",
-      "sourceId": "Saffire-IV Exploration Atmosphere Fire Test",
+      "sourceId": "Saffire-IV Sample IV-1 Fire Test",
       "pdfUrl": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
       "pageNumber": 5,
       "boundingBox": {

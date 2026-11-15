@@ -84,14 +84,14 @@ describe("Flagship Research Journey & Workspace Logic", () => {
     assert.equal(brief.citedRecordIds.length, 0);
   });
 
-  it("accurately isolates Exploration Atmosphere conditions (26% O2 / 57 kPa)", () => {
-    const expAtmQuery: SearchQuery = {
-      oxygenPct: 26.0,
-      pressureKpa: 57.0,
+  it("accurately isolates Saffire-IV sample IV-1 conditions (22% O2 / 100 kPa)", () => {
+    const saffire4Query: SearchQuery = {
+      oxygenPct: 22.0,
+      pressureKpa: 100.0,
     };
 
     const saffire4 = allRecords.find((r) => r.id === "saffire-4")!;
-    const assess = assessApplicability(saffire4, expAtmQuery);
+    const assess = assessApplicability(saffire4, saffire4Query);
 
     assert.equal(assess.verdict, "EXACT_MATCH");
     assert.equal(assess.differences.length, 0);

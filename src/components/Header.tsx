@@ -20,8 +20,8 @@ interface HeaderProps {
   onOpenUpload?: () => void;
   selectedCount: number;
   activeView: "workspace" | "coverage" | "sources";
-  activeMainView?: "dashboard" | "explorer" | "split";
-  onSelectView?: (view: "dashboard" | "explorer" | "split") => void;
+  activeMainView?: "dashboard" | "explorer" | "split" | "assistant";
+  onSelectView?: (view: "dashboard" | "explorer" | "split" | "assistant") => void;
 }
 
 export function Header({ corpusCount, onReset, onOpenBrief, onOpenCompare, onOpenCoverage, onOpenSources, onOpenWhiteboard, onOpenAssistant, onOpenGraph, onOpenIngestion, onOpenSimulator, onOpenUpload, selectedCount, activeView, activeMainView, onSelectView }: HeaderProps) {
@@ -47,7 +47,7 @@ export function Header({ corpusCount, onReset, onOpenBrief, onOpenCompare, onOpe
             {item("Overview", LayoutDashboard, onSelectView ? () => onSelectView("dashboard") : undefined, activeMainView === "dashboard")}
             {item("Explore", Compass, onSelectView ? () => onSelectView("explorer") : undefined, activeMainView === "explorer")}
             {item("Analysis", Columns, onSelectView ? () => onSelectView("split") : undefined, activeMainView === "split")}
-            {item("AI Assistant", Bot, onOpenAssistant)}
+            {item("AI Assistant", Bot, onSelectView ? () => onSelectView("assistant") : onOpenAssistant, activeMainView === "assistant")}
             {item("Whiteboard", Network, onOpenWhiteboard)}
           </div>
           <div><p className={`mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 ${collapsed ? "md:sr-only" : ""}`}>Research tools</p>
