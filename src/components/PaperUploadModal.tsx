@@ -29,7 +29,7 @@ interface PaperUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCommitRecord?: (newRecord: ExperimentRecord) => void;
-  onOpenStagingQueue?: () => void;
+  onOpenStagingQueue?: (stagedId?: string) => void;
 }
 
 export function PaperUploadModal({
@@ -191,13 +191,29 @@ export function PaperUploadModal({
     }
   };
 
-  const handleCommitToCorpus = () => {
+  const handleCommitToCorpus = async () => {
     if (!stagedRecord || !onCommitRecord) return;
     try {
+      // Sync decision to server ingestion store
+      try {
+        await fetch("/api/ingestion", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            stagedId: stagedRecord.stagedId,
+            decision: "APPROVED_FOR_CORPUS",
+            reviewerName: "NASA Flight Safety Lead (Direct Ingest)",
+            notes: "Directly verified and promoted through Harsh Scientific Gatekeeper",
+          }),
+        });
+      } catch (patchErr) {
+        console.warn("Could not sync direct promotion to server staging store:", patchErr);
+      }
+
       const approvedCandidate = {
         ...stagedRecord,
         reviewStatus: "APPROVED_FOR_CORPUS" as const,
-        reviewerName: "NASA Flight Safety Lead (Admin Ingest)",
+        reviewerName: "NASA Flight Safety Lead (Direct Ingest)",
         reviewDecisionDate: new Date().toISOString(),
       };
       const promoted = promoteCandidateToCorpus(approvedCandidate);
@@ -566,7 +582,7 @@ export function PaperUploadModal({
 
                 {auditResult.verdict === "STAGED_FOR_REVIEW" && onOpenStagingQueue && (
                   <button
-                    onClick={onOpenStagingQueue}
+                    onClick={() => onOpenStagingQueue(stagedRecord?.stagedId)}
                     className="px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shrink-0 shadow"
                   >
                     <span>View Staging Queue</span>

@@ -60,6 +60,7 @@ export default function UnifiedWorkspace() {
   const [isIngestionOpen, setIsIngestionOpen] = useState(false);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [selectedStagedIdForReview, setSelectedStagedIdForReview] = useState<string | null>(null);
   const [assistantInitialPrompt, setAssistantInitialPrompt] = useState<string | null>(null);
   const [whiteboardInitialPrompt, setWhiteboardInitialPrompt] = useState<string | null>(null);
   const [whiteboardInitialTree, setWhiteboardInitialTree] = useState<BuildHypothesisTreeArgs | null>(null);
@@ -236,7 +237,10 @@ export default function UnifiedWorkspace() {
 
   // Commit new user-uploaded record into active corpus
   const handleCommitNewRecord = (newRec: ExperimentRecord) => {
-    setCorpus((prev) => [newRec, ...prev]);
+    setCorpus((prev) => {
+      if (prev.some((r) => r.id === newRec.id)) return prev;
+      return [newRec, ...prev];
+    });
     setSelectedIds((prev) => new Set([newRec.id, ...Array.from(prev)]));
     setActiveId(newRec.id);
   };
@@ -447,7 +451,8 @@ export default function UnifiedWorkspace() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onCommitRecord={handleCommitNewRecord}
-        onOpenStagingQueue={() => {
+        onOpenStagingQueue={(stagedId) => {
+          setSelectedStagedIdForReview(stagedId || null);
           setIsUploadOpen(false);
           setIsIngestionOpen(true);
         }}
@@ -646,7 +651,12 @@ export default function UnifiedWorkspace() {
       {/* Stage 4: Document Ingestion & Verification Staging Queue */}
       <IngestionReviewModal
         isOpen={isIngestionOpen}
-        onClose={() => setIsIngestionOpen(false)}
+        onClose={() => {
+          setIsIngestionOpen(false);
+          setSelectedStagedIdForReview(null);
+        }}
+        onPromoteRecord={handleCommitNewRecord}
+        selectedStagedId={selectedStagedIdForReview}
       />
     </div>
   );

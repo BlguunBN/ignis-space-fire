@@ -24,11 +24,16 @@ export interface StagedCandidateRecord {
   reviewerNotes?: string;
 }
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __ignisStagingStore: StagedCandidateRecord[] | undefined;
+}
+
 /**
  * Initial queue of candidate NASA technical reports parsed by Docling layout engine,
  * pending human reviewer flight-safety verification.
  */
-let stagingStore: StagedCandidateRecord[] = [
+const INITIAL_STAGING_DATA: StagedCandidateRecord[] = [
   {
     stagedId: "staged-saffire-5-extinction",
     documentTitle: "Saffire-V Low-Pressure Concurrent Flame Extinction in Cotton-Fiberglass Blends",
@@ -71,20 +76,29 @@ let stagingStore: StagedCandidateRecord[] = [
   },
 ];
 
+function getStore(): StagedCandidateRecord[] {
+  if (!globalThis.__ignisStagingStore) {
+    globalThis.__ignisStagingStore = [...INITIAL_STAGING_DATA];
+  }
+  return globalThis.__ignisStagingStore;
+}
+
 export function getStagingQueue(): StagedCandidateRecord[] {
-  return [...stagingStore];
+  return [...getStore()];
 }
 
 export function stageNewDocument(
   doc: Omit<StagedCandidateRecord, "stagedId" | "extractedAt" | "reviewStatus">
 ): StagedCandidateRecord {
+  const store = getStore();
   const newRecord: StagedCandidateRecord = {
     ...doc,
     stagedId: `staged-${Date.now().toString(36)}`,
     extractedAt: new Date().toISOString(),
     reviewStatus: "PENDING_REVIEW",
   };
-  stagingStore.push(newRecord);
+  // Place newly staged candidate at the top of the queue for immediate visibility
+  store.unshift(newRecord);
   return newRecord;
 }
 
@@ -94,20 +108,21 @@ export function reviewCandidate(
   reviewerName: string,
   notes?: string
 ): StagedCandidateRecord {
-  const index = stagingStore.findIndex((s) => s.stagedId === stagedId);
+  const store = getStore();
+  const index = store.findIndex((s) => s.stagedId === stagedId);
   if (index === -1) {
     throw new Error(`Candidate with id ${stagedId} not found in staging queue.`);
   }
 
   const updated: StagedCandidateRecord = {
-    ...stagingStore[index],
+    ...store[index],
     reviewStatus: decision,
     reviewerName,
     reviewDecisionDate: new Date().toISOString(),
     reviewerNotes: notes,
   };
 
-  stagingStore[index] = updated;
+  store[index] = updated;
   return updated;
 }
 
