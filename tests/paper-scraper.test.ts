@@ -39,6 +39,22 @@ describe("Research Paper & Experimental Data Scraper", () => {
     assert.strictEqual(scraped.extractedMetadata.doi, "10.60555/0t15-s5ex");
   });
 
+  test("fetches and extracts structured NASA PSI investigation PSI-69 (FLEX)", async () => {
+    const scraped = await fetchAndExtractPaperFromUrl("https://psi.nasa.gov/physci/repo/data/investigations/PSI-69");
+    assert.ok(scraped.title.includes("PSI-69"));
+    assert.strictEqual(scraped.filename, "NASA-PSI-69-FLEX.pdf");
+    assert.ok(scraped.rawText.includes("Methanol liquid droplets"));
+    assert.ok(scraped.rawText.includes("21.0% O2"));
+    assert.strictEqual(scraped.extractedMetadata.doi, "10.60555/mbq8-0451");
+  });
+
+  test("resolves direct NASA DOI link for FLEX flight data", async () => {
+    const scraped = await fetchAndExtractPaperFromUrl("https://doi.org/10.60555/mbq8-0451");
+    assert.ok(scraped.title.includes("FLEX"));
+    assert.ok(scraped.rawText.includes("Flame Extinguishment Experiment"));
+    assert.strictEqual(scraped.extractedMetadata.doi, "10.60555/mbq8-0451");
+  });
+
   test("parses uploaded local document correctly", () => {
     const fileContent = `
 Title: Microgravity Droplet Burning of Heptane on ISS

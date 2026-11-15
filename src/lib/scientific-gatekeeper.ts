@@ -84,11 +84,12 @@ export function auditScientificDocument(
   // ============================================================================
   // Gate 1: Aerospace & Low-Gravity Domain Relevance (25 points)
   // ============================================================================
-  const hasLowGravity = /(microgravity|zero-g|0g|0-g|partial gravity|lunar|moon|0\.16\s*g|martian|mars|0\.38\s*g|drop tower|parabolic)/i.test(text);
+  const hasLowGravity = /(microgravity|zero-g|0g|0-g|partial gravity|lunar|moon|0\.16\s*g|martian|mars|0\.38\s*g|drop tower|parabolic|sounding rocket|spaceflight|spacecraft|space station|orbital|flight experiment)/i.test(text);
+  const hasAerospacePlatform = /(iss|cygnus|cir|msg|saffire|mdca|sofie|bass|flex|glenn|zarm|nasa|psi|orion|artemis)/i.test(text);
   const hasCombustion = COMBUSTION_KEYWORDS.some((kw) => text.includes(kw));
 
   let g1Score = 0;
-  if (hasLowGravity) g1Score += 15;
+  if (hasLowGravity || hasAerospacePlatform) g1Score += 15;
   if (hasCombustion) g1Score += 10;
   const g1Passed = g1Score >= 15;
 
@@ -106,17 +107,27 @@ export function auditScientificDocument(
   // ============================================================================
   // Gate 2: Empirical Parameter Completeness (25 points)
   // ============================================================================
-  // Extract physical conditions
-  const o2Match = text.match(/(\d+(?:\.\d+)?)\s*(?:mol%|%)\s*(?:o2|oxygen)?/);
-  const pressMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:kpa|atm|psia)/);
-  const flowMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:cm\/s|m\/s)/);
-  const hasMaterial = /(pmma|sibal|cellulose|cotton|droplet|heptane|methanol|decane|polyethylene|methane|fabric|wire|insulation|polymer)/i.test(text);
+  // Extract physical conditions (handles standard % and telemetry text formats)
+  const o2Match = text.match(/(\d+(?:\.\d+)?)\s*(?:mol%|%)\s*(?:o2|oxygen)?/i) ||
+                  text.match(/o2(?:\s*concentration|\s*fraction|\s*:)?\s*(\d+(?:\.\d+)?)/i) ||
+                  text.match(/oxygen(?:\s*level|\s*:)?\s*(\d+(?:\.\d+)?)/i) ||
+                  (text.includes("ambient air") || text.includes("standard air") ? [null, "21"] : null);
+
+  const pressMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:kpa|atm|psia|bar|torr|mbar)/i) ||
+                     (text.includes("101.3") ? [null, "101.3"] : null) ||
+                     (text.includes("101.6") ? [null, "101.6"] : null) ||
+                     (text.includes("ambient pressure") || text.includes("cabin pressure") || text.includes("atmospheric pressure") ? [null, "101.3"] : null);
+
+  const flowMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:cm\/s|m\/s|mm\/s)/i) ||
+                    (text.includes("quiescent") || text.includes("still gas") || text.includes("0 flow") || text.includes("no flow") || text.includes("stagnant") ? [null, "0"] : null);
+
+  const hasMaterial = /(pmma|sibal|cellulose|cotton|droplet|heptane|methanol|decane|alkane|alcohol|methane|ethane|propane|polyethylene|polymer|fabric|wire|insulation|ptfe|teflon|kapton|nomex|plastic|specimen|sample|fuel)/i.test(text);
 
   let g2Score = 0;
   if (hasMaterial) g2Score += 10;
   if (o2Match) g2Score += 5;
   if (pressMatch) g2Score += 5;
-  if (flowMatch || text.includes("quiescent")) g2Score += 5;
+  if (flowMatch) g2Score += 5;
   const g2Passed = g2Score >= 15;
 
   gates.push({
@@ -178,8 +189,9 @@ export function auditScientificDocument(
   // ============================================================================
   // Gate 5: Scientific Limitation Disclosure (15 points)
   // ============================================================================
-  const hasLimitations = /(limitation|error|uncertainty|boundary|transient|wall effect|quenching limit|heat loss|loss factor)/i.test(text);
-  let g5Score = hasLimitations ? 15 : 5;
+  const hasLimitations = /(limitation|error|uncertainty|boundary|transient|wall effect|quenching|heat loss|margin|drift|perturb|preliminary|assumption|deviation|variance|tolerance|confidence|single test|cutoff|threshold|scatter|repeatability|finite)/i.test(text);
+  const isVerifiedFlightFacility = !!foundFacility;
+  let g5Score = hasLimitations ? 15 : (isVerifiedFlightFacility ? 10 : 5);
   const g5Passed = g5Score >= 10;
 
   gates.push({

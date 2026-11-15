@@ -52,12 +52,27 @@ export function PaperUploadModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Quick preset samples
+  // Quick preset samples with official NASA and scientific repositories
   const sampleUrlPresets = [
+    {
+      name: "NASA PSI (FLEX Droplets PSI-69)",
+      url: "https://psi.nasa.gov/physci/repo/data/investigations/PSI-69",
+      desc: "ISS CIR/MDCA droplet extinction & cool-flame discovery",
+    },
+    {
+      name: "NASA PSI (Saffire-I PSI-98)",
+      url: "https://psi.nasa.gov/physci/repo/data/investigations/PSI-98",
+      desc: "Cygnus large-scale fabric flammability & spread telemetry",
+    },
     {
       name: "NASA NTRS (Saffire-V)",
       url: "https://ntrs.nasa.gov/citations/20220014245",
       desc: "Saffire-V concurrent flame spread & low-pressure quenching",
+    },
+    {
+      name: "NASA DOI Direct (FLEX)",
+      url: "https://doi.org/10.60555/mbq8-0451",
+      desc: "Direct Digital Object Identifier (DOI) for FLEX flight data",
     },
     {
       name: "arXiv (FLEX Droplets)",
