@@ -27,7 +27,7 @@ export function GuidedResearchStepper({
       id: "explore",
       number: "01",
       label: "Explore Library",
-      desc: "34 verified + 16 context records",
+      desc: "34 internally reviewed + 16 awaiting review",
       icon: <Compass className="w-3.5 h-3.5" />,
     },
     {
