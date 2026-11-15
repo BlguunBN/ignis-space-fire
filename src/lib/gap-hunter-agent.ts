@@ -118,14 +118,15 @@ export function scanCorpusForResearchGaps(corpus: ExperimentRecord[]): ResearchG
           if (!mat.matcher(r)) return false;
 
           // Gravity matching
+          const rGrav = r.gravity as string;
           if (grav.id === "microgravity") {
-            if (r.gravity !== "microgravity" && (r.gravity as string) !== "0g") return false;
+            if (rGrav !== "microgravity" && rGrav !== "0g") return false;
           } else if (grav.id === "lunar") {
-            if (r.gravity !== "lunar" && (r.gravity as string) !== "0.16g") return false;
+            if (rGrav !== "lunar" && rGrav !== "0.16g") return false;
           } else if (grav.id === "martian") {
-            if (r.gravity !== "martian" && (r.gravity as string) !== "0.38g") return false;
+            if (rGrav !== "martian" && rGrav !== "0.38g") return false;
           } else if (grav.id === "partial_low") {
-            if (r.gravity !== "partial_gravity" && r.gravity !== "partial_low") return false;
+            if (rGrav !== "partial_gravity" && rGrav !== "partial_low") return false;
           }
 
           // Oxygen matching
@@ -202,8 +203,8 @@ export function generateArtemisHypothesisTree(
   );
 
   for (const r of relevantRecords) {
-    if (r.primary_claim_locator?.claim_id) {
-      candidateClaims.push(r.primary_claim_locator.claim_id);
+    if (r.claim_locator_details?.claimId) {
+      candidateClaims.push(r.claim_locator_details.claimId);
     }
     if (candidateClaims.length >= 3) break;
   }

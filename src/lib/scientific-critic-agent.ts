@@ -42,7 +42,7 @@ export interface CriticReport {
 }
 
 export interface CandidateEvaluationInput {
-  material: string;
+  material?: string;
   oxygenPct?: number;
   pressureKpa?: number;
   airflowCmS?: number;
