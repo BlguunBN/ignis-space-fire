@@ -276,6 +276,11 @@ export function GroundedChatDrawer({
   const inputRef = useRef<HTMLInputElement>(null);
   const loadingRef = useRef(false);
   const sentPromptRef = useRef<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
+  }, []);
 
   // Prevent background scrolling while chat drawer is open
   useEffect(() => {
@@ -288,13 +293,35 @@ export function GroundedChatDrawer({
     }
   }, [isOpen]);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Focus input on open
   useEffect(() => {
     if (isOpen) {
-      const timer = setTimeout(() => inputRef.current?.focus(), 120);
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+        scrollToBottom(false);
+      }, 120);
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, scrollToBottom]);
+
+  // Auto-scroll when new messages arrive or loading state changes
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom(true);
+    }
+  }, [isOpen, messages.length, loading, scrollToBottom]);
 
   const handleSend = useCallback(
     async (queryText: string) => {
@@ -952,6 +979,7 @@ export function GroundedChatDrawer({
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Quick Prompts Strip */}
