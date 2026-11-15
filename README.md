@@ -2,6 +2,8 @@
 
 **NASA Space Apps Challenge 2026 · Flame in Freefall**
 
+**Live deployment:** https://ignis-space-fire.netlify.app/
+
 FLARE is an interactive research workspace for exploring NASA microgravity combustion investigations and identifying useful evidence for fire safety in crewed habitats. It connects research discovery, comparison, source inspection, exploratory simulation, and guided AI research actions.
 
 ## The research problem
