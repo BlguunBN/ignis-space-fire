@@ -18,6 +18,7 @@ import {
   Wind,
 } from "lucide-react";
 import { ExperimentRecord } from "../types/evidence";
+import { rankFireSafetyEvidence } from "../lib/fire-safety-ranking";
 
 interface ExecutiveAnalyticsDashboardProps {
   records: ExperimentRecord[];
@@ -32,11 +33,18 @@ interface ExecutiveAnalyticsDashboardProps {
 
 type ResearchLens = "all" | "spread" | "extinction" | "cool_flames";
 const LENSES: { id: ResearchLens; label: string; pattern?: RegExp }[] = [
-  { id: "all", label: "All topics" },
+  { id: "all", label: "Habitat safety" },
   { id: "spread", label: "Flame spread", pattern: /flame spread|propagation|spread rate/i },
   { id: "extinction", label: "Extinction", pattern: /extinct|suppress|quench/i },
   { id: "cool_flames", label: "Cool flames", pattern: /cool flame|low.temperature/i },
 ];
+const RANKING_QUESTIONS: Record<ResearchLens, string> = {
+  all: "spacecraft cabin solid material flame spread flammability airflow",
+  spread: "solid material flame spread under ventilation in microgravity",
+  extinction: "solid material flame extinction and suppression in microgravity",
+  cool_flames: "liquid droplet cool flame extinction in microgravity",
+};
+
 const GRAVITIES = [
   { id: "microgravity", label: "Microgravity" },
   { id: "partial_gravity", label: "Partial gravity" },
@@ -115,14 +123,10 @@ export function ExecutiveAnalyticsDashboard({
     const filtered = pattern
       ? records.filter((r) => pattern.test([r.investigation, r.finding, r.fire_safety_relevance].join(" ")))
       : records;
-    const sorted = [...filtered].sort((a, b) => {
-      const rank = (r: ExperimentRecord) =>
-        (r.source_type === "NASA_PSI" ? 2 : 0) + (r.verification_status === "verified" ? 1 : 0);
-      return rank(b) - rank(a);
-    });
+    const ranked = rankFireSafetyEvidence(filtered, RANKING_QUESTIONS[lens]);
     const seen = new Set<string>();
-    return sorted.filter((r) => {
-      const key = r.investigation.toLowerCase().trim();
+    return ranked.filter(({ record }) => {
+      const key = record.investigation.toLowerCase().trim();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -277,11 +281,13 @@ export function ExecutiveAnalyticsDashboard({
           </div>
           <div className="mt-4 divide-y divide-white/[0.07]">
             {featured.length === 0 && <p className="py-8 text-sm text-slate-400">No indexed investigations match this topic.</p>}
-            {featured.map((record) => (
+            {featured.map(({ record, score, reasons, warnings }) => (
               <button key={record.id} type="button" onClick={() => onSelectRecord?.(record.id)} disabled={!onSelectRecord} className={"group flex w-full items-center justify-between gap-4 py-4 text-left transition-colors hover:bg-white/[0.02] disabled:cursor-default " + focusStyle}>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-slate-100 group-hover:text-amber-200">{record.investigation}</p>
                   <p className="mt-1.5 truncate text-xs text-slate-400">{record.material} · {record.gravity.replaceAll("_", " ")}</p>
+                  <p className="mt-2 text-xs text-amber-200/90">Relevance index {score}/100 · {reasons[0] || "Contextual evidence only"}</p>
+                  {warnings.length > 0 && <p className="mt-1 truncate text-[11px] text-slate-500" title={warnings[0]}>Caution: {warnings[0]}</p>}
                   <div className="mt-2.5 flex flex-wrap items-center gap-3">
                     <SourceTag record={record} />
                     <span className="text-[11px] text-slate-500">{record.oxygen_pct == null ? "O₂ unreported" : record.oxygen_pct + "% O₂"}</span>
@@ -292,7 +298,7 @@ export function ExecutiveAnalyticsDashboard({
               </button>
             ))}
           </div>
-          <p className="mt-2 text-[11px] text-slate-500">Topic tabs use keyword matching. Display order reflects source and review metadata, not scientific relevance or safety ranking.</p>
+          <p className="mt-2 text-[11px] text-slate-500">A transparent, question-specific relevance index ranks these records by topic, material applicability, provenance and reported conditions. The score is a discovery heuristic, never a fire-risk or safety prediction. “Marked verified” refers only to internal review status.</p>
         </section>
         <section className={panel + " p-5 sm:p-6 xl:col-span-5"}>
           <div className="flex items-center gap-2">
