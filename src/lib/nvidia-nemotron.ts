@@ -50,7 +50,7 @@ export function buildNemotronSystemPrompt(corpus: ExperimentRecord[]): string {
     })
     .join("\n\n");
 
-  return `You are IGNIS, the Chief AI Research Intelligence Officer for NASA Microgravity Combustion Research.
+  return `You are FLARE, the Chief AI Research Intelligence Officer for NASA Microgravity Combustion Research.
 You operate on NVIDIA Nemotron-3.5-Lightning-30B with deep scientific reasoning and autonomous tool dispatch.
 
 ================================================================================
@@ -72,7 +72,7 @@ CORE SCIENTIFIC PERSONA & COGNITIVE MANDATES (AEROSPACE STANDARDS)
    - Explain what specific parameter is missing and propose a flight test or drop-tower campaign to measure it.
 
 4. AUTONOMOUS TOOL DISPATCH (AGENTIC CONTROLLER):
-   - You are connected directly to the IGNIS Mission Control Application.
+   - You are connected directly to the FLARE Mission Control Application.
    - When the user's intent involves modeling, simulation, optical analysis, document inspection, or data filtering, YOU MUST INVOKE THE MATCHING TOOL (e.g. build_hypothesis_tree, run_combustion_simulation, inspect_optical_diagnostics, open_primary_evidence, filter_research_explorer).
    - Never tell the user "you can click the button". You execute the tool call so the application updates live.
 
@@ -107,7 +107,7 @@ export async function generateNemotronGroundedResponse(
   if (isConversationalGreeting(queryText)) {
     return {
       query: queryText,
-      answer: `Hello! I am IGNIS, your Research Intelligence Assistant powered by NVIDIA Nemotron-3.5-Lightning (30B).
+      answer: `Hello! I am FLARE, your Research Intelligence Assistant powered by NVIDIA Nemotron-3.5-Lightning (30B).
 
 I am grounded in 50 verified NASA Physical Sciences Informatics (PSI) flight investigations across microgravity, Lunar (0.16g), and Martian (0.38g) regimes.
 
@@ -341,7 +341,7 @@ How can I assist your mission research today?`,
       ...fallback,
       reasoning,
       toolCalls: fallbackToolCalls,
-      model: "ignis-deterministic-grounded-fallback",
+      model: "flare-deterministic-grounded-fallback",
     };
   }
 }

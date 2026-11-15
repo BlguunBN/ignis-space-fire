@@ -268,7 +268,7 @@ export function GroundedChatDrawer({
       id: "init",
       role: "assistant",
       content:
-        "Welcome to Research assistant powered by NVIDIA Nemotron-3.5-Lightning (30B). Deep reasoning and strict citation grounding against NASA Physical Sciences Informatics (PSI) flight records are active.",
+        "Answers come only from the indexed NASA records, with citations. If the records don’t cover your question, the assistant says so. AI can make mistakes: always open the cited source.",
       timestamp: "Ready",
     },
   ]);
@@ -360,7 +360,7 @@ export function GroundedChatDrawer({
             const localFallback = generateGroundedAssistantResponse(trimmed, targetCorpus);
             grounded = {
               ...localFallback,
-              model: "ignis-deterministic-grounded-fallback",
+              model: "flare-deterministic-grounded-fallback",
             };
           } else {
             const res = await fetch("/api/chat", {
@@ -378,7 +378,7 @@ export function GroundedChatDrawer({
               const localFallback = generateGroundedAssistantResponse(trimmed, targetCorpus);
               grounded = {
                 ...localFallback,
-                model: "ignis-deterministic-grounded-fallback",
+                model: "flare-deterministic-grounded-fallback",
               };
             }
           }
@@ -391,7 +391,7 @@ export function GroundedChatDrawer({
           const localFallback = generateGroundedAssistantResponse(trimmed, targetCorpus);
           grounded = {
             ...localFallback,
-            model: "ignis-deterministic-grounded-fallback",
+            model: "flare-deterministic-grounded-fallback",
           };
         }
 
@@ -509,7 +509,13 @@ export function GroundedChatDrawer({
         const args = tc.args as BuildHypothesisTreeArgs;
         onRun = () => {
           if (onAddToWhiteboard) {
-            onAddToWhiteboard(args.question?.title || msg.content, msg.response!.citations, args);
+            const messageClaims = (msg.response?.citations || []).map((c) => c.claimId).filter(Boolean);
+            const combinedClaims = Array.from(new Set([...(args.evidenceClaims || []), ...messageClaims]));
+            const resolvedArgs: BuildHypothesisTreeArgs = {
+              ...args,
+              evidenceClaims: combinedClaims.length > 0 ? combinedClaims : args.evidenceClaims,
+            };
+            onAddToWhiteboard(args.question?.title || msg.content, msg.response?.citations, resolvedArgs);
           }
           if (!isFullPage) onClose?.();
         };
@@ -633,7 +639,7 @@ export function GroundedChatDrawer({
                 <Bot className="w-8 h-8" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold tracking-tight text-white">IGNIS Research Intelligence Copilot</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-white">FLARE Research Intelligence Copilot</h2>
                 <p className="text-xs text-slate-400 max-w-xl mx-auto">
                   Chief AI Research Officer grounded in 50 NASA Physical Sciences Informatics (PSI) flight records across microgravity, Lunar (0.16g), and Martian (0.38g) regimes.
                 </p>
@@ -905,7 +911,7 @@ export function GroundedChatDrawer({
           </form>
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-2.5 px-1">
             <span>{selectedModel === "nemotron" ? "NVIDIA Nemotron 30B • RAG Grounding Engine" : "Local Deterministic Grounded Engine"}</span>
-            <span>Answers only from indexed records and says when evidence is missing</span>
+            <span>Answers cite indexed NASA records; check the source</span>
           </div>
         </div>
       </div>
@@ -931,7 +937,7 @@ export function GroundedChatDrawer({
             </div>
             <div>
               <div className="flex items-center gap-2 font-mono text-xs font-bold text-slate-100">
-                <span>IGNIS AI Copilot</span>
+                <span>FLARE AI Copilot</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-mono">
                   <Cpu className="w-2.5 h-2.5" /> {selectedModel === "nemotron" ? "Nemotron 30B" : "Deterministic"}
                 </span>

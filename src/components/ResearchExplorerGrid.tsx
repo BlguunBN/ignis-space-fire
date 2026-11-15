@@ -38,7 +38,7 @@ interface ResearchExplorerGridProps {
 
 type GravityRegimeFilter = "all" | "microgravity" | "partial_gravity" | "lunar" | "martian" | "terrestrial";
 type MaterialFilter = "all" | "liquid_droplets" | "pmma" | "fabrics_cellulose" | "wire_insulation" | "gaseous_fuels" | "other_solids";
-type OutcomeFilter = "all" | "extinction" | "spread" | "cool_flame" | "scaling" | "other";
+type OutcomeFilter = "all" | "extinction" | "completion" | "spread" | "cool_flame" | "scaling" | "other";
 type RelevanceFilter = "all" | "high" | "medium" | "low";
 type SortOption = "relevance" | "oxygen_desc" | "oxygen_asc" | "pressure_desc" | "name_asc";
 
@@ -81,15 +81,31 @@ export function ResearchExplorerGrid({
   }, [initialOxygenRange]);
 
   const getOutcome = (r: ExperimentRecord): { id: OutcomeFilter; label: string; dotColor: string } => {
+    const finding = (r.finding || "").toLowerCase();
     const text = `${r.investigation} ${r.finding} ${r.fire_safety_relevance}`.toLowerCase();
-    const isMethanol = r.material.toLowerCase().includes("methanol");
 
-    // 1. Cool flame: only for alkane fuels exhibiting cool flame kinetics (not methanol)
-    if (!isMethanol && (text.includes("cool flame") || text.includes("low-temp"))) {
+    // 1. Check r.finding first: "went out", "extinct", "quench", "no ignition", "blowoff" -> Extinction
+    if (
+      finding.includes("went out") ||
+      finding.includes("extinct") ||
+      finding.includes("quench") ||
+      finding.includes("no ignition") ||
+      finding.includes("blowoff")
+    ) {
+      return { id: "extinction", label: "Extinction", dotColor: "#38bdf8" };
+    }
+
+    // 2. "completion" -> Burned to completion
+    if (finding.includes("completion")) {
+      return { id: "completion", label: "Burned to completion", dotColor: "#10b981" };
+    }
+
+    // 3. Only label cool flame if finding explicitly mentions it
+    if (finding.includes("cool flame")) {
       return { id: "cool_flame", label: "Cool-flame burning", dotColor: "#eab308" };
     }
 
-    // 2. Liquid droplet combustion & extinction tests (FLEX droplet records are extinction, not flame spread)
+    // 4. Liquid droplet combustion & extinction tests (FLEX droplet records are extinction, not flame spread)
     if (
       r.material_class === "liquid_droplet" ||
       r.measurements.some((m) => m.toLowerCase().includes("extinct")) ||
@@ -99,7 +115,7 @@ export function ResearchExplorerGrid({
       return { id: "extinction", label: "Extinction", dotColor: "#38bdf8" };
     }
 
-    // 3. Flame spread across solid and fabric materials
+    // 5. Flame spread across solid and fabric materials
     if (text.includes("spread") || text.includes("propagation") || text.includes("growth")) {
       return { id: "spread", label: "Flame spread", dotColor: "#f97316" };
     }
@@ -141,6 +157,7 @@ export function ResearchExplorerGrid({
     const outcomeCounts: Record<OutcomeFilter, number> = {
       all: records.length,
       extinction: 0,
+      completion: 0,
       spread: 0,
       cool_flame: 0,
       scaling: 0,
@@ -430,6 +447,7 @@ export function ResearchExplorerGrid({
               <div className="flex flex-wrap gap-1.5 font-mono text-xs">
                 {[
                   { id: "extinction", label: "Extinction / limits", count: filterCounts.outcomeCounts.extinction },
+                  { id: "completion", label: "Burned to completion", count: filterCounts.outcomeCounts.completion },
                   { id: "spread", label: "Flame spread", count: filterCounts.outcomeCounts.spread },
                   { id: "cool_flame", label: "Cool flames", count: filterCounts.outcomeCounts.cool_flame },
                   { id: "scaling", label: "Scaling trends", count: filterCounts.outcomeCounts.scaling },

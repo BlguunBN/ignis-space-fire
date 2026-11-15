@@ -48,7 +48,7 @@ export function IngestionReviewModal({
   corpus,
 }: IngestionReviewModalProps) {
   const [queue, setQueue] = useState<StagedCandidateRecord[]>([]);
-  const [reviewerName, setReviewerName] = useState("Dr. Sarah Chen (NASA GRC)");
+  const [reviewerName, setReviewerName] = useState("FLARE team reviewer");
   const [reviewNotes, setReviewNotes] = useState("");
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [selectedCandidate, setSelectedCandidate] = useState<StagedCandidateRecord | null>(null);
@@ -335,7 +335,7 @@ export function IngestionReviewModal({
             </span>
           </div>
           <span className="text-[10px] text-amber-400/80 uppercase tracking-wider font-bold hidden md:inline">
-            Verification Gate
+            Human review gate
           </span>
         </div>
 

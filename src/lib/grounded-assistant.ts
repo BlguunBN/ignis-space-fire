@@ -135,7 +135,7 @@ export function generateGroundedAssistantResponse(
     return {
       query: queryText,
       answer:
-        "Welcome to IGNIS Research Assistant. I am grounded in 50 NASA Physical Sciences Informatics (PSI) flight investigations across microgravity, Lunar (0.16g), and Martian (0.38g) regimes.\n\nYou can ask me combustion science questions (e.g., Saffire large-scale flame spread, FLEX droplet cool flames, or BASS low-speed extinction limits), or ask me to formulate hypothesis trees and launch simulations.",
+        "Welcome to FLARE Research Assistant. I am grounded in 50 NASA Physical Sciences Informatics (PSI) flight investigations across microgravity, Lunar (0.16g), and Martian (0.38g) regimes.\n\nYou can ask me combustion science questions (e.g., Saffire large-scale flame spread, FLEX droplet cool flames, or BASS low-speed extinction limits), or ask me to formulate hypothesis trees and launch simulations.",
       citations: [],
       isAbstention: false,
       boundaryWarnings: [],

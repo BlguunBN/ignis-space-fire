@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       candidatePressureKpa: audit.extractedCandidate?.candidatePressureKpa ?? 101.3,
       extractedFinding:
         audit.extractedCandidate?.extractedFinding ||
-        `Empirical data extracted by IGNIS Gatekeeper (${scraped.rawText.slice(0, 160).trim()}...).`,
+        `Empirical data extracted by FLARE Gatekeeper (${scraped.rawText.slice(0, 160).trim()}...).`,
       extractedQuote: audit.extractedCandidate?.extractedQuote || scraped.rawText.slice(0, 120).trim(),
       pageNumber: audit.extractedCandidate?.pageNumber || 1,
       sourceLocator: audit.extractedCandidate?.sourceLocator || scraped.url || "Local Upload Queue",

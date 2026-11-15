@@ -18,7 +18,7 @@ describe("NVIDIA Nemotron 3.5 Lightning Agent Integration", () => {
 
   test("compiles comprehensive NASA PSI system prompt with authentic flight citations", () => {
     const prompt = buildNemotronSystemPrompt(corpus);
-    assert.ok(prompt.includes("You are IGNIS"));
+    assert.ok(prompt.includes("You are FLARE"));
     assert.ok(prompt.includes("NVIDIA Nemotron-3.5-Lightning-30B"));
     assert.ok(prompt.includes("Saffire-I Flight Experiment"));
     assert.ok(prompt.includes("BASS-II"));

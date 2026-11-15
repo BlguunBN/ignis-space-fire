@@ -53,7 +53,7 @@ export function InvestigationDetail({ record, query, onInspectSource }: Investig
 
         <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">
           <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>{record.verified_by || "Verified by NASA GRC"}</span>
+          <span>{record.verified_by || "Not yet reviewed"}</span>
         </div>
       </div>
 

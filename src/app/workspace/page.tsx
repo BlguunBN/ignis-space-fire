@@ -72,7 +72,7 @@ export default function ResearcherWorkspace() {
 
   async function importLocalBoard() {
     try {
-      const raw = localStorage.getItem("ignis_whiteboard_state");
+      const raw = localStorage.getItem("flare_whiteboard_state") || localStorage.getItem("ignis_whiteboard_state");
       if (!raw) {
         setMessage("No locally cached evidence tree was detected in this browser session.");
         setMessageType("info");
@@ -392,6 +392,7 @@ export default function ResearcherWorkspace() {
                     {item.kind === "whiteboard" && (
                       <button
                         onClick={() => {
+                          sessionStorage.setItem(`flare_open_board_${session.user.id}`, item.id);
                           sessionStorage.setItem(`ignis_open_board_${session.user.id}`, item.id);
                           window.location.assign("/?openBoard=1");
                         }}

@@ -30,7 +30,7 @@ export function generateDeterministicBrief(
   const querySummary = queryParts.length > 0 ? queryParts.join(" | ") : "All Indexed Evidence";
 
   if (records.length === 0) {
-    const emptyMarkdown = `# IGNIS Research Evidence Brief: No Applicable Evidence
+    const emptyMarkdown = `# FLARE Research Evidence Brief: No Applicable Evidence
 
 **Generated:** ${timestamp}  
 **Corpus Version:** ${corpusVersion}  
@@ -42,7 +42,7 @@ export function generateDeterministicBrief(
 > [!WARNING]
 > **No reviewed NASA microgravity combustion records in this corpus match the requested query conditions.**
 > 
-> IGNIS strictly enforces scientific abstention. Extrapolations or synthetic estimations are withheld to prevent mischaracterizing spacecraft fire risk.
+> FLARE strictly enforces scientific abstention. Extrapolations or synthetic estimations are withheld to prevent mischaracterizing spacecraft fire risk.
 
 ## 2. Recommended Next Steps
 - Broaden oxygen or airflow bounds.
@@ -58,7 +58,7 @@ export function generateDeterministicBrief(
     };
   }
 
-  let md = `# IGNIS Microgravity Combustion Evidence Brief
+  let md = `# FLARE Microgravity Combustion Evidence Brief
 
 **Generated:** ${timestamp}  
 **Corpus Version:** ${corpusVersion}  

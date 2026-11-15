@@ -445,7 +445,7 @@ export async function fetchAndExtractPaperFromUrl(
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) IGNIS-NASA-Research-Scraper/1.0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) FLARE-NASA-Research-Scraper/1.0",
         Accept: "text/html,application/xhtml+xml,application/xml,text/plain,application/pdf;q=0.9,*/*;q=0.8",
       },
     });

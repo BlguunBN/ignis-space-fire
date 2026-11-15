@@ -6,7 +6,7 @@ import { HelpCircle, FileCheck, Sparkles, Layers, ShieldCheck, X } from "lucide-
 
 export const QuestionNode = memo(({ id, data }: { id: string; data: any }) => {
   return (
-    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-amber-400 ring-2 ring-amber-400/30" : "border-amber-400/80"} rounded-xl p-3 shadow-xl w-72 font-sans text-xs text-slate-200 transition-all duration-300`}>
+    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-amber-400 ring-2 ring-amber-400/30" : "border-amber-400/80"} rounded-xl p-3 shadow-xl w-[360px] font-sans text-xs text-slate-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Top} className="!bg-amber-400 !w-2.5 !h-2.5" />
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5 font-mono text-[10px] text-amber-400 uppercase tracking-wider font-bold">
@@ -29,19 +29,19 @@ export const QuestionNode = memo(({ id, data }: { id: string; data: any }) => {
         )}
       </div>
 
-      <input
-        type="text"
+      <textarea
         value={data.label || ""}
         onChange={(e) => data.onChange?.(id, { ...data, label: e.target.value })}
         placeholder="e.g. Forced Airflow Flame Spread..."
-        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none focus:border-amber-400 mb-1.5"
+        rows={2}
+        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none focus:border-amber-400 mb-1.5 resize-none leading-snug"
       />
 
       <textarea
         value={data.details || ""}
         onChange={(e) => data.onChange?.(id, { ...data, details: e.target.value })}
         placeholder="Enter research scope, gap, or physical question..."
-        rows={2}
+        rows={3}
         className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[11px] text-slate-300 focus:outline-none focus:border-amber-400 resize-none leading-relaxed"
       />
       <Handle type="source" position={Position.Bottom} className="!bg-amber-400 !w-2.5 !h-2.5" />
@@ -102,6 +102,7 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
     if (study) {
       data.onChange?.(id, {
         ...data,
+        investigationId: study.id,
         investigation: study.label,
         claimId: study.claimId,
         conditions: study.conditions,
@@ -111,7 +112,7 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
   };
 
   return (
-    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-cyan-400 ring-2 ring-cyan-400/30" : "border-cyan-400/80"} rounded-xl p-3 shadow-xl w-80 font-sans text-xs text-slate-200 transition-all duration-300`}>
+    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-cyan-400 ring-2 ring-cyan-400/30" : "border-cyan-400/80"} rounded-xl p-3 shadow-xl w-[360px] font-sans text-xs text-slate-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Top} className="!bg-cyan-400 !w-2.5 !h-2.5" />
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5 font-mono text-[10px] text-cyan-400 uppercase tracking-wider font-bold">
@@ -139,18 +140,25 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
         </div>
       </div>
 
-      {/* Investigation Selector */}
+      {/* Investigation Selector & Verified Title */}
       <select
-        value={data.investigationId || ""}
+        value={data.investigationId || (data.investigation ? "current-investigation" : "")}
         onChange={(e) => handleSelectStudy(e.target.value)}
-        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-xs text-slate-100 font-semibold mb-1 focus:outline-none focus:border-cyan-400"
+        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-xs text-slate-100 font-semibold mb-1 focus:outline-none focus:border-cyan-400 truncate"
+        title={data.investigation || data.claimId}
       >
-        <option value="" disabled>Select NASA Investigation...</option>
-        {corpusList.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.label} ({c.claimId})
+        {data.investigation && (
+          <option value={data.investigationId || "current-investigation"}>
+            {data.investigation} {data.claimId ? `(${data.claimId})` : ""}
           </option>
-        ))}
+        )}
+        {corpusList
+          .filter((c) => c.label !== data.investigation && c.claimId !== data.claimId && c.id !== data.investigationId)
+          .map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.label} ({c.claimId})
+            </option>
+          ))}
       </select>
 
       <div className="text-[10px] font-mono text-cyan-300 mb-1.5 px-0.5">
@@ -160,13 +168,13 @@ export const EvidenceNode = memo(({ id, data }: { id: string; data: any }) => {
       <textarea
         value={data.quote || ""}
         onChange={(e) => data.onChange?.(id, { ...data, quote: e.target.value })}
-        rows={2}
+        rows={3}
         className="w-full bg-[#0c0f14] border border-white/[0.08] rounded p-1.5 text-[11px] text-slate-300 focus:outline-none focus:border-cyan-400 resize-none italic leading-relaxed"
       />
 
       <div className="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-emerald-400">
         <ShieldCheck className="w-3 h-3" />
-        <span>Indexed Record Verified</span>
+        <span>Linked to cited source</span>
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-cyan-400 !w-2.5 !h-2.5" />
     </div>
@@ -179,7 +187,7 @@ export const HypothesisNode = memo(({ id, data }: { id: string; data: any }) => 
   const borderColor = isCounter ? "border-amber-500 ring-2 ring-amber-500/30" : data.aiGenerated ? "border-emerald-400 ring-2 ring-emerald-400/30" : "border-emerald-400/80";
 
   return (
-    <div className={`bg-[#13171e] border-2 ${borderColor} rounded-xl p-3 shadow-xl w-72 font-sans text-xs text-slate-200 transition-all duration-300`}>
+    <div className={`bg-[#13171e] border-2 ${borderColor} rounded-xl p-3 shadow-xl w-[360px] font-sans text-xs text-slate-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Top} className={`!w-2.5 !h-2.5 ${isCounter ? "!bg-amber-500" : "!bg-emerald-400"}`} />
       <div className="flex items-center justify-between mb-1.5">
         <div className={`flex items-center gap-1.5 font-mono text-[10px] ${isCounter ? "text-amber-400" : "text-emerald-400"} uppercase tracking-wider font-bold`}>
@@ -202,28 +210,28 @@ export const HypothesisNode = memo(({ id, data }: { id: string; data: any }) => 
         )}
       </div>
 
-      <input
-        type="text"
+      <textarea
         value={data.title || ""}
         onChange={(e) => data.onChange?.(id, { ...data, title: e.target.value })}
         placeholder="Hypothesis Title..."
-        className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"} mb-1.5`}
+        rows={2}
+        className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"} mb-1.5 resize-none leading-snug`}
       />
 
       <textarea
         value={data.prediction || ""}
         onChange={(e) => data.onChange?.(id, { ...data, prediction: e.target.value })}
         placeholder="Enter physical prediction (e.g. extinction threshold shift)..."
-        rows={2}
+        rows={3}
         className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[11px] text-slate-300 focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"} resize-none leading-relaxed mb-1.5`}
       />
 
-      <input
-        type="text"
+      <textarea
         value={data.rationale || ""}
         onChange={(e) => data.onChange?.(id, { ...data, rationale: e.target.value })}
         placeholder="Governing physical mechanism / rationale..."
-        className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[10px] font-mono text-slate-400 focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"}`}
+        rows={2}
+        className={`w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[10px] font-mono text-slate-400 focus:outline-none ${isCounter ? "focus:border-amber-400" : "focus:border-emerald-400"} resize-none leading-relaxed`}
       />
       <Handle type="source" position={Position.Bottom} className={`!w-2.5 !h-2.5 ${isCounter ? "!bg-amber-500" : "!bg-emerald-400"}`} />
     </div>
@@ -233,7 +241,7 @@ HypothesisNode.displayName = "HypothesisNode";
 
 export const ExperimentNode = memo(({ id, data }: { id: string; data: any }) => {
   return (
-    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-purple-400 ring-2 ring-purple-400/30" : "border-purple-400/80"} rounded-xl p-3 shadow-xl w-80 font-sans text-xs text-slate-200 transition-all duration-300`}>
+    <div className={`bg-[#13171e] border-2 ${data.aiGenerated ? "border-purple-400 ring-2 ring-purple-400/30" : "border-purple-400/80"} rounded-xl p-3 shadow-xl w-[380px] font-sans text-xs text-slate-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Top} className="!bg-purple-400 !w-2.5 !h-2.5" />
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5 font-mono text-[10px] text-purple-400 uppercase tracking-wider font-bold">
@@ -256,12 +264,12 @@ export const ExperimentNode = memo(({ id, data }: { id: string; data: any }) => 
         )}
       </div>
 
-      <input
-        type="text"
+      <textarea
         value={data.objective || ""}
         onChange={(e) => data.onChange?.(id, { ...data, objective: e.target.value })}
         placeholder="Proposal Objective..."
-        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none focus:border-purple-400 mb-1.5"
+        rows={2}
+        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none focus:border-purple-400 mb-1.5 resize-none leading-snug"
       />
 
       <div className="grid grid-cols-2 gap-1.5 mb-1.5 font-mono text-[10px]">
@@ -270,7 +278,7 @@ export const ExperimentNode = memo(({ id, data }: { id: string; data: any }) => 
           <select
             value={data.facility || "ISS CIR"}
             onChange={(e) => data.onChange?.(id, { ...data, facility: e.target.value })}
-            className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-1.5 py-1 text-slate-200 focus:outline-none"
+            className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-1.5 py-1 text-slate-200 focus:outline-none truncate"
           >
             <option value="ISS CIR">ISS CIR</option>
             <option value="Cygnus Duct (Saffire)">Cygnus Duct (Saffire)</option>
@@ -311,12 +319,12 @@ export const ExperimentNode = memo(({ id, data }: { id: string; data: any }) => 
         </div>
       </div>
 
-      <input
-        type="text"
+      <textarea
         value={data.geometry || "0.4m x 1.0m duct sample"}
         onChange={(e) => data.onChange?.(id, { ...data, geometry: e.target.value })}
         placeholder="Fuel geometry & dimensions..."
-        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[10px] font-mono text-slate-300 focus:outline-none focus:border-purple-400"
+        rows={2}
+        className="w-full bg-[#0c0f14] border border-white/[0.08] rounded px-2 py-1 text-[10px] font-mono text-slate-300 focus:outline-none focus:border-purple-400 resize-none leading-snug"
       />
       <Handle type="source" position={Position.Bottom} className="!bg-purple-400 !w-2.5 !h-2.5" />
     </div>

@@ -87,7 +87,7 @@ ER  - `;
               <span className="font-bold">Peer-Reviewed NASA Source</span>
             </div>
             <span className="text-[11px] text-slate-300">
-              Verified by: <strong>{record.verified_by || "NASA GRC"}</strong>
+              Verified by: <strong>{record.verified_by || "Not yet reviewed"}</strong>
             </span>
           </div>
 

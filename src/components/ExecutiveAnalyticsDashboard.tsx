@@ -56,7 +56,14 @@ const smallTitle = "text-[11px] font-semibold uppercase tracking-[0.13em] text-s
 const focusStyle = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400";
 
 function SourceTag({ record }: { record: ExperimentRecord }) {
-  const label = record.source_type === "NASA_PSI" ? "NASA PSI" : record.source_type === "NTRS" ? "NASA NTRS" : "Published source";
+  const label =
+    record.source_type === "NASA_PSI"
+      ? "NASA PSI"
+      : record.source_type === "NTRS"
+      ? "NASA NTRS"
+      : record.source_type === "AGENCY_REPORT" || record.source_type === "NASA_WEB"
+      ? "Agency Report"
+      : "Published source";
   return (
     <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400">
       <span className="h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden="true" />
@@ -131,7 +138,7 @@ export function ExecutiveAnalyticsDashboard({
           <div className="p-6 sm:p-8 lg:p-10">
             <div className="mb-6 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.17em] text-amber-300">
               <span className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-400/10"><Flame className="h-3.5 w-3.5" /></span>
-              IGNIS / Research intelligence
+              FLARE / Research intelligence
             </div>
             <h2 className="max-w-2xl text-3xl font-semibold leading-[1.14] tracking-tight text-white sm:text-4xl lg:text-[42px]">
               Understand fire in low gravity. Build safer habitats.

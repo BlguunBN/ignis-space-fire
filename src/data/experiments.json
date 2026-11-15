@@ -615,7 +615,7 @@
     ],
     "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-PSI-013",
       "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC. Related PSI dataset: FLEX (PSI-69), DOI 10.60555/mbq8-0451",
@@ -631,7 +631,7 @@
       "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 12, section 'Flame Extinguishment Experiment (FLEX)'",
       "quote": "FLEX research showed the flammability limit is lower in reduced gravity, so Earth standards for inert gas suppressants do not give the same margin of safety in low gravity.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -663,7 +663,7 @@
     ],
     "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-PSI-014",
       "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC. Related PSI dataset: BASS (PSI-26), DOI 10.60555/58h4-dy80",
@@ -679,7 +679,7 @@
       "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 22 (BASS suppression) and p. 31 (BASS results)",
       "quote": "A nitrogen suppressant jet applied to a flame can strengthen it by pulling in surrounding air, and local application of suppressant was not adequate for extinguishment: the jet sustained the flame even with the ambient airflow turned off.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -711,7 +711,7 @@
     ],
     "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-PSI-015",
       "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC. Related PSI dataset: BASS (PSI-26), DOI 10.60555/58h4-dy80",
@@ -727,7 +727,7 @@
       "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 31",
       "quote": "BASS results indicate that NASA's standard material flammability test (NASA-STD-6001 Test 1) is not conservative: materials can burn at lower oxygen levels in microgravity than on Earth.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -759,7 +759,7 @@
     ],
     "source_url": "https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-PSI-016",
       "sourceId": "No DOI. NASA publication NP-2015-10-034-JSC",
@@ -775,7 +775,7 @@
       "tableOrFigure": "Gokoglu et al., A Researcher's Guide to: Combustion Science (NASA ISS Program Science Office, Oct 2015), p. 31, 'Low-Stretch (Low-Velocity) Flames' and Figure 8",
       "quote": "For flame spread across solid materials, the lowest oxygen level that supports steady spread occurs at a gas velocity on the order of 10 cm/s, which is also where flame spread is fastest and is typical of spacecraft ventilation.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -853,7 +853,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-002",
       "sourceId": "Saffire V — sample V-2",
@@ -869,7 +869,7 @@
       "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
       "quote": "The cotton-jersey test burned for 200 s and yielded an estimated 2,800 W average heat release from fuel consumption.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -900,7 +900,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-003",
       "sourceId": "Saffire VI — sample VI-2",
@@ -916,7 +916,7 @@
       "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
       "quote": "The SIBAL sample achieved a relatively steady flame size and spread; oxygen-consumption calorimetry reported 3,217 W peak heat release.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -947,7 +947,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-004",
       "sourceId": "Saffire VI — sample VI-3",
@@ -963,7 +963,7 @@
       "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
       "quote": "The PMMA flame continued to grow until ventilation was reduced; oxygen-consumption calorimetry reported 3,080 W peak heat release.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -994,7 +994,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-005",
       "sourceId": "Saffire VI — sample VI-4",
@@ -1010,7 +1010,7 @@
       "tableOrFigure": "Tables 1 and 2, pp. 3 and 6; Fig. 3/5 as applicable",
       "quote": "The one-sided PMMA sample burned for 1,200 s; peak heat release from oxygen-consumption calorimetry was 1,507 W.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1041,7 +1041,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-006",
       "sourceId": "Saffire VI — sample VI-3, ventilation change",
@@ -1057,7 +1057,7 @@
       "tableOrFigure": "Fig. 5 caption, p. 5; Results section pp. 4–5",
       "quote": "The experiment decreased ventilation during burning; outlet concentrations of CO and CO2 increased under the reduced flow.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1088,7 +1088,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20240002981/downloads/Saffire-ICES-2024-ICES-365-accepted%20final.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-007",
       "sourceId": "Saffire VI — sample VI-3, smoke detector",
@@ -1104,7 +1104,7 @@
       "tableOrFigure": "p. 5, paragraph discussing Fig. 7; Table 1, p. 3",
       "quote": "At a specified particulate threshold, the far-field detector did not reach the threshold until after much hazardous gas had already been produced.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1135,7 +1135,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-of-materials-on-the-moon-fm2/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-008",
       "sourceId": "Flammability of Materials on the Moon (FM2)",
@@ -1151,7 +1151,7 @@
       "tableOrFigure": "Background, image caption, Objectives, Approach and Hardware",
       "quote": "NASA describes a lunar flame-spread investigation and illustrates SIBAL burning in simulated lunar gravity; the page does not report a numerical flame-spread outcome.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1182,7 +1182,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-009",
       "sourceId": "SoFIE — Residence Time Driven Flame Spread (RTDFS)",
@@ -1198,7 +1198,7 @@
       "tableOrFigure": "Residence Time Driven Flame Spread (RTDFS), Description",
       "quote": "The NASA page explains the study of steady and unsteady flame propagation and presents a theoretical expectation of critical fuel thickness; it does not quantify an experimental result.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1229,7 +1229,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-010",
       "sourceId": "SoFIE — Narrow Channel Apparatus (NCA)",
@@ -1245,7 +1245,7 @@
       "tableOrFigure": "Narrow Channel Apparatus (NCA), Description",
       "quote": "NASA outlines tests designed to measure flame spread and extinction limits over PMMA under oxygen-nitrogen mixtures; no measured result appears in this overview.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1276,7 +1276,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-SOFIE-001",
       "sourceId": "SoFIE Growth and Extinction Limit (GEL)",
@@ -1292,7 +1292,7 @@
       "tableOrFigure": "Growth and Extinction Limit (GEL), Description",
       "quote": "NASA describes investigation of flame growth and extinction over a thick spherical solid; no observed extinction threshold is reported.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1323,7 +1323,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-012",
       "sourceId": "SoFIE — Material Ignition and Suppression Test (MIST)",
@@ -1339,7 +1339,7 @@
       "tableOrFigure": "Material Ignition and Suppression Test (MIST), Description",
       "quote": "NASA describes a wind-tunnel apparatus with a downstream igniter and opposed-flow configuration, not a reported successful test result.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1370,7 +1370,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-013",
       "sourceId": "SoFIE — Spacecraft Materials Microgravity Research on Flammability (SMuRF)",
@@ -1386,7 +1386,7 @@
       "tableOrFigure": "SMuRF, Description",
       "quote": "NASA states the aim of comparing normal-gravity flammability screening with ventilated microgravity testing, without providing a measured correlation.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1417,7 +1417,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-limits-at-reduced-g-experiment-flare/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-014",
       "sourceId": "Flammability Limits at Reduced-g Experiment (FLARE)",
@@ -1433,7 +1433,7 @@
       "tableOrFigure": "Experimental Approach; Relevance/Impact",
       "quote": "NASA describes a program to correlate flammability limits between gravity conditions; this page presents the approach, not numerical results.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1464,7 +1464,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-015",
       "sourceId": "Advanced Combustion via Microgravity Experiments (ACME)",
@@ -1480,7 +1480,7 @@
       "tableOrFigure": "Archived Combustion Experiments > ACME",
       "quote": "The NASA overview describes ACME's focus on combustion efficiency and reducing pollutant emissions; it does not present a measured smoke or soot result.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1511,7 +1511,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-016",
       "sourceId": "Burning and Suppression of Solids (BASS)",
@@ -1527,7 +1527,7 @@
       "tableOrFigure": "Archived Combustion Experiments > BASS",
       "quote": "NASA describes BASS as studying burning and extinction of a wide variety of solid samples; no numeric result is reported here.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1558,7 +1558,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-017",
       "sourceId": "Dust and Aerosol Measurement Feasibility Test (DAFT)",
@@ -1574,7 +1574,7 @@
       "tableOrFigure": "Archived Combustion Experiments > DAFT",
       "quote": "DAFT was designed to verify operation of a modified P-Trak needed for the subsequent smoke aerosol experiment.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1605,7 +1605,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-018",
       "sourceId": "Flame Extinguishment Experiment (FLEX)",
@@ -1621,7 +1621,7 @@
       "tableOrFigure": "Archived Combustion Experiments > FLEX",
       "quote": "NASA describes FLEX as assessing inert-gas extinguishment and limiting oxygen index; the Glenn overview provides no numerical extinction value.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1652,7 +1652,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-019",
       "sourceId": "Smoke Aerosol Measurement Experiment (SAME)",
@@ -1668,7 +1668,7 @@
       "tableOrFigure": "Archived Combustion Experiments > SAME",
       "quote": "NASA notes that plastics can generate recondensed polymer droplets whereas hydrocarbon fuels commonly produce soot; the passage does not supply test-specific measured sizes.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1699,7 +1699,7 @@
     ],
     "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/smoke-aerosol-measurement-experiment-same.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-SAME-001",
       "sourceId": "SAME-R Smoke Aerosol Particle Sizing",
@@ -1715,7 +1715,7 @@
       "tableOrFigure": "NASA SAME-R project summary, first paragraph",
       "quote": "NASA reports that flight diagnostic instruments collected smoke size-distribution statistics, while ground testing supported comparison; the overview does not provide numerical particle diameters.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1746,7 +1746,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-021",
       "sourceId": "Structure & Liftoff in Combustion Experiment (SLICE)",
@@ -1762,7 +1762,7 @@
       "tableOrFigure": "Archived Combustion Experiments > SLICE",
       "quote": "NASA describes coflow laminar diffusion flames as useful for comparison with numerical models, without providing a specific measurement.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1793,7 +1793,7 @@
     ],
     "source_url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-SPICE-001",
       "sourceId": "SPICE Smoke Point and Soot Radiation",
@@ -1809,7 +1809,7 @@
       "tableOrFigure": "Archived Combustion Experiments > SPICE",
       "quote": "NASA describes work on flame stability and extinction mechanisms, building on earlier Laminar Soot Processes experiments.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1840,7 +1840,7 @@
     ],
     "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-023",
       "sourceId": "BASS — PMMA sphere drop-tower nitrogen test",
@@ -1856,7 +1856,7 @@
       "tableOrFigure": "PDF page 2, unnumbered image caption: 'Zero-g facility test burning 2-cm-diameter PMMA sphere'",
       "quote": "A zero-g facility image sequence shows a burning PMMA sphere before the drop, 1 s after the drop, and 4 s after nitrogen extinguishing agent was applied.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1887,7 +1887,7 @@
     ],
     "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-024",
       "sourceId": "BASS — PMMA sphere drop-tower model comparison",
@@ -1903,7 +1903,7 @@
       "tableOrFigure": "PDF page 2, caption: 'PMMA Sphere Drop tower results and modeling'",
       "quote": "The report presents drop-tower flame images overlaid with computed reaction-rate and temperature contours and states that the simulation captures the flame response during the 1-g to 0-g transition.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -1934,7 +1934,7 @@
     ],
     "source_url": "https://www.nasa.gov/wp-content/uploads/2025/07/burning-and-suppression-of-solids-bass.pdf",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-025",
       "sourceId": "BASS — ISS nitrogen suppression protocol",
@@ -1950,7 +1950,7 @@
       "tableOrFigure": "PDF pages 1–3, 'Detailed Research Description' and 'Operational Protocols'",
       "quote": "NASA describes a protocol in which crew raise nitrogen suppressant flow until flame extinction; the source specifies operational settings rather than a fuel-specific threshold.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2028,7 +2028,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-027",
       "sourceId": "BASS-II — Residence Time Driven Flame Spread (RTDFS), high flow",
@@ -2044,7 +2044,7 @@
       "tableOrFigure": "PDF slide 13 (PDF page 13), right-hand image sequence and caption",
       "quote": "A companion image sequence describes a flame approaching blowoff extinction as opposed airflow crosses 40 cm/s.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2075,7 +2075,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-028",
       "sourceId": "BASS-II — RTDFS sample series",
@@ -2091,7 +2091,7 @@
       "tableOrFigure": "PDF slide 12 (PDF page 12), 'Residence Time Driven Flame Spread: Status'",
       "quote": "The poster reports 22 BASS-II test points using PMMA sheets to investigate how fuel thickness affects flame spread and extinguishment.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2122,7 +2122,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-029",
       "sourceId": "BASS-II — Material Ignition and Suppression Test (MIST)",
@@ -2138,7 +2138,7 @@
       "tableOrFigure": "PDF slides 14–15 (PDF pages 14–15), MIST Status and flame-spread plots",
       "quote": "The poster reports flame-spread rates tending to decrease with increasing rod diameter in both gravity conditions; 1-g rates were higher in its comparison. In microgravity, average rates tended to increase with oxygen concentration.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2169,7 +2169,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-030",
       "sourceId": "BASS-II — Narrow Channel Validation (NCV)",
@@ -2185,7 +2185,7 @@
       "tableOrFigure": "PDF slides 16–17 (PDF pages 16–17), 'Narrow Channel Validation' Status and results",
       "quote": "The poster reports 20 opposed-flow PMMA test points and notes that video and still images were used to determine spread rates as flow was changed during each test.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2216,7 +2216,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-031",
       "sourceId": "BASS-II — Spacecraft Materials Microgravity Research on Flammability",
@@ -2232,7 +2232,7 @@
       "tableOrFigure": "PDF slide 18 (PDF page 18), 'Spacecraft Materials Microgravity Research on Flammability: Status'",
       "quote": "The poster reports steady flame spread for the quarter-inch PMMA rod at 13.6% oxygen in microgravity, compared with a 1-g blowoff limit at 16% oxygen.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2263,7 +2263,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-032",
       "sourceId": "BASS-II — Growth and Extinction Limit (GEL), quenching sequence",
@@ -2279,7 +2279,7 @@
       "tableOrFigure": "PDF slide 21 (PDF page 21), 'Growth and Extinction Limit', bottom time-sequence caption",
       "quote": "The poster depicts a quenching time sequence for a SIBAL fabric sample as airflow was gradually reduced from the ignition setting.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2310,7 +2310,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "primary_nasa",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-BASS-002",
       "sourceId": "BASS-II SIBAL Fabric Flame Growth and Extinction",
@@ -2326,7 +2326,7 @@
       "tableOrFigure": "NTRS 20160000593 Slide 21: GEL Series",
       "quote": "The presentation reports 29 tests, including six low-flow quenching cases and one increasing-flow blowoff case, and states that steady spread with a limiting flame length was observed.",
       "reviewStatus": "verified",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   },
@@ -2357,7 +2357,7 @@
     ],
     "source_url": "https://ntrs.nasa.gov/api/citations/20160000593/downloads/20160000593.pdf",
     "quality": "supporting",
-    "verified_by": "IGNIS Research Team",
+    "verified_by": "FLARE Research Team",
     "claim_locator_details": {
       "claimId": "CLM-REG-034",
       "sourceId": "BASS-II — apparatus operating envelope",
@@ -2373,7 +2373,7 @@
       "tableOrFigure": "PDF slides 3 and 7 (PDF pages 3 and 7), Approach and Hardware",
       "quote": "The poster describes BASS-II test hardware and the oxygen and airflow parameter space, but the equipment ranges alone are not evidence of a specific fuel's response.",
       "reviewStatus": "needs_review",
-      "reviewer": "IGNIS Research Team",
+      "reviewer": "FLARE Research Team",
       "reviewDate": "2026-11-14"
     }
   }

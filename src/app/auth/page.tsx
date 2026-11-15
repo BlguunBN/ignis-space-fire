@@ -134,7 +134,7 @@ export default function AuthPage() {
                 : "Mission Specialist Sign In"}
             </h1>
             <p className="mt-1.5 text-xs text-slate-400">
-              IGNIS Microgravity Combustion Intelligence Workspace
+              FLARE Microgravity Combustion Intelligence Workspace
             </p>
           </div>
 

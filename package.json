@@ -2,7 +2,7 @@
   "name": "ignis-space-fire",
   "version": "0.1.0",
   "private": true,
-  "description": "IGNIS - NASA microgravity combustion research intelligence dashboard (Space Apps 2026, Flame in Freefall)",
+  "description": "FLARE - NASA microgravity combustion research intelligence dashboard (Space Apps 2026, Flame in Freefall)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

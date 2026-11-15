@@ -3,7 +3,7 @@ import "./globals.css"
 import { AuthProvider } from "../components/AuthProvider"
 
 export const metadata: Metadata = {
-  title: "IGNIS | NASA Microgravity Fire Safety Intelligence",
+  title: "FLARE | NASA Microgravity Fire Safety Intelligence",
   description: "Explore source-linked summaries of NASA microgravity combustion investigations. NASA Space Apps Ulaanbaatar 2026.",
 }
 

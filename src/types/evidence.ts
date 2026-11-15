@@ -22,13 +22,15 @@ export interface ClaimLocator {
   reviewDate: string;
 }
 
+export type SourceType = "NASA_PSI" | "PEER_REVIEWED" | "NTRS" | "NASA_WEB" | "AGENCY_REPORT";
+
 export interface ExperimentRecord {
   id: string;
   programme: string;
   investigation: string;
   record_type: RecordType;
   verification_status: VerificationStatus;
-  source_type: "NASA_PSI" | "PEER_REVIEWED" | "NTRS";
+  source_type: SourceType;
   psi_id?: string | null;
   doi?: string;
   source_locator?: string;

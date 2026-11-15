@@ -124,7 +124,7 @@ const TEMPLATES: Record<string, { label: string; nodes: Node[]; edges: Edge[] }>
     ],
   },
   exploration: {
-    label: "Exploration Atmospheres (26% O₂ / 56 kPa)",
+    label: "Moon base air (≥30% O₂ / ≤70 kPa)",
     nodes: [
       {
         id: "q-exp",
@@ -539,6 +539,10 @@ export function StructuredWhiteboard({
       ? tree.evidenceClaims
       : ["CLM-SAFFIRE-001", "CLM-BASS-002"];
 
+    const totalClaims = Math.min(claims.length, 3);
+    const spacing = 400;
+    const startX = 400 - ((totalClaims - 1) * spacing) / 2;
+
     claims.slice(0, 3).forEach((claimId, idx) => {
       const matchedRec = (experimentsData as ExperimentRecord[]).find(
         (r) =>
@@ -548,15 +552,16 @@ export function StructuredWhiteboard({
       );
 
       const evId = `ev-${Date.now()}-${idx}`;
-      const xPos = idx === 0 ? 80 : idx === 1 ? 620 : 350;
-      const yPos = idx === 2 ? 260 : 190;
+      const xPos = startX + idx * spacing;
+      const yPos = 200;
 
       evNodes.push({
         id: evId,
         type: "evidence",
         position: { x: xPos, y: yPos },
         data: {
-          claimId: claimId,
+          claimId: matchedRec?.claim_locator_details?.claimId || claimId,
+          investigationId: matchedRec?.id || claimId,
           investigation: matchedRec?.investigation || `NASA Flight Record (${claimId})`,
           conditions: matchedRec
             ? `${matchedRec.oxygen_pct != null ? `${matchedRec.oxygen_pct}% O₂` : "21% O₂"} • ${matchedRec.airflow_cm_s != null ? `${matchedRec.airflow_cm_s} cm/s` : "0 cm/s"} • ${matchedRec.pressure_kpa != null ? `${matchedRec.pressure_kpa} kPa` : "101.3 kPa"}`
@@ -587,7 +592,7 @@ export function StructuredWhiteboard({
     const questionNode: Node = {
       id: qId,
       type: "question",
-      position: { x: 380, y: 20 },
+      position: { x: 400, y: 20 },
       data: {
         label: tree.question.title,
         details: tree.question.details,
@@ -600,7 +605,7 @@ export function StructuredWhiteboard({
     const hypothesisNode: Node = {
       id: hypId,
       type: "hypothesis",
-      position: { x: 350, y: 390 },
+      position: { x: 400, y: 450 },
       data: {
         title: tree.hypothesis.title,
         prediction: tree.hypothesis.prediction,
@@ -614,7 +619,7 @@ export function StructuredWhiteboard({
     const expNode: Node = {
       id: expId,
       type: "experiment",
-      position: { x: 350, y: 580 },
+      position: { x: 390, y: 720 },
       data: {
         facility: tree.validationExperiment.facility,
         objective: tree.validationExperiment.objective,
@@ -645,7 +650,7 @@ export function StructuredWhiteboard({
       const counterNode: Node = {
         id: counterId,
         type: "hypothesis",
-        position: { x: 740, y: 390 },
+        position: { x: 800, y: 450 },
         data: {
           title: tree.counterHypothesis.title,
           prediction: tree.counterHypothesis.prediction,
@@ -659,12 +664,18 @@ export function StructuredWhiteboard({
       allNodes.push(counterNode);
       if (evNodes.length > 1) {
         allEdges.push({
-          id: `e-${evNodes[1].id}-${counterId}`,
-          source: evNodes[1].id,
+          id: `e-${evNodes[evNodes.length - 1].id}-${counterId}`,
+          source: evNodes[evNodes.length - 1].id,
           target: counterId,
           style: { stroke: "#ef4444", strokeWidth: 2, strokeDasharray: "5 5" },
         });
       }
+      allEdges.push({
+        id: `e-${counterId}-${expId}`,
+        source: counterId,
+        target: expId,
+        style: { stroke: "#ef4444", strokeWidth: 1.5, strokeDasharray: "4 4" },
+      });
     }
 
     return { nodes: allNodes, edges: allEdges };
@@ -1030,7 +1041,10 @@ export function StructuredWhiteboard({
     try {
       const state = { nodes, edges };
       if (session) await saveResearcherItem("whiteboard", `Evidence tree ${new Date().toLocaleString()}`, state);
-      else localStorage.setItem("ignis_whiteboard_state", JSON.stringify(state));
+      else {
+        localStorage.setItem("flare_whiteboard_state", JSON.stringify(state));
+        localStorage.setItem("ignis_whiteboard_state", JSON.stringify(state));
+      }
       setSavedFeedback(true);
       setTimeout(() => setSavedFeedback(false), 2000);
     } catch (e) {
@@ -1042,14 +1056,17 @@ export function StructuredWhiteboard({
     try {
       let raw: string | null = null;
       if (session && authClient) {
-        const selectedId = sessionStorage.getItem(`ignis_open_board_${session.user.id}`);
+        const selectedId = sessionStorage.getItem(`flare_open_board_${session.user.id}`) || sessionStorage.getItem(`ignis_open_board_${session.user.id}`);
         let query = authClient.from("researcher_items").select("content").eq("kind", "whiteboard");
         if (selectedId) query = query.eq("id", selectedId);
         const { data, error } = await query.order("created_at", { ascending: false }).limit(1).maybeSingle();
         if (error) throw error;
         raw = data ? JSON.stringify(data.content) : null;
-        if (data && selectedId) sessionStorage.removeItem(`ignis_open_board_${session.user.id}`);
-      } else raw = localStorage.getItem("ignis_whiteboard_state");
+        if (data && selectedId) {
+          sessionStorage.removeItem(`flare_open_board_${session.user.id}`);
+          sessionStorage.removeItem(`ignis_open_board_${session.user.id}`);
+        }
+      } else raw = localStorage.getItem("flare_whiteboard_state") || localStorage.getItem("ignis_whiteboard_state");
       if (raw) {
         const state = JSON.parse(raw);
         if (state.nodes && state.edges) {
@@ -1072,7 +1089,7 @@ export function StructuredWhiteboard({
   };
 
   useEffect(() => {
-    if (session && sessionStorage.getItem(`ignis_open_board_${session.user.id}`)) void handleLoadFromLocal();
+    if (session && (sessionStorage.getItem(`flare_open_board_${session.user.id}`) || sessionStorage.getItem(`ignis_open_board_${session.user.id}`))) void handleLoadFromLocal();
   }, [session?.user.id]);
 
   const handleSerializeToBrief = () => {

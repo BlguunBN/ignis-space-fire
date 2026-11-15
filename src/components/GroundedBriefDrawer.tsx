@@ -28,7 +28,7 @@ export function GroundedBriefDrawer({ isOpen, onClose, brief }: GroundedBriefDra
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `ignis-evidence-brief-${new Date().toISOString().slice(0, 10)}.md`;
+    a.download = `flare-evidence-brief-${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -97,7 +97,7 @@ export function GroundedBriefDrawer({ isOpen, onClose, brief }: GroundedBriefDra
         {/* Footer */}
         <div className="px-5 py-2.5 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between text-[11px] font-mono text-slate-400">
           <span>Inquiry: {brief.querySummary}</span>
-          <span>IGNIS Research Engine</span>
+          <span>FLARE Research Engine</span>
         </div>
       </div>
     </div>

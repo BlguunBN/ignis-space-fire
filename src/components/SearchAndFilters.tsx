@@ -41,7 +41,7 @@ const PRESETS: { label: string; description: string; query: SearchQuery }[] = [
     },
   },
   {
-    label: "Exploration Atmospheres (26% O₂ / 56 kPa)",
+    label: "Moon base air (≥30% O₂ / ≤70 kPa)",
     description: "NASA EVA and exploration habitat reduced-pressure flammability",
     query: {
       freeText: "exploration atmosphere",

@@ -9,14 +9,31 @@ export interface FormattedCitations {
 }
 
 export function generateCslJson(record: ExperimentRecord): any {
-  // Extract authors if in verified_by or fallback to NASA GRC
+  // Extract authors if in source_locator, verified_by, or fallback to NASA GRC
   let authorFamily = "NASA Physical Sciences Research Team";
   let authorGiven = "";
 
-  if (record.verified_by && record.verified_by.includes("et al")) {
+  const textToScan = `${record.source_locator || ""} ${record.investigation || ""} ${record.verified_by || ""}`;
+  const locatorMatch = (record.source_locator || "").match(/([A-Z][a-z]+)\s+et\s+al/i);
+
+  if (locatorMatch) {
+    authorFamily = locatorMatch[1];
+  } else if (record.verified_by && record.verified_by.includes("et al") && !record.verified_by.includes("IGNIS") && !record.verified_by.includes("FLARE")) {
     const parts = record.verified_by.split("et al")[0].trim().split(" ");
     authorFamily = parts[parts.length - 1];
     authorGiven = parts.slice(0, parts.length - 1).join(" ");
+  } else if (/bhattacharjee/i.test(textToScan) || record.id.startsWith("bass-")) {
+    authorFamily = "Bhattacharjee";
+    authorGiven = "S.";
+  } else if (/urban/i.test(textToScan) || record.id.startsWith("saffire-")) {
+    authorFamily = "Urban";
+    authorGiven = "D. L.";
+  } else if (/olson/i.test(textToScan)) {
+    authorFamily = "Olson";
+    authorGiven = "S.";
+  } else if (/ferkul/i.test(textToScan)) {
+    authorFamily = "Ferkul";
+    authorGiven = "P.";
   }
 
   // Extract year from locator or default
