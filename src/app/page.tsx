@@ -292,7 +292,10 @@ export default function UnifiedWorkspace() {
         onOpenCoverage={() => setIsCoverageOpen(true)}
         onOpenSources={() => setIsSourcesOpen(true)}
         onOpenWhiteboard={() => setIsWhiteboardOpen(true)}
-        onOpenAssistant={() => setIsAssistantOpen(true)}
+        onOpenAssistant={() => {
+          setViewMode("assistant");
+          setIsAssistantOpen(false);
+        }}
         onOpenGraph={() => setIsGraphOpen(true)}
         onOpenIngestion={() => setIsIngestionOpen(true)}
         onOpenSimulator={() => setIsSimulatorOpen(true)}

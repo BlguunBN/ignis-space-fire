@@ -1,5 +1,5 @@
 export function resolveActiveStudy(
-  view: "dashboard" | "explorer" | "split",
+  view: "dashboard" | "explorer" | "split" | "assistant",
   inspectingEvidence: boolean,
   activeId: string | null,
   filteredIds: string[],
