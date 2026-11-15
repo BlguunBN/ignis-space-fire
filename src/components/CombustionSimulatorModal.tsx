@@ -278,17 +278,27 @@ export function CombustionSimulatorModal({
 
     const render = () => {
       frame++;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = 560;
+      const h = 350;
+      const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+      }
 
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h / 2;
 
       // Dark chamber background with subtle radial grid
       const bgGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 260);
       bgGrad.addColorStop(0, "#080c14");
       bgGrad.addColorStop(1, "#020306");
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, w, h);
 
       // Chamber alignment reticle & scale markings (mm)
       ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
@@ -366,8 +376,9 @@ export function CombustionSimulatorModal({
         ctx.stroke();
       }
 
-      // If burning, render authentic physics flame
-      if (isBurning || elapsedTime > 0) {
+      // If active burn, render authentic physics flame
+      const isFlameActive = (isBurning || (elapsedTime > 0 && elapsedTime < totalBurnTimeSec)) && currentDiameterMm > 0.05;
+      if (isFlameActive) {
         const flicker = Math.sin(frame * 0.25) * 1.5 + Math.cos(frame * 0.35) * 0.8;
         const flameRadiusPx = Math.max(10, dropletRadiusPx * 3.8 + flicker);
 
@@ -525,6 +536,7 @@ export function CombustionSimulatorModal({
         ctx.stroke();
       }
 
+      ctx.restore();
       animId = requestAnimationFrame(render);
     };
 
@@ -551,9 +563,19 @@ export function CombustionSimulatorModal({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const w = canvas.width;
-    const h = canvas.height;
+    const baseW = 640;
+    const baseH = 360;
+    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    if (canvas.width !== Math.round(baseW * dpr) || canvas.height !== Math.round(baseH * dpr)) {
+      canvas.width = Math.round(baseW * dpr);
+      canvas.height = Math.round(baseH * dpr);
+    }
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, baseW, baseH);
+    const w = baseW;
+    const h = baseH;
     const cx = w / 2;
     const cy = h / 2;
 
@@ -848,6 +870,7 @@ export function CombustionSimulatorModal({
     ctx.lineTo(w, scanlineY);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
   }, [activeTab, diagSequence, cvFilter, scanlineYPct, thresholdSensitivity]);
 
   const toggleBurn = () => {
@@ -1131,9 +1154,11 @@ export function CombustionSimulatorModal({
                     className="relative w-full aspect-[16/10] bg-black rounded-lg border border-white/[0.08] overflow-hidden flex items-center justify-center"
                     onMouseMove={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
+                      const scaleX = 560 / (rect.width || 560);
+                      const scaleY = 350 / (rect.height || 350);
                       setCursorPos({
-                        x: e.clientX - rect.left,
-                        y: e.clientY - rect.top,
+                        x: (e.clientX - rect.left) * scaleX,
+                        y: (e.clientY - rect.top) * scaleY,
                       });
                     }}
                   >
@@ -1154,6 +1179,34 @@ export function CombustionSimulatorModal({
                           <Play className="w-4 h-4 fill-current" />
                           <span>Ignite Droplet (or Spacebar)</span>
                         </button>
+                      </div>
+                    )}
+
+                    {/* Burn Complete / Quenched Overlay */}
+                    {!isBurning && elapsedTime >= totalBurnTimeSec && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
+                        <div className="text-center space-y-2.5 p-4 rounded-xl bg-[#0c0f16]/95 border border-cyan-500/30 shadow-2xl font-mono">
+                          <div className="flex items-center justify-center gap-2 text-cyan-300 text-xs font-bold">
+                            <Sparkles className="w-4 h-4 text-cyan-400" />
+                            <span>
+                              {extinctionProbability > 50
+                                ? "Flame Extinguished (Radiative Quenching)"
+                                : "Droplet Burn Complete (d² Law)"}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 max-w-xs mx-auto">
+                            {extinctionProbability > 50
+                              ? `Radiative heat loss exceeded chemical heat release rate at ${o2Pct}% O₂.`
+                              : `Total burn time ${totalBurnTimeSec.toFixed(1)}s reached for ${initialDropletMm.toFixed(2)}mm ${fuelType} droplet.`}
+                          </p>
+                          <button
+                            onClick={resetSimulation}
+                            className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 mx-auto transition-transform hover:scale-105"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Reset Simulation</span>
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
