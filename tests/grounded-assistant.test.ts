@@ -28,6 +28,25 @@ describe("Stage 3 Grounded AI Assistant & Hallucination Guard", () => {
     assert.strictEqual(check.invalidClaims.length, 0);
   });
 
+  test("rejects a real claim ID attached to the wrong record or page", () => {
+    const saffire = corpus.find((r) => r.id === "saffire-1")!;
+    const flex = corpus.find((r) => r.id === "flex-droplet-1")!;
+    const citation: GroundedCitation = {
+      claimId: saffire.claim_locator_details!.claimId,
+      recordId: flex.id,
+      investigation: flex.investigation,
+      pageNumber: saffire.claim_locator_details!.pageNumber,
+      quote: "Incorrectly borrowed from a different experiment",
+      sourceLocator: flex.source_locator || "NASA PSI",
+    };
+    assert.strictEqual(validateCitations([citation], corpus).valid, false);
+    assert.strictEqual(validateCitations([{
+      ...citation,
+      recordId: saffire.id,
+      pageNumber: 999,
+    }], corpus).valid, false);
+  });
+
   test("rejects hallucinated claim IDs and invalid records", () => {
     const hallucinatedCitation: GroundedCitation = {
       claimId: "CLM-FAKE-FLIGHT-999",
