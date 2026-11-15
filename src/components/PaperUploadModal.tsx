@@ -65,6 +65,16 @@ export function PaperUploadModal({
       desc: "Cygnus large-scale fabric flammability & spread telemetry",
     },
     {
+      name: "NASA PSI (SAME Smoke PSI-102)",
+      url: "https://psi.nasa.gov/physci/repo/data/investigations/PSI-102",
+      desc: "ISS Glovebox smoke detector response & particle sizes",
+    },
+    {
+      name: "NASA PSI (BASS Extinction PSI-25)",
+      url: "https://psi.nasa.gov/physci/repo/data/investigations/PSI-25",
+      desc: "ISS low-speed solid fuel burning & suppression limits",
+    },
+    {
       name: "NASA NTRS (Saffire-V)",
       url: "https://ntrs.nasa.gov/citations/20220014245",
       desc: "Saffire-V concurrent flame spread & low-pressure quenching",

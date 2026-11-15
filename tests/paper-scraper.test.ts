@@ -55,6 +55,14 @@ describe("Research Paper & Experimental Data Scraper", () => {
     assert.strictEqual(scraped.extractedMetadata.doi, "10.60555/mbq8-0451");
   });
 
+  test("dynamically resolves NASA PSI-102 (SAME) investigation from corpus", async () => {
+    const scraped = await fetchAndExtractPaperFromUrl("https://psi.nasa.gov/physci/repo/data/investigations/PSI-102");
+    assert.ok(scraped.title.includes("PSI-102") || scraped.title.includes("Smoke"));
+    assert.ok(scraped.rawText.includes("SAME"));
+    assert.ok(scraped.rawText.includes("Teflon"));
+    assert.strictEqual(scraped.extractedMetadata.doi, "10.60555/gd4k-8h62");
+  });
+
   test("parses uploaded local document correctly", () => {
     const fileContent = `
 Title: Microgravity Droplet Burning of Heptane on ISS
