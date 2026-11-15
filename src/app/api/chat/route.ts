@@ -48,13 +48,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify citations against authentic corpus
-    const citationCheck = validateCitations(nemotronResponse.citations, corpus);
+    // Validate the claim-to-record-to-page mapping before returning the answer.
+    // Silently dropping a bad citation while retaining the claim text would
+    // make unsupported scientific statements appear source-backed.
+    const citationCheck = validateCitations(nemotronResponse.citations, targetCorpus);
     if (!citationCheck.valid) {
-      // Filter out invalid claims to maintain strict hallucination safety
-      nemotronResponse.citations = nemotronResponse.citations.filter(
-        (c) => !citationCheck.invalidClaims.includes(c.claimId)
-      );
+      return NextResponse.json({
+        ...nemotronResponse,
+        answer: "I could not verify the source citation for this result against the indexed research. Please inspect the primary document or narrow the research question.",
+        citations: [],
+        isAbstention: true,
+        abstentionReason: "One or more claim, record and page references did not match the indexed corpus.",
+        scientificLimitations: [
+          ...nemotronResponse.scientificLimitations,
+          "Source verification is incomplete; no safety conclusion should be drawn from this answer.",
+        ],
+        toolCalls: [],
+      });
     }
 
     return NextResponse.json(nemotronResponse);
