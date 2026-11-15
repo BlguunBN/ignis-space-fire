@@ -8,6 +8,12 @@
 import { scanDocumentForPromptInjection, InjectionScanResult } from "./prompt-injection-guard";
 import { StagedCandidateRecord } from "./ingestion";
 import { extractScientificTelemetryVLM } from "./vlm-extractor";
+import {
+  auditScientificTransportAndContradictions,
+  CriticReport,
+} from "./scientific-critic-agent";
+import experimentsData from "../data/experiments.json";
+import { ExperimentRecord } from "../types/evidence";
 
 export type GatekeeperVerdict = "STAGED_FOR_REVIEW" | "REJECTED_UNVERIFIED" | "REJECTED_SECURITY_THREAT";
 
@@ -29,6 +35,7 @@ export interface GatekeeperAuditReport {
   gates: GateEvaluation[];
   extractedCandidate?: Partial<StagedCandidateRecord>;
   securityAudit: InjectionScanResult;
+  criticReport?: CriticReport;
   auditSummary: string;
 }
 
@@ -160,6 +167,31 @@ export function auditScientificDocument(
     g3Notes = "FAILED: Non-physical claim of steady flame spread under 0% oxygen without monopropellant.";
   }
 
+  // Adversarial Scientific Red-Team Critic
+  const criticReport = auditScientificTransportAndContradictions(
+    {
+      material: hasMaterial ? text : "solid fuel",
+      oxygenPct: o2Match ? parseFloat(o2Match[1]) : 21,
+      pressureKpa: pressMatch ? parseFloat(pressMatch[1]) : 101.3,
+      airflowCmS: flowMatch ? parseFloat(flowMatch[1]) : 0,
+      gravityG: hasLowGravity ? 0 : 1,
+      claim: rawText.slice(0, 300),
+    },
+    experimentsData as unknown as ExperimentRecord[]
+  );
+
+  if (!criticReport.isThermodynamicallySound || criticReport.confidencePenalty > 30) {
+    g3Score = Math.max(0, g3Score - Math.round(criticReport.confidencePenalty / 4));
+    if (criticReport.confidencePenalty >= 35) {
+      g3Passed = false;
+      g3Notes = `FAILED: ${criticReport.critiqueNotes}`;
+    } else {
+      g3Notes = `ADVISORY: ${criticReport.critiqueNotes}`;
+    }
+  } else if (g3Passed) {
+    g3Notes = criticReport.critiqueNotes;
+  }
+
   gates.push({
     id: "gate-3",
     name: "Thermodynamic & Physical Sanity",
@@ -278,6 +310,7 @@ export function auditScientificDocument(
     gates,
     extractedCandidate,
     securityAudit,
+    criticReport,
     auditSummary,
   };
 }
